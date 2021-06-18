@@ -1,0 +1,6 @@
+
+db/
+gen-cpp/
+
+client
+server
