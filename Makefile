@@ -21,5 +21,23 @@ gen-cpp/KV_RPC_types.o: gen-cpp/KV_RPC_types.h gen-cpp/KV_RPC_types.cpp
 gen-cpp/KV_RPC_constants.o: gen-cpp/KV_RPC_constants.h gen-cpp/KV_RPC_constants.cpp
 	g++ gen-cpp/KV_RPC_constants.cpp -c -o gen-cpp/KV_RPC_constants.o
 
+gen-cpp/KV_RPC.h:
+	thrift -r --gen cpp KV_RPC.thrift
+
+gen-cpp/KV_RPC.cpp:
+	thrift -r --gen cpp KV_RPC.thrift
+
+gen-cpp/KV_RPC_types.h:
+	thrift -r --gen cpp KV_RPC.thrift
+
+gen-cpp/KV_RPC_types.cpp:
+	thrift -r --gen cpp KV_RPC.thrift
+
+gen-cpp/KV_RPC_constants.h:
+	thrift -r --gen cpp KV_RPC.thrift
+
+gen-cpp/KV_RPC_constants.cpp:
+	thrift -r --gen cpp KV_RPC.thrift
+
 clean:
-	rm *.o
+	rm *.o db/* gen-cpp/*
