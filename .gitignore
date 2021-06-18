@@ -4,3 +4,5 @@ gen-cpp/
 
 client
 server
+
+*.o
