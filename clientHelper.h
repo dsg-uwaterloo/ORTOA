@@ -24,8 +24,8 @@ extern std::unordered_map<std::string, std::string> masterKeys;
 
 extern unsigned char randomBytes[VALUE_SIZE];
 
-void setup();
-void cleanup();
+void setup(std::string fileName);
+void cleanup(std::string fileName);
 
 Entry constructCreateEntry(std::string& key, std::string& value);
 Entry constructGetEntry(std::string& key);

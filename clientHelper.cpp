@@ -1,5 +1,17 @@
 #include "clientHelper.h"
 
+#include <fstream>
+
+#include <boost/filesystem.hpp>
+
+#include <boost/archive/tmpdir.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/unordered_map.hpp>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 std::set<std::string> keySet;
 std::unordered_map<std::string, int> valueSizes;
 std::unordered_map<std::string, std::string> masterKeys;
@@ -19,13 +31,23 @@ inline unsigned char modifyBit(unsigned char c, int bitNum, int b)
     return ((c & ~(1 << bitNum)) | (b << bitNum));
 }
 
-void setup() {
-
+void setup(std::string fileName) {
+	if(boost::filesystem::exists(fileName)){
+		std::ifstream ifs(fileName);
+		boost::archive::text_iarchive ia(ifs);
+		ia >> keySet;
+		ia >> valueSizes;
+		ia >> masterKeys;
+	}
 }
 
 
-void cleanup() {
-
+void cleanup(std::string fileName) {
+	std::ofstream ofs(fileName);
+	boost::archive::text_oarchive oa(ofs);
+	oa << keySet;
+	oa << valueSizes;
+	oa << masterKeys;
 }
 
 

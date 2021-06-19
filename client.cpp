@@ -19,7 +19,6 @@
 
 #include <set>
 #include <string>
-#include <utility>
 #include <iostream>
 #include <unordered_map>
 
@@ -27,16 +26,10 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include <sodium.h>
-
 #include "gen-cpp/KV_RPC.h"
 #include "clientHelper.h"
 
-#define VALUE_SIZE 1024
-
-#define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES)
-
-#define CONTEXT "OpScureK"
+#define DATA_FILE "OpScure.data"
 
 using namespace std;
 using namespace apache::thrift;
@@ -54,6 +47,11 @@ struct Operation {
   std::string value;
 };
 
+void signal_callback_handler(int signum) {
+   cleanup(DATA_FILE);
+   exit(signum);
+}
+
 Operation parseOperation() {
   Operation op;
   std::string tmp;
@@ -66,6 +64,9 @@ Operation parseOperation() {
 }
 
 int main() {
+
+  signal(SIGINT, signal_callback_handler);
+
   std::shared_ptr<TTransport> socket(new TSocket("localhost", 9090));
   std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
   std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -74,6 +75,7 @@ int main() {
   Operation op;
 
   try {
+    setup(DATA_FILE);
     transport->open();
 
     while(1) {

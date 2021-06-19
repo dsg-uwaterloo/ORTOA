@@ -7,7 +7,7 @@ libOpscureJavaClient.so: OpscureJavaClient.h OpscureJavaClient.cpp clientHelper.
 	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libOpscureJavaClient.so OpscureJavaClient.cpp clientHelper.o -l -fPIC
 
 client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lthrift -lsodium -fPIC -o client
+	g++ client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC -o client
 
 clientHelper.o: clientHelper.h clientHelper.cpp
 	g++ clientHelper.cpp -c
