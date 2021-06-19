@@ -48,7 +48,7 @@ struct Operation {
 };
 
 void signal_callback_handler(int signum) {
-   cleanup(DATA_FILE);
+   OpScureCleanup(DATA_FILE);
    exit(signum);
 }
 
@@ -75,7 +75,7 @@ int main() {
   Operation op;
 
   try {
-    setup(DATA_FILE);
+    OpScureSetup(DATA_FILE);
     transport->open();
 
     while(1) {

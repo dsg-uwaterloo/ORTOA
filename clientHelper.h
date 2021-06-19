@@ -12,7 +12,7 @@
 
 #include "gen-cpp/KV_RPC.h"
 
-#define VALUE_SIZE 1024
+#define VALUE_SIZE 1150
 
 #define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES)
 
@@ -24,8 +24,8 @@ extern std::unordered_map<std::string, std::string> masterKeys;
 
 extern unsigned char randomBytes[VALUE_SIZE];
 
-void setup(std::string fileName);
-void cleanup(std::string fileName);
+void OpScureSetup(std::string fileName);
+void OpScureCleanup(std::string fileName);
 
 Entry constructCreateEntry(std::string& key, std::string& value);
 Entry constructGetEntry(std::string& key);

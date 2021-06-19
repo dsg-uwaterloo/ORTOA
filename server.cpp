@@ -17,7 +17,7 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-#define VALUE_SIZE 1024
+#define VALUE_SIZE 1150
 
 #define BLOCK_SIZE (VALUE_SIZE*8*crypto_secretbox_KEYBYTES)
 
@@ -40,7 +40,8 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
   void create(const Entry& entry) {
     // Your implementation goes here
-    printf("create %s\n", entry.keyName.c_str());
+    //printf("create %s\n", entry.keyName.c_str());
+    //fflush(stdout);
 
     db->Put(rocksdb::WriteOptions(), entry.keyName, entry.encryptedLabelsA);
 
@@ -48,19 +49,19 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
   void access(std::string& _return, const Entry& entry) {
     // Your implementation goes here
-    printf("access %s\n", entry.keyName.c_str());
+    //printf("access %s\n", entry.keyName.c_str());
 
     std::string oldKeys;
 
     db->Get(rocksdb::ReadOptions(), entry.keyName, &oldKeys);
 
-    uint8_t* oldKey = (uint8_t*)oldKeys.data();
+    uint8_t* oldKey = (uint8_t*) &oldKeys[0];
 
-    uint8_t* labelListA = (uint8_t*)entry.encryptedLabelsA.data();
-    uint8_t* labelListB = (uint8_t*)entry.encryptedLabelsB.data();
+    uint8_t* labelListA = (uint8_t*) &entry.encryptedLabelsA[0];
+    uint8_t* labelListB = (uint8_t*) &entry.encryptedLabelsB[0];
 
     _return.resize(BLOCK_SIZE);
-    uint8_t* newKey = (uint8_t*)_return.data();
+    uint8_t* newKey = (uint8_t*) &_return[0];
 
     uint8_t* nonce;
     uint8_t* ciphertext;

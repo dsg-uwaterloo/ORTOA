@@ -6,5 +6,6 @@ client
 server
 
 *.o
+*.so
 
 *.data
