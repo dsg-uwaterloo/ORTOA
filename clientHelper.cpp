@@ -2,7 +2,7 @@
 
 std::set<std::string> keySet;
 std::unordered_map<std::string, int> valueSizes;
-std::unordered_map<std::string, unsigned char*> masterKeys;
+std::unordered_map<std::string, std::string> masterKeys;
 
 unsigned char randomBytes[VALUE_SIZE];
 
@@ -19,11 +19,23 @@ inline unsigned char modifyBit(unsigned char c, int bitNum, int b)
     return ((c & ~(1 << bitNum)) | (b << bitNum));
 }
 
+void setup() {
+
+}
+
+
+void cleanup() {
+
+}
+
+
 Entry constructCreateEntry(std::string& key, std::string& value) {
   Entry entry;
   std::string paddedVal = padToLen(value, VALUE_SIZE);
-  masterKeys[key] = (unsigned char*) malloc(crypto_kdf_KEYBYTES);
-  crypto_kdf_keygen(masterKeys[key]);
+  masterKeys[key] = std::string();
+  masterKeys[key].resize(crypto_kdf_KEYBYTES);
+  unsigned char* masterKey = (unsigned char*) masterKeys[key].data();
+  crypto_kdf_keygen(masterKey);
 
   entry.encryptedLabelsA.resize(VALUE_SIZE*8*crypto_secretbox_KEYBYTES);
   unsigned char* label = (unsigned char*) entry.encryptedLabelsA.data();
@@ -32,7 +44,7 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
   for(int i = 0; i < VALUE_SIZE; i++) {
     c = paddedVal.at(i);
     for(int j = 0; j < 8; j++) {
-      crypto_kdf_derive_from_key(label, crypto_secretbox_KEYBYTES, 2*(8*i + j) + getBit(c, j), CONTEXT, masterKeys[key]);
+      crypto_kdf_derive_from_key(label, crypto_secretbox_KEYBYTES, 2*(8*i + j) + getBit(c, j), CONTEXT, masterKey);
       label += crypto_secretbox_KEYBYTES;
     }
   }
@@ -43,7 +55,9 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
 Entry constructGetEntry(std::string& key) {
   Entry entry;
 
-  unsigned char* newMasterKey = (unsigned char*) malloc(crypto_kdf_KEYBYTES);
+  std::string newMasterKeyStr;
+  newMasterKeyStr.resize(crypto_kdf_KEYBYTES);
+  unsigned char* newMasterKey = (unsigned char*) newMasterKeyStr.data();
   crypto_kdf_keygen(newMasterKey);
 
   unsigned char* newLabel0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
@@ -67,8 +81,8 @@ Entry constructGetEntry(std::string& key) {
       crypto_kdf_derive_from_key(newLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, newMasterKey);
       crypto_kdf_derive_from_key(newLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, newMasterKey);
 
-      crypto_kdf_derive_from_key(oldLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, masterKeys[key]);
-      crypto_kdf_derive_from_key(oldLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, masterKeys[key]);
+      crypto_kdf_derive_from_key(oldLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*)masterKeys[key].data());
+      crypto_kdf_derive_from_key(oldLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, (unsigned char*)masterKeys[key].data());
 
       randombytes_buf(encryptedLabelA, crypto_secretbox_NONCEBYTES);
       randombytes_buf(encryptedLabelB, crypto_secretbox_NONCEBYTES);
@@ -89,8 +103,7 @@ Entry constructGetEntry(std::string& key) {
   free(oldLabel0);
   free(oldLabel1);
 
-  free(masterKeys[key]);
-  masterKeys[key] = newMasterKey;
+  masterKeys[key] = newMasterKeyStr;
 
   return entry;
 }
@@ -107,7 +120,7 @@ std::string readValueFromLabels(std::string key, std::string labels) {
   for(int i = 0; i < VALUE_SIZE; i++) {
     for(int j = 0; j < 8; j++) {
 
-      crypto_kdf_derive_from_key(label0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, masterKeys[key]);
+      crypto_kdf_derive_from_key(label0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*)masterKeys[key].data());
 
       c = modifyBit(c, j, memcmp(currLabel, label0, crypto_secretbox_KEYBYTES) ? 1 : 0);
 
@@ -126,7 +139,9 @@ Entry constructPutEntry(std::string& key, std::string& value) {
 
   std::string paddedVal = padToLen(value, VALUE_SIZE);
 
-  unsigned char* newMasterKey = (unsigned char*) malloc(crypto_kdf_KEYBYTES);
+  std::string newMasterKeyStr;
+  newMasterKeyStr.resize(crypto_kdf_KEYBYTES);
+  unsigned char* newMasterKey = (unsigned char*) newMasterKeyStr.data();
   crypto_kdf_keygen(newMasterKey);
 
   unsigned char* newLabel0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
@@ -151,8 +166,8 @@ Entry constructPutEntry(std::string& key, std::string& value) {
       crypto_kdf_derive_from_key(newLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, newMasterKey);
       crypto_kdf_derive_from_key(newLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, newMasterKey);
 
-      crypto_kdf_derive_from_key(oldLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, masterKeys[key]);
-      crypto_kdf_derive_from_key(oldLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, masterKeys[key]);
+      crypto_kdf_derive_from_key(oldLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*)masterKeys[key].data());
+      crypto_kdf_derive_from_key(oldLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, (unsigned char*)masterKeys[key].data());
 
       randombytes_buf(encryptedLabelA, crypto_secretbox_NONCEBYTES);
       randombytes_buf(encryptedLabelB, crypto_secretbox_NONCEBYTES);
@@ -174,8 +189,7 @@ Entry constructPutEntry(std::string& key, std::string& value) {
   free(oldLabel0);
   free(oldLabel1);
 
-  free(masterKeys[key]);
-  masterKeys[key] = newMasterKey;
+  masterKeys[key] = newMasterKeyStr;
 
   return entry;
 }

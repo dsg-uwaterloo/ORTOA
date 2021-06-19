@@ -20,9 +20,12 @@
 
 extern std::set<std::string> keySet;
 extern std::unordered_map<std::string, int> valueSizes;
-extern std::unordered_map<std::string, unsigned char*> masterKeys;
+extern std::unordered_map<std::string, std::string> masterKeys;
 
 extern unsigned char randomBytes[VALUE_SIZE];
+
+void setup();
+void cleanup();
 
 Entry constructCreateEntry(std::string& key, std::string& value);
 Entry constructGetEntry(std::string& key);
