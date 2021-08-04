@@ -9,13 +9,13 @@ libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o
 	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libwaffle.so waffle.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC
 
 client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC -o client
+	g++ client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
 
 clientHelper.o: clientHelper.h clientHelper.cpp
 	g++ clientHelper.cpp -c -fPIC
 
 server: server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lthrift -lsodium -lrocksdb -fPIC -o server
+	g++ server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lthrift -lsodium -lrocksdb -pthread -fPIC -o server
 
 gen-cpp/KV_RPC.o: gen-cpp/KV_RPC.h gen-cpp/KV_RPC.cpp
 	g++ gen-cpp/KV_RPC.cpp -c -fPIC -o gen-cpp/KV_RPC.o

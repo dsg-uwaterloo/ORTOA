@@ -1,5 +1,7 @@
 #include "clientHelper.h"
 
+#include <thread>
+#include <algorithm>
 #include <fstream>
 
 #include <boost/filesystem.hpp>
@@ -11,6 +13,8 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+
+#define NUM_THREADS 8
 
 std::set<std::string> keySet;
 std::unordered_map<std::string, int> valueSizes;
@@ -28,7 +32,7 @@ inline int getBit(unsigned char c, int bitNum) {
 
 inline unsigned char modifyBit(unsigned char c, int bitNum, int b)
 {
-    return ((c & ~(1 << bitNum)) | (b << bitNum));
+  return ((c & ~(1 << bitNum)) | (b << bitNum));
 }
 
 void OpScureSetup(std::string fileName) {
@@ -53,6 +57,23 @@ void OpScureCleanup(std::string fileName) {
 }
 
 
+void createEntryParallel(int part, char* paddedVal, unsigned char* masterKey, unsigned char* label) {
+  int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+  int start = part * partSize;
+  int limit = std::min((part + 1) * partSize, VALUE_SIZE);
+
+  label += part * partSize * 8 * crypto_secretbox_KEYBYTES;
+
+  char c;
+  for(int i = start; i < limit; i++) {
+    c = paddedVal[i];
+    for(int j = 0; j < 8; j++) {
+      crypto_kdf_derive_from_key(label, crypto_secretbox_KEYBYTES, 2*(8*i + j) + getBit(c, j), CONTEXT, masterKey);
+      label += crypto_secretbox_KEYBYTES;
+    }
+  }
+}
+
 Entry constructCreateEntry(std::string& key, std::string& value) {
   Entry entry;
   entry.__set_keyName(key);
@@ -66,16 +87,23 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
   entry.encryptedLabelsA.resize(VALUE_SIZE*8*crypto_secretbox_KEYBYTES);
   unsigned char* label = (unsigned char*) &entry.encryptedLabelsA[0];
 
-  char c;
-  for(int i = 0; i < VALUE_SIZE; i++) {
-    c = paddedVal.at(i);
-    for(int j = 0; j < 8; j++) {
-      crypto_kdf_derive_from_key(label, crypto_secretbox_KEYBYTES, 2*(8*i + j) + getBit(c, j), CONTEXT, masterKey);
-      label += crypto_secretbox_KEYBYTES;
-    }
+  std::thread createThreads[NUM_THREADS];
+
+  for(int i = 0; i < NUM_THREADS; i++) {
+    createThreads[i] = std::thread(createEntryParallel, i, &paddedVal[0], masterKey, label);
+  }
+
+  for(int i = 0; i < NUM_THREADS; i++) {
+    createThreads[i].join();
   }
 
   return entry;
+}
+
+void getEntryParallel(int part, unsigned char* randomBytes) {
+  int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+  int start = part * partSize;
+  int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 }
 
 Entry constructGetEntry(std::string& key) {
@@ -139,22 +167,24 @@ std::string readValueFromLabels(std::string key, std::string labels) {
   std::string result;
   result.resize(VALUE_SIZE);
 
-  std::string label0;
-  label0.resize(crypto_secretbox_KEYBYTES);
+  unsigned char* label0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
 
-  unsigned char* currLabel = (unsigned char*) &labels[0];
+  unsigned char* currLabel = (unsigned char*) labels.data();
 
   char c;
   for(int i = 0; i < VALUE_SIZE; i++) {
     for(int j = 0; j < 8; j++) {
-      crypto_kdf_derive_from_key((unsigned char*) &label0[0], crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*) &masterKeys[key][0]);
 
-      c = modifyBit(c, j, (label0 == std::string((char*)currLabel, crypto_secretbox_KEYBYTES)) ? 1 : 0);
+      crypto_kdf_derive_from_key(label0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*)masterKeys[key].data());
+
+      c = modifyBit(c, j, memcmp(currLabel, label0, crypto_secretbox_KEYBYTES) ? 1 : 0);
 
       currLabel += crypto_secretbox_KEYBYTES;
     }
     result[i] = c;
   }
+
+  free(label0);
 
   return result.substr(0, valueSizes[key]);
 }

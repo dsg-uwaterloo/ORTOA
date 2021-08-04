@@ -9,6 +9,9 @@
 
 #include <cstdint>
 #include <cassert>
+#include <thread>
+#include <algorithm>
+
 #include <sodium.h>
 #include "rocksdb/db.h"
 
@@ -17,7 +20,9 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-#define VALUE_SIZE 1150
+#define NUM_THREADS 64
+
+#define VALUE_SIZE 300
 
 #define BLOCK_SIZE (VALUE_SIZE*8*crypto_secretbox_KEYBYTES)
 
@@ -47,6 +52,44 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
   }
 
+  static void decryptPortion(int part, uint8_t* newKey, uint8_t* oldKey, uint8_t* A, uint8_t* B) {
+
+    int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+    int start = part * partSize;
+    int limit = std::min((part + 1) * partSize, VALUE_SIZE);
+
+    newKey += start * crypto_secretbox_KEYBYTES;
+    oldKey += start * crypto_secretbox_KEYBYTES;
+
+    A += start * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN);
+    B += start * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN);
+
+    uint8_t *nonce, *ciphertext;
+
+    for(int i = start; i < limit; i++) {
+      for(int j = 0; j < 8; j++) {
+
+        nonce = A;
+        ciphertext = A + crypto_secretbox_NONCEBYTES;
+        if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
+
+          nonce = B;
+          ciphertext = B + crypto_secretbox_NONCEBYTES;
+          if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
+              printf("RIP\n");
+              fflush(stdout);
+              exit(1);
+          }
+        }
+
+        A += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
+        B += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
+        newKey += crypto_secretbox_KEYBYTES;
+        oldKey += crypto_secretbox_KEYBYTES;
+      }
+    }
+  }
+
   void access(std::string& _return, const Entry& entry) {
     // Your implementation goes here
     //printf("access %s\n", entry.keyName.c_str());
@@ -66,29 +109,14 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     uint8_t* nonce;
     uint8_t* ciphertext;
 
-    for(int i = 0; i < 1024; i++) {
-      for(int j = 0; j < 8; j++) {
+    std::thread decryptionThreads[NUM_THREADS];
 
-        nonce = labelListA;
-        ciphertext = labelListA + crypto_secretbox_NONCEBYTES;
-        if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
+    for(int i = 0; i < NUM_THREADS; i++) {
+      decryptionThreads[i] = std::thread(decryptPortion, i, newKey, oldKey, labelListA, labelListB);
+    }
 
-          nonce = labelListB;
-          ciphertext = labelListB + crypto_secretbox_NONCEBYTES;
-          if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
-              printf("RIP\n");
-              fflush(stdout);
-              exit(1);
-          }
-        }
-
-
-
-        labelListA += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
-        labelListB += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
-        newKey += crypto_secretbox_KEYBYTES;
-        oldKey += crypto_secretbox_KEYBYTES;
-      }
+    for(int i = 0; i < NUM_THREADS; i++) {
+      decryptionThreads[i].join();
     }
 
     db->Put(rocksdb::WriteOptions(), entry.keyName, _return);

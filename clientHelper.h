@@ -12,7 +12,7 @@
 
 #include "gen-cpp/KV_RPC.h"
 
-#define VALUE_SIZE 1150
+#define VALUE_SIZE 300
 
 #define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES)
 
