@@ -1,8 +1,6 @@
 
 ALL = server client libwaffle.so
 
-JAVA_HOME = /usr/lib/jvm/java-11-openjdk-amd64
-
 all: $(ALL)
 
 libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
