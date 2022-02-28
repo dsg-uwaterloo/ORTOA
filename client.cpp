@@ -29,7 +29,7 @@
 #include "gen-cpp/KV_RPC.h"
 #include "clientHelper.h"
 
-#define DATA_FILE "OpScure.data"
+#define DATA_FILE "/dsl/OpScure/OpScure.data"
 
 using namespace std;
 using namespace apache::thrift;

@@ -1,5 +1,5 @@
 
-ALL = server client libwaffle.so
+ALL = server client libwaffle.so benchmark encryption_benchmark
 
 all: $(ALL)
 
@@ -8,6 +8,13 @@ libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o
 
 client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
 	g++ client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
+
+benchmark: benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
+	g++ benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o benchmark
+
+encryption_benchmark: estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
+	g++ estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o encryption_benchmark
+
 
 clientHelper.o: clientHelper.h clientHelper.cpp
 	g++ clientHelper.cpp -c -fPIC
