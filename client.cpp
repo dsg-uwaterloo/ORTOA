@@ -38,7 +38,8 @@ using namespace apache::thrift::transport;
 
 enum OperationType {
   GET,
-  PUT
+  PUT,
+  EXIT
 };
 
 struct Operation {
@@ -56,6 +57,10 @@ Operation parseOperation() {
   Operation op;
   std::string tmp;
   std::cin >> tmp;
+  if(tmp == "EXIT"){
+    op.type = EXIT;
+    return op;
+  }
   op.type = (tmp == "PUT") ? PUT : GET;
   std::cin >> op.key;
   if(op.type == PUT)
@@ -81,6 +86,10 @@ int main() {
     while(1) {
       std::cerr << "> ";
       op = parseOperation();
+      if(op.type == EXIT){
+        transport->close();
+        exit(0);
+      }
 
       if(!keySet.count(op.key)) {
         if(op.type == GET) {
@@ -89,6 +98,7 @@ int main() {
           Entry createEntry = constructCreateEntry(op.key, op.value);
           valueSizes[op.key] = op.value.length();
           keySet.insert(op.key);
+
           client.create(createEntry);
         }
       } else {
@@ -96,6 +106,7 @@ int main() {
           Entry getEntry = constructGetEntry(op.key);
           std::string labels;
           client.access(labels, getEntry);
+
           std::string value = readValueFromLabels(op.key, labels);
           std::cerr << value << std::endl;
         } else {
