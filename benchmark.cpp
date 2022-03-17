@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <numeric>
+#include <chrono>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
@@ -17,6 +18,8 @@ using namespace std;
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
+using namespace std::chrono;
+
 
 enum OperationType {
   GET,
@@ -59,7 +62,6 @@ int main() {
   try {
     OpScureSetup(DATA_FILE);
     transport->open();
-    clock_t begin_time, end_time;
     float diff;
     std::vector<float> put_times, get_times;
     char entry[1000];
@@ -75,20 +77,21 @@ int main() {
         keySet.insert(str_entry);
         client.create(createEntry);
         std::string labels;
-        begin_time = clock();
+        auto start = high_resolution_clock::now();
         Entry getEntry = constructGetEntry(str_entry);
         client.access(labels, getEntry);
         std::string value = readValueFromLabels(str_entry, labels);
-        end_time = clock();
-        diff = float(end_time - begin_time) / CLOCKS_PER_SEC;
+        auto end = high_resolution_clock::now();
+        diff = duration_cast<seconds>(stop - start);
+
         get_times.push_back(diff);
         value = "2";
-        begin_time = clock();
+        start = high_resolution_clock::now();
         Entry putEntry = constructPutEntry(str_entry, value);
         valueSizes[str_entry] = value.length();
         client.access(labels, putEntry);
-        end_time = clock();
-        diff = float(end_time - begin_time) / CLOCKS_PER_SEC;
+        end = high_resolution_clock::now();
+        diff = duration_cast<seconds>(stop - start);
         put_times.push_back(diff);
         // std::cout << get_times.back() << put_times.back()  << std::endl;
       //std::cerr << (op.type ? "PUT" : "GET") << " " << op.key << " " << op.value << std::endl;
