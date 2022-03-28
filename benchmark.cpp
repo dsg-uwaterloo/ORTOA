@@ -94,7 +94,7 @@ int main() {
         encrypt_done = high_resolution_clock::now();
         valueSizes[str_entry] = value.length();
         client.access(labels, putEntry);
-        end = high_resolution_clock::now();
+        stop = high_resolution_clock::now();
         put_times.push_back(duration_cast<microseconds>(stop - start).count());
         put_times_access.push_back(duration_cast<microseconds>(stop - encrypt_done).count());
         put_times_encrypt.push_back(duration_cast<microseconds>(encrypt_done - start).count());
