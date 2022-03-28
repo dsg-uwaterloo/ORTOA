@@ -91,7 +91,7 @@ int main() {
         value = "2";
         start = high_resolution_clock::now();
         Entry putEntry = constructPutEntry(str_entry, value);
-        auto encrypt_done = high_resolution_clock::now();
+        encrypt_done = high_resolution_clock::now();
         valueSizes[str_entry] = value.length();
         client.access(labels, putEntry);
         end = high_resolution_clock::now();
