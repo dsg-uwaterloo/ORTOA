@@ -63,7 +63,7 @@ int main() {
     OpScureSetup(DATA_FILE);
     transport->open();
     float diff;
-    std::vector<float> put_times, get_times, put_times_encrypt, put_time_access, get_times_encrypt, get_times_access;
+    std::vector<float> put_times, get_times, put_times_encrypt, put_times_access, get_times_encrypt, get_times_access;
     char entry[1000];
     std::string str_entry;
     std::string value;
