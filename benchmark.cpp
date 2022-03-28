@@ -63,7 +63,7 @@ int main() {
     OpScureSetup(DATA_FILE);
     transport->open();
     float diff;
-    std::vector<float> put_times, get_times;
+    std::vector<float> put_times, get_times, put_times_encrypt, put_time_access, get_times_encrypt, get_times_access;
     char entry[1000];
     std::string str_entry;
     std::string value;
@@ -79,29 +79,37 @@ int main() {
         std::string labels;
         auto start = high_resolution_clock::now();
         Entry getEntry = constructGetEntry(str_entry);
+        auto encrypt_done = high_resolution_clock::now();
         client.access(labels, getEntry);
         std::string value = readValueFromLabels(str_entry, labels);
-        auto end = high_resolution_clock::now();
-        diff = duration_cast<seconds>(stop - start);
+        auto stop = high_resolution_clock::now();
+        
 
-        get_times.push_back(diff);
+        get_times.push_back(duration_cast<microseconds>(stop - start).count());
+        get_times_access.push_back(duration_cast<microseconds>(stop - encrypt_done).count());
+        get_times_encrypt.push_back(duration_cast<microseconds>(encrypt_done - start).count());
         value = "2";
         start = high_resolution_clock::now();
         Entry putEntry = constructPutEntry(str_entry, value);
+        auto encrypt_done = high_resolution_clock::now();
         valueSizes[str_entry] = value.length();
         client.access(labels, putEntry);
         end = high_resolution_clock::now();
-        diff = duration_cast<seconds>(stop - start);
-        put_times.push_back(diff);
+        put_times.push_back(duration_cast<microseconds>(stop - start).count());
+        put_times_access.push_back(duration_cast<microseconds>(stop - encrypt_done).count());
+        put_times_encrypt.push_back(duration_cast<microseconds>(encrypt_done - start).count());
         // std::cout << get_times.back() << put_times.back()  << std::endl;
       //std::cerr << (op.type ? "PUT" : "GET") << " " << op.key << " " << op.value << std::endl;
     }    
 
     transport->close();
-    std::cout << "get_times avg:" << 1.0 * std::accumulate(get_times.begin(), get_times.end(), 0.0) / get_times.size() << std::endl;
-    std::cout << "put_times avg:" << 1.0 * std::accumulate(put_times.begin(), put_times.end(), 0.0) / put_times.size() << std::endl;
+    std::cout << "get_times avg: " << 1.0 * std::accumulate(get_times.begin(), get_times.end(), 0.0) / get_times.size() << std::endl;
+    std::cout << "get_times_encrypt avg: " << 1.0 * std::accumulate(get_times_encrypt.begin(), get_times_encrypt.end(), 0.0) / get_times_encrypt.size() << std::endl;
+    std::cout << "get_times_access avg: " << 1.0 * std::accumulate(get_times_access.begin(), get_times_access.end(), 0.0) / get_times_access.size() << std::endl;
+    std::cout << "put_times avg: " << 1.0 * std::accumulate(put_times.begin(), put_times.end(), 0.0) / put_times.size() << std::endl;
+    std::cout << "put_times_encrypt avg: " << 1.0 * std::accumulate(put_times_encrypt.begin(), put_times_encrypt.end(), 0.0) / put_times_encrypt.size() << std::endl;
+    std::cout << "put_times_access avg: " << 1.0 * std::accumulate(put_times_access.begin(), put_times_access.end(), 0.0) / put_times_access.size() << std::endl;
 
-    
   } catch (TException& tx) {
     cout << "ERROR: " << tx.what() << endl;
   }
