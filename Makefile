@@ -7,29 +7,29 @@ libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o
 	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libwaffle.so waffle.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC
 
 client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
+	g++ -g client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
 
 benchmark: benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o benchmark
+	g++ -g benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o benchmark
 
 encryption_benchmark: estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o encryption_benchmark
+	g++ -g estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o encryption_benchmark
 
 
 clientHelper.o: clientHelper.h clientHelper.cpp
-	g++ clientHelper.cpp -c -fPIC
+	g++ -g clientHelper.cpp -c -fPIC
 
 server: server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lthrift -lsodium -lrocksdb -pthread -fPIC -o server
+	g++ -g server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lthrift -lsodium -lrocksdb -pthread -fPIC -o server
 
 gen-cpp/KV_RPC.o: gen-cpp/KV_RPC.h gen-cpp/KV_RPC.cpp
-	g++ gen-cpp/KV_RPC.cpp -c -fPIC -o gen-cpp/KV_RPC.o
+	g++ -g gen-cpp/KV_RPC.cpp -c -fPIC -o gen-cpp/KV_RPC.o
 
 gen-cpp/KV_RPC_types.o: gen-cpp/KV_RPC_types.h gen-cpp/KV_RPC_types.cpp
-	g++ gen-cpp/KV_RPC_types.cpp -c -fPIC -o gen-cpp/KV_RPC_types.o
+	g++ -g gen-cpp/KV_RPC_types.cpp -c -fPIC -o gen-cpp/KV_RPC_types.o
 
 gen-cpp/KV_RPC_constants.o: gen-cpp/KV_RPC_constants.h gen-cpp/KV_RPC_constants.cpp
-	g++ gen-cpp/KV_RPC_constants.cpp -c -fPIC -o gen-cpp/KV_RPC_constants.o
+	g++ -g gen-cpp/KV_RPC_constants.cpp -c -fPIC -o gen-cpp/KV_RPC_constants.o
 
 gen-cpp/KV_RPC.h:
 	thrift -r --gen cpp KV_RPC.thrift
