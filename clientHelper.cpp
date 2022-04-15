@@ -30,9 +30,20 @@ inline int getBit(unsigned char c, int bitNum) {
   return (c >> bitNum) & 1;
 }
 
+inline int getBits(unsigned char c, int bitNumPair) {
+  return (c >> (bitNumPair)) & 3;
+}
+
 inline unsigned char modifyBit(unsigned char c, int bitNum, int b)
 {
   return ((c & ~(1 << bitNum)) | (b << bitNum));
+}
+
+inline unsigned char modifyBits(unsigned char c, int bitNum, int b)
+{
+  unsigned char p = modifyBit(c, bitNum, b & 1);
+  p = modifyBit(p, bitNum + 1, (b >> 1) & 1);
+  return p;
 }
 
 void OpScureSetup(std::string fileName) {
@@ -62,13 +73,13 @@ void createEntryParallel(int part, char* paddedVal, unsigned char* masterKey, un
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
-  label += part * partSize * 8 * crypto_secretbox_KEYBYTES;
+  label += part * partSize * 4 * crypto_secretbox_KEYBYTES;
 
   char c;
   for(int i = start; i < limit; i++) {
     c = paddedVal[i];
-    for(int j = 0; j < 8; j++) {
-      crypto_kdf_derive_from_key(label, crypto_secretbox_KEYBYTES, 2*(8*i + j) + getBit(c, j), CONTEXT, masterKey);
+    for(int j = 0; j < 4; j++) {
+      crypto_kdf_derive_from_key(label, crypto_secretbox_KEYBYTES, 4*(4*i + j) + getBits(c, 2*j), CONTEXT, masterKey);
       label += crypto_secretbox_KEYBYTES;
     }
   }
@@ -84,7 +95,7 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
   unsigned char* masterKey = (unsigned char*) &masterKeys[key][0];
   crypto_kdf_keygen(masterKey);
 
-  entry.encryptedLabelsA.resize(VALUE_SIZE*8*crypto_secretbox_KEYBYTES);
+  entry.encryptedLabelsA.resize(VALUE_SIZE*4*crypto_secretbox_KEYBYTES);
   unsigned char* label = (unsigned char*) &entry.encryptedLabelsA[0];
 
   std::thread createThreads[NUM_THREADS];
@@ -96,7 +107,6 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
   for(int i = 0; i < NUM_THREADS; i++) {
     createThreads[i].join();
   }
-
   return entry;
 }
 
@@ -115,48 +125,71 @@ Entry constructGetEntry(std::string& key) {
   unsigned char* newMasterKey = (unsigned char*) &newMasterKeyStr[0];
   crypto_kdf_keygen(newMasterKey);
 
-  unsigned char* newLabel0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
-  unsigned char* newLabel1 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel00 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel01 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel10 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel11 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
 
-  unsigned char* oldLabel0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
-  unsigned char* oldLabel1 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel00 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel01 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel10 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel11 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
 
-  entry.encryptedLabelsA.resize(VALUE_SIZE * 8 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  entry.encryptedLabelsA.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
   unsigned char* encryptedLabelA = (unsigned char*) &entry.encryptedLabelsA[0];
-  entry.encryptedLabelsB.resize(VALUE_SIZE * 8 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  entry.encryptedLabelsB.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
   unsigned char* encryptedLabelB = (unsigned char*) &entry.encryptedLabelsB[0];
+  entry.encryptedLabelsC.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  unsigned char* encryptedLabelC = (unsigned char*) &entry.encryptedLabelsC[0];
+  entry.encryptedLabelsD.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  unsigned char* encryptedLabelD = (unsigned char*) &entry.encryptedLabelsD[0];
 
   randombytes_buf(randomBytes, VALUE_SIZE);
 
-  char randomBit;
+  char randomBits;
 
   for(int i = 0; i < VALUE_SIZE; i++) {
-    for(int j = 0; j < 8; j++) {
+    for(int j = 0; j < 4; j++) {
 
-      crypto_kdf_derive_from_key(newLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, newMasterKey);
-      crypto_kdf_derive_from_key(newLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel00, crypto_secretbox_KEYBYTES, 4*(4*i + j), CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel01, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 1, CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel10, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 2, CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel11, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 3, CONTEXT, newMasterKey);
 
-      crypto_kdf_derive_from_key(oldLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*) &masterKeys[key][0]);
-      crypto_kdf_derive_from_key(oldLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel00, crypto_secretbox_KEYBYTES, 4*(4*i + j), CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel01, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 1, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel10, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 2, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel11, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 3, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+
 
       randombytes_buf(encryptedLabelA, crypto_secretbox_NONCEBYTES);
       randombytes_buf(encryptedLabelB, crypto_secretbox_NONCEBYTES);
+      randombytes_buf(encryptedLabelC, crypto_secretbox_NONCEBYTES);
+      randombytes_buf(encryptedLabelD, crypto_secretbox_NONCEBYTES);
 
-      randomBit = getBit(randomBytes[i], j);
+      randomBits = getBits(randomBytes[i], 2*j);
 
-      crypto_secretbox_easy(encryptedLabelA + crypto_secretbox_NONCEBYTES, randomBit ? newLabel0 : newLabel1, crypto_secretbox_KEYBYTES, encryptedLabelA, randomBit ? oldLabel0 : oldLabel1);
-      crypto_secretbox_easy(encryptedLabelB + crypto_secretbox_NONCEBYTES, randomBit ? newLabel1 : newLabel0, crypto_secretbox_KEYBYTES, encryptedLabelB, randomBit ? oldLabel1 : oldLabel0);
+      crypto_secretbox_easy(encryptedLabelA + crypto_secretbox_NONCEBYTES, randomBits & 1 ? newLabel00 : newLabel01, crypto_secretbox_KEYBYTES, encryptedLabelA, randomBits & 1 ? oldLabel00 : oldLabel01);
+      crypto_secretbox_easy(encryptedLabelB + crypto_secretbox_NONCEBYTES, randomBits & 1 ? newLabel01 : newLabel00, crypto_secretbox_KEYBYTES, encryptedLabelB, randomBits & 1 ? oldLabel01 : oldLabel00);
+      crypto_secretbox_easy(encryptedLabelC + crypto_secretbox_NONCEBYTES, randomBits & 2 ? newLabel10 : newLabel11, crypto_secretbox_KEYBYTES, encryptedLabelC, randomBits & 2 ? oldLabel10 : oldLabel11);
+      crypto_secretbox_easy(encryptedLabelD + crypto_secretbox_NONCEBYTES, randomBits & 2 ? newLabel11 : newLabel10, crypto_secretbox_KEYBYTES, encryptedLabelD, randomBits & 2 ? oldLabel11 : oldLabel10);
 
       encryptedLabelA += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
       encryptedLabelB += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
+      encryptedLabelC += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
+      encryptedLabelD += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
     }
   }
 
-  free(newLabel0);
-  free(newLabel1);
+  free(newLabel00);
+  free(newLabel01);
+  free(newLabel10);
+  free(newLabel11);
 
-  free(oldLabel0);
-  free(oldLabel1);
+  free(oldLabel00);
+  free(oldLabel01);
+  free(oldLabel10);
+  free(oldLabel11);
 
   masterKeys[key] = newMasterKeyStr;
 
@@ -167,24 +200,36 @@ std::string readValueFromLabels(std::string key, std::string labels) {
   std::string result;
   result.resize(VALUE_SIZE);
 
-  unsigned char* label0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* label00 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* label01 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* label10 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* label11 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+
+
 
   unsigned char* currLabel = (unsigned char*) labels.data();
 
   char c;
   for(int i = 0; i < VALUE_SIZE; i++) {
-    for(int j = 0; j < 8; j++) {
+    for(int j = 0; j < 4; j++) {
 
-      crypto_kdf_derive_from_key(label0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*)masterKeys[key].data());
+      crypto_kdf_derive_from_key(label00, crypto_secretbox_KEYBYTES, 4*(4*i + j), CONTEXT, (unsigned char*)masterKeys[key].data());
+      crypto_kdf_derive_from_key(label01, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 1, CONTEXT, (unsigned char*)masterKeys[key].data());
+      crypto_kdf_derive_from_key(label10, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 2, CONTEXT, (unsigned char*)masterKeys[key].data());
+      crypto_kdf_derive_from_key(label11, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 3, CONTEXT, (unsigned char*)masterKeys[key].data());
 
-      c = modifyBit(c, j, memcmp(currLabel, label0, crypto_secretbox_KEYBYTES) ? 1 : 0);
+      c = modifyBits(c, 2*j, !memcmp(currLabel, label00, crypto_secretbox_KEYBYTES) ? 0 : !memcmp(currLabel, label01, crypto_secretbox_KEYBYTES) ? 1 :
+                            !memcmp(currLabel, label10, crypto_secretbox_KEYBYTES) ? 2: 3);
 
       currLabel += crypto_secretbox_KEYBYTES;
     }
     result[i] = c;
   }
 
-  free(label0);
+  free(label00);
+  free(label01);
+  free(label10);
+  free(label11);
 
   return result.substr(0, valueSizes[key]);
 }
@@ -200,50 +245,90 @@ Entry constructPutEntry(std::string& key, std::string& value) {
   unsigned char* newMasterKey = (unsigned char*) &newMasterKeyStr[0];
   crypto_kdf_keygen(newMasterKey);
 
-  unsigned char* newLabel0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
-  unsigned char* newLabel1 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel00 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel01 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel10 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* newLabel11 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
 
-  unsigned char* oldLabel0 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
-  unsigned char* oldLabel1 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
 
-  entry.encryptedLabelsA.resize(VALUE_SIZE * 8 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  unsigned char* oldLabel00 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel01 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel10 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+  unsigned char* oldLabel11 = (unsigned char*) malloc(crypto_secretbox_KEYBYTES);
+
+  entry.encryptedLabelsA.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
   unsigned char* encryptedLabelA = (unsigned char*) &entry.encryptedLabelsA[0];
-  entry.encryptedLabelsB.resize(VALUE_SIZE * 8 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  entry.encryptedLabelsB.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
   unsigned char* encryptedLabelB = (unsigned char*) &entry.encryptedLabelsB[0];
+  entry.encryptedLabelsC.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  unsigned char* encryptedLabelC = (unsigned char*) &entry.encryptedLabelsC[0];
+  entry.encryptedLabelsD.resize(VALUE_SIZE * 4 * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN));
+  unsigned char* encryptedLabelD = (unsigned char*) &entry.encryptedLabelsD[0];
+
 
   randombytes_buf(randomBytes, VALUE_SIZE);
 
-  char c, newBit, randomBit;
+  char c;
+  int newBits, randomBit;
 
   for(int i = 0; i < VALUE_SIZE; i++) {
     c = paddedVal.at(i);
-    for(int j = 0; j < 8; j++) {
+    for(int j = 0; j < 4; j++) {
 
-      crypto_kdf_derive_from_key(newLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, newMasterKey);
-      crypto_kdf_derive_from_key(newLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel00, crypto_secretbox_KEYBYTES, 4*(4*i + j), CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel01, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 1, CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel10, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 2, CONTEXT, newMasterKey);
+      crypto_kdf_derive_from_key(newLabel11, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 3, CONTEXT, newMasterKey);
 
-      crypto_kdf_derive_from_key(oldLabel0, crypto_secretbox_KEYBYTES, 2*(8*i + j), CONTEXT, (unsigned char*) &masterKeys[key][0]);
-      crypto_kdf_derive_from_key(oldLabel1, crypto_secretbox_KEYBYTES, 2*(8*i + j) + 1, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel00, crypto_secretbox_KEYBYTES, 4*(4*i + j), CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel01, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 1, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel10, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 2, CONTEXT, (unsigned char*) &masterKeys[key][0]);
+      crypto_kdf_derive_from_key(oldLabel11, crypto_secretbox_KEYBYTES, 4*(4*i + j) + 3, CONTEXT, (unsigned char*) &masterKeys[key][0]);
 
       randombytes_buf(encryptedLabelA, crypto_secretbox_NONCEBYTES);
       randombytes_buf(encryptedLabelB, crypto_secretbox_NONCEBYTES);
+      randombytes_buf(encryptedLabelC, crypto_secretbox_NONCEBYTES);
+      randombytes_buf(encryptedLabelD, crypto_secretbox_NONCEBYTES);
 
-      newBit = getBit(c, j);
-      randomBit = getBit(randomBytes[i], j);
+      newBits = getBits(c, 2*j);
+      randomBit = getBits(randomBytes[i], 2*j);
 
-      crypto_secretbox_easy(encryptedLabelA + crypto_secretbox_NONCEBYTES, newBit ? newLabel1 : newLabel0, crypto_secretbox_KEYBYTES, encryptedLabelA, randomBit ? oldLabel0 : oldLabel1);
-      crypto_secretbox_easy(encryptedLabelB + crypto_secretbox_NONCEBYTES, newBit ? newLabel1 : newLabel0, crypto_secretbox_KEYBYTES, encryptedLabelB, randomBit ? oldLabel1 : oldLabel0);
+      unsigned char* newLabel = 0;
+      if(newBits == 0){
+        newLabel = newLabel00;
+      }
+      else if(newBits == 1){
+        newLabel = newLabel01;
+      }
+      else if(newBits == 2){
+        newLabel = newLabel10;
+      }
+      else{
+        newLabel = newLabel11;
+      }
+
+
+      crypto_secretbox_easy(encryptedLabelA + crypto_secretbox_NONCEBYTES, newLabel, crypto_secretbox_KEYBYTES, encryptedLabelA, randomBit & 1 ? oldLabel00 : oldLabel01);
+      crypto_secretbox_easy(encryptedLabelB + crypto_secretbox_NONCEBYTES, newLabel, crypto_secretbox_KEYBYTES, encryptedLabelB, randomBit & 1 ? oldLabel01 : oldLabel00);
+      crypto_secretbox_easy(encryptedLabelC + crypto_secretbox_NONCEBYTES, newLabel, crypto_secretbox_KEYBYTES, encryptedLabelC, randomBit & 2 ? oldLabel10 : oldLabel11);
+      crypto_secretbox_easy(encryptedLabelD + crypto_secretbox_NONCEBYTES, newLabel, crypto_secretbox_KEYBYTES, encryptedLabelD, randomBit & 2 ? oldLabel11 : oldLabel10);
 
       encryptedLabelA += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
       encryptedLabelB += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
+      encryptedLabelC += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
+      encryptedLabelD += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
     }
   }
 
-  free(newLabel0);
-  free(newLabel1);
+  free(newLabel00);
+  free(newLabel01);
+  free(newLabel10);
+  free(newLabel11);
 
-  free(oldLabel0);
-  free(oldLabel1);
+  free(oldLabel00);
+  free(oldLabel01);
+  free(oldLabel10);
+  free(oldLabel11);
 
   masterKeys[key] = newMasterKeyStr;
 
