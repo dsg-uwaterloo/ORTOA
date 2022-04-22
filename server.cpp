@@ -25,9 +25,9 @@ using namespace ::apache::thrift::server;
 
 #define VALUE_SIZE 300
 
-#define BLOCK_SIZE (VALUE_SIZE*4*crypto_secretbox_KEYBYTES)
+#define BLOCK_SIZE (VALUE_SIZE*4*(1 + crypto_secretbox_KEYBYTES))
 
-#define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES)
+#define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES + 1)
 
 class KV_RPCHandler : virtual public KV_RPCIf {
  public:
@@ -59,8 +59,8 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     int start = part * partSize;
     int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
-    newKey += start * crypto_secretbox_KEYBYTES;
-    oldKey += start * crypto_secretbox_KEYBYTES;
+    newKey += start * (1 + crypto_secretbox_KEYBYTES);
+    oldKey += start * (1 + crypto_secretbox_KEYBYTES);
 
     A += start * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN);
     B += start * (crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN);
@@ -72,32 +72,38 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     for(int i = start; i < limit; i++) {
       for(int j = 0; j < 4; j++) {
 
-        nonce = A;
-        ciphertext = A + crypto_secretbox_NONCEBYTES;
-        if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
+        int auxBits = oldKey[0] & 3;
+
+        if(auxBits == 0){
+          nonce = A;
+          ciphertext = A + crypto_secretbox_NONCEBYTES;
+        }
+        else if(auxBits == 1){
           nonce = B;
           ciphertext = B + crypto_secretbox_NONCEBYTES;
-          if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
-              nonce = C;
-              ciphertext = C + crypto_secretbox_NONCEBYTES;
-              if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
-                  nonce = D;
-                  ciphertext = D + crypto_secretbox_NONCEBYTES;
-                  if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey) != 0) {
-                      printf("RIP\n");
-                      fflush(stdout);
-                      exit(1);
-                  }
-              }
-          }
         }
-
+        else if(auxBits == 2){
+          nonce = C;
+          ciphertext = C + crypto_secretbox_NONCEBYTES;
+        }
+        else{
+          nonce = D;
+          ciphertext = D + crypto_secretbox_NONCEBYTES;
+        }
+        
+        
+        if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey + 1) != 0) {
+            printf("RIP\n");
+            fflush(stdout);
+            exit(1);
+        }
+              
         A += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
         B += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
         C += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
         D += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
-        newKey += crypto_secretbox_KEYBYTES;
-        oldKey += crypto_secretbox_KEYBYTES;
+        newKey += crypto_secretbox_KEYBYTES + 1;
+        oldKey += crypto_secretbox_KEYBYTES + 1;
       }
     }
   }
