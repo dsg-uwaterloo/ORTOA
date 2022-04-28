@@ -21,9 +21,9 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-#define NUM_THREADS 64
+#include "constants.h"
 
-#define VALUE_SIZE 300
+#define NUM_THREADS 64
 
 #define BLOCK_SIZE (VALUE_SIZE*4*(1 + crypto_secretbox_KEYBYTES))
 
