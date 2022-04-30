@@ -142,5 +142,5 @@ int main() {
         t[i].join();
     }
     auto end = high_resolution_clock::now();
-    std::cout << "Finished in " << duration_cast<seconds>(end - start).count() << " seconds" << std::endl;
+    std::cout << "Finished in " << duration_cast<microseconds>(end - start).count() << " seconds" << std::endl;
 }
