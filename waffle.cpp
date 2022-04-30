@@ -14,7 +14,6 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#define DATA_FILE "/dsl/OpScure/OpScure.data"
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;

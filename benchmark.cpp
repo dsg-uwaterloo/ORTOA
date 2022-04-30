@@ -11,8 +11,8 @@
 
 #include "gen-cpp/KV_RPC.h"
 #include "clientHelper.h"
+#include "constants.h"
 
-#define DATA_FILE "/dsl/OpScure/OpScure.data"
 
 using namespace std;
 using namespace apache::thrift;
@@ -49,10 +49,13 @@ Operation parseOperation() {
 }
 
 int main() {
+  OpScureSetup(DATA_FILE);
+  srand( (unsigned)time( NULL ) );
+
 
   signal(SIGINT, signal_callback_handler);
 
-  std::shared_ptr<TTransport> socket(new TSocket("localhost", 9090));
+  std::shared_ptr<TTransport> socket(new TSocket(SERVER_IP, SERVER_PORT));
   std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
   std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
   KV_RPCClient client(protocol);
@@ -64,24 +67,20 @@ int main() {
     transport->open();
     float diff;
     std::vector<float> put_times, get_times, put_times_encrypt, put_times_access, get_times_encrypt, get_times_access;
-    char entry[1000];
-    std::string str_entry;
+    std::string key;
     std::string value;
-    for(int i = 0; i < 8000; i++) {
-        bzero(entry, 1000);
-        entry[i / 8] |= 1 << i % 8;
-        str_entry = std::string(entry);
-        value = "1";
-        Entry createEntry = constructCreateEntry(str_entry, value);
-        valueSizes[str_entry] = value.length();
-        keySet.insert(str_entry);
-        client.create(createEntry);
+    for(int i = 0; i < 100; i++) {
+        if(i % 5 == 0){
+          std::cout << i << std::endl;
+        }
+        
+        key = to_string(rand()% KEY_MAX);
         std::string labels;
         auto start = high_resolution_clock::now();
-        Entry getEntry = constructGetEntry(str_entry);
+        Entry getEntry = constructGetEntry(key);
         auto encrypt_done = high_resolution_clock::now();
         client.access(labels, getEntry);
-        std::string value = readValueFromLabels(str_entry, labels);
+        std::string value = readValueFromLabels(key, labels);
         auto stop = high_resolution_clock::now();
         
 
@@ -90,9 +89,9 @@ int main() {
         get_times_encrypt.push_back(duration_cast<microseconds>(encrypt_done - start).count());
         value = "2";
         start = high_resolution_clock::now();
-        Entry putEntry = constructPutEntry(str_entry, value);
+        Entry putEntry = constructPutEntry(key, value);
         encrypt_done = high_resolution_clock::now();
-        valueSizes[str_entry] = value.length();
+        valueSizes[key] = value.length();
         client.access(labels, putEntry);
         stop = high_resolution_clock::now();
         put_times.push_back(duration_cast<microseconds>(stop - start).count());

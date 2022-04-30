@@ -5,12 +5,14 @@
 #include <thrift/transport/TTransportUtils.h>
 #include "gen-cpp/Operation_types.h"
 #include "gen-cpp/Send_Op.h"
+#include <chrono>
 
 #include <sodium.h>
 
 
 
 using namespace std;
+using namespace::chrono;
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
@@ -132,10 +134,13 @@ void client(int i){
 int main() {
     srand( (unsigned)time( NULL ) );
     std::thread t[NUM_THREADS];
+    auto start = high_resolution_clock::now();
     for(int i = 0; i < NUM_THREADS; i++){
         t[i] = std::thread(client, i);
     }
     for(int i = 0; i < NUM_THREADS; i++){
         t[i].join();
     }
+    auto end = high_resolution_clock::now();
+    std::cout << "Finished in " << duration_cast<microseconds>(end - start).count() << " seconds" << std::endl;
 }
