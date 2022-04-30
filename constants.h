@@ -8,5 +8,6 @@
 #define SERVER_PORT 9090
 #define PROXY_PORT 3000
 #define KEY_MAX 10000
+#define DATA_FILE "./OpScure.data"
 
 #endif

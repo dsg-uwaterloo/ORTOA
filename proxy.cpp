@@ -21,7 +21,6 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-#define DATA_FILE "/dsl/OpScure/OpScure.data"
 
 #include "constants.h"
 
