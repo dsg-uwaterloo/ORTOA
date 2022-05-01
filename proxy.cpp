@@ -25,9 +25,6 @@ using namespace ::apache::thrift::server;
 #include "constants.h"
 
 
-
-std::unordered_map<std::string, std::atomic<bool>> locks;
-
 KV_RPCClient* client = NULL;
 std::atomic<int> accesses{0};
 std::atomic<int> aborted{0};
@@ -39,7 +36,6 @@ void handleOp(Operation op, std::string* _return){
           *_return = "";
           aborted++;
         } else {
-          locks[op.key] = ATOMIC_VAR_INIT(true);
           if(locks[op.key].exchange(false)){
             Entry createEntry = constructCreateEntry(op.key, op.value);
             valueSizes[op.key] = op.value.length();

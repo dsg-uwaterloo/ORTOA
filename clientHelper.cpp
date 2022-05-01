@@ -3,6 +3,7 @@
 #include <thread>
 #include <algorithm>
 #include <fstream>
+#include <atomic>
 
 #include <boost/filesystem.hpp>
 
@@ -19,6 +20,7 @@
 std::set<std::string> keySet;
 std::unordered_map<std::string, int> valueSizes;
 std::unordered_map<std::string, std::string> masterKeys;
+std::unordered_map<std::string, std::atomic<bool>> locks;
 
 
 
@@ -47,6 +49,9 @@ inline unsigned char modifyBits(unsigned char c, int bitNum, int b)
 }
 
 void OpScureSetup(std::string fileName) {
+  for(int i = 0; i < KEY_MAX; i++){
+    locks[std::to_string(i)] = ATOMIC_VAR_INIT(true);
+  }
 	if(boost::filesystem::exists(fileName)){
 		std::ifstream ifs(fileName);
 		boost::archive::text_iarchive ia(ifs);
