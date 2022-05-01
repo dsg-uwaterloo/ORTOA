@@ -5,7 +5,7 @@
 #include "clientHelper.h"
 #include "gen-cpp/KV_RPC.h"
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TSocket.h>
@@ -25,11 +25,10 @@ using namespace ::apache::thrift::server;
 #include "constants.h"
 
 
-KV_RPCClient* client = NULL;
 std::atomic<int> accesses{0};
 std::atomic<int> aborted{0};
 
-void handleOp(Operation op, std::string* _return){
+void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
     if(!keySet.count(op.key)) {
         if(op.op == "GET") {
         //   std::cerr << "No such key exists" << std::endl;
@@ -41,7 +40,7 @@ void handleOp(Operation op, std::string* _return){
             valueSizes[op.key] = op.value.length();
             keySet.insert(op.key);
 
-            client->create(createEntry);
+            client.create(createEntry);
             accesses++;
             locks[op.key].exchange(true);
           }
@@ -54,7 +53,7 @@ void handleOp(Operation op, std::string* _return){
             if(op.op == "GET") {
             Entry getEntry = constructGetEntry(op.key);
             std::string labels;
-            client->access(labels, getEntry);
+            client.access(labels, getEntry);
 
             std::string value = readValueFromLabels(op.key, labels);
             *_return = value;
@@ -63,7 +62,7 @@ void handleOp(Operation op, std::string* _return){
             valueSizes[op.key] = op.value.length();
             std::string labels;
             
-            client->access(labels, putEntry);
+            client.access(labels, putEntry);
             }
             accesses++;
             locks[op.key].exchange(true);
@@ -83,21 +82,23 @@ class Send_OpHandler : virtual public Send_OpIf {
  public:
 
   Send_OpHandler() {
-    ::std::shared_ptr<TTransport> socket(new TSocket(SERVER_IP, SERVER_PORT));
-    ::std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-    ::std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-    client = new KV_RPCClient(protocol);
+    
     OpScureSetup(DATA_FILE);
-    transport->open();
 
   }
 
   void access(std::string& _return, const Operation& operation) {
+    ::std::shared_ptr<TTransport> socket(new TSocket(SERVER_IP, SERVER_PORT));
+    ::std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+    ::std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+    KV_RPCClient client(protocol);
+    transport->open();
+
     Operation op;
     op.__set_op(operation.op);
     op.__set_key(operation.key);
     op.__set_value(operation.value);
-    handleOp(op, &_return);
+    handleOp(op, &_return, client);
   }
 
 };
@@ -119,8 +120,14 @@ int main(int argc, char **argv) {
   ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-  server.serve();
+  
+ std::shared_ptr<apache::thrift::server::TServer> server;
+
+
+  server.reset(
+        new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory));
+  server->serve();
+
   return 0;
 }
 
