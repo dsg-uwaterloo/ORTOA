@@ -71,7 +71,7 @@ int main() {
 
   signal(SIGINT, signal_callback_handler);
 
-  std::shared_ptr<TTransport> socket(new TSocket("localhost", 9090));
+  std::shared_ptr<TTransport> socket(new TSocket(SERVER_IP, SERVER_PORT));
   std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
   std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
   KV_RPCClient client(protocol);

@@ -76,7 +76,7 @@ void client(int i){
     try {
         transport->open();
 
-        for(int i = 0; i < 10000; i++){
+        for(int i = 0; i < 1000; i++){
             op = randGenOperation();
             std::string val;
             client.access(val, op);
