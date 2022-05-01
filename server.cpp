@@ -1,6 +1,6 @@
 #include "gen-cpp/KV_RPC.h"
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
@@ -109,6 +109,8 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     // Your implementation goes here
     //printf("access %s\n", entry.keyName.c_str());
 
+    // std::cout << "Got " << entry << std::endl;
+
     std::string oldKeys;
 
     db->Get(rocksdb::ReadOptions(), entry.keyName, &oldKeys);
@@ -151,9 +153,13 @@ int main(int argc, char **argv) {
   ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
   ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  std::shared_ptr<apache::thrift::server::TServer> server;
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-  server.serve();
+
+  server.reset(
+        new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory));
+  server->serve();
+
   return 0;
 }
 

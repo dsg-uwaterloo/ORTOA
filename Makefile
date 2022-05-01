@@ -65,3 +65,6 @@ clean:
 
 cleandb:
 	rm db/* OpScure.data
+
+cpdb: 
+	cp db_backup/OpScure.data . && cp db_backup/db/* db/.
