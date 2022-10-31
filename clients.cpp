@@ -6,6 +6,7 @@
 #include "gen-cpp/Operation_types.h"
 #include "gen-cpp/Send_Op.h"
 #include <chrono>
+#include <numeric>
 
 #include <sodium.h>
 
@@ -20,7 +21,7 @@ using namespace apache::thrift::transport;
 
 #include "constants.h"
 
-#define NUM_THREADS 16
+#define NUM_THREADS 64
 
 
 
@@ -66,7 +67,7 @@ Operation randGenOperation(){
 
 }
 
-void client(int i){
+void client(int i, vector<float>* latencies){
     std::shared_ptr<TTransport> socket(new TSocket(PROXY_IP, PROXY_PORT));
     std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
     std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -76,10 +77,13 @@ void client(int i){
     try {
         transport->open();
 
-        for(int i = 0; i < 1000; i++){
+        for(int i = 0; i < 100; i++){
             op = randGenOperation();
             std::string val;
-            client.access(val, op);
+            auto start = high_resolution_clock::now();
+	    client.access(val, op);
+	    auto end = high_resolution_clock::now();
+	    latencies->push_back(duration_cast<microseconds>(end - start).count());
             // if(op.op == "GET"){
             //     std::cout << val << std::endl;
             // }
@@ -134,13 +138,23 @@ void client(int i){
 int main() {
     srand( (unsigned)time( NULL ) );
     std::thread t[NUM_THREADS];
+    vector<float>* latencies[NUM_THREADS];
+    for(int i = 0; i < NUM_THREADS; i++){
+	    latencies[i] = new vector<float>;
+    }
     auto start = high_resolution_clock::now();
     for(int i = 0; i < NUM_THREADS; i++){
-        t[i] = std::thread(client, i);
+        t[i] = std::thread(client, i, latencies[i]);
     }
     for(int i = 0; i < NUM_THREADS; i++){
         t[i].join();
     }
     auto end = high_resolution_clock::now();
     std::cout << "Finished in " << duration_cast<microseconds>(end - start).count() << " microseconds" << std::endl;
+    vector<float> totals;
+    for(int i = 0; i < NUM_THREADS; i++){
+    	totals.push_back(std::accumulate(latencies[i]->begin(), latencies[i]->end(), 0));
+    }
+
+    std::cout << "Average Latency: " << std::accumulate(totals.begin(), totals.end(), 0.0) / (NUM_THREADS * 100) << endl;
 }
