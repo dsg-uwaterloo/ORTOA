@@ -1,35 +1,40 @@
 
-ALL = server client libwaffle.so benchmark encryption_benchmark
+ALL = server client libwaffle.so benchmark encryption_benchmark proxy clients
 
-all: $(ALL)
+all: $(ALL) constants.h
 
-libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libwaffle.so waffle.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC
+CPPFLAGS = --std=c++11 -g
 
-client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ -g client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
+libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
+	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libwaffle.so waffle.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC
 
-benchmark: benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ -g benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o benchmark
+client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
+	g++ $(CPPFLAGS) client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
 
-encryption_benchmark: estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ -g estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o encryption_benchmark
+clients: clients.cpp gen-cpp/Send_Op.o gen-cpp/Operation_types.o
+	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
 
+proxy: proxy.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Send_Op.o gen-cpp/Operation_types.o
+	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
+
+benchmark: benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
+	g++ $(CPPFLAGS) benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o benchmark
+
+encryption_benchmark: estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
+	g++ $(CPPFLAGS) estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o encryption_benchmark
 
 clientHelper.o: clientHelper.h clientHelper.cpp
-	g++ -g clientHelper.cpp -c -fPIC
+	g++ $(CPPFLAGS) clientHelper.cpp -c -fPIC
 
-server: server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o
-	g++ -g server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/KV_RPC_constants.o -lthrift -lsodium -lrocksdb -pthread -fPIC -o server
+server: server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
+	g++ $(CPPFLAGS) $^ -lthrift -lsodium -lrocksdb -pthread -fPIC -o $@
 
 gen-cpp/KV_RPC.o: gen-cpp/KV_RPC.h gen-cpp/KV_RPC.cpp
-	g++ -g gen-cpp/KV_RPC.cpp -c -fPIC -o gen-cpp/KV_RPC.o
+	g++ $(CPPFLAGS) gen-cpp/KV_RPC.cpp -c -fPIC -o gen-cpp/KV_RPC.o
 
 gen-cpp/KV_RPC_types.o: gen-cpp/KV_RPC_types.h gen-cpp/KV_RPC_types.cpp
-	g++ -g gen-cpp/KV_RPC_types.cpp -c -fPIC -o gen-cpp/KV_RPC_types.o
+	g++ $(CPPFLAGS) gen-cpp/KV_RPC_types.cpp -c -fPIC -o gen-cpp/KV_RPC_types.o
 
-gen-cpp/KV_RPC_constants.o: gen-cpp/KV_RPC_constants.h gen-cpp/KV_RPC_constants.cpp
-	g++ -g gen-cpp/KV_RPC_constants.cpp -c -fPIC -o gen-cpp/KV_RPC_constants.o
 
 gen-cpp/KV_RPC.h:
 	thrift -r --gen cpp KV_RPC.thrift
@@ -43,14 +48,23 @@ gen-cpp/KV_RPC_types.h:
 gen-cpp/KV_RPC_types.cpp:
 	thrift -r --gen cpp KV_RPC.thrift
 
-gen-cpp/KV_RPC_constants.h:
-	thrift -r --gen cpp KV_RPC.thrift
+gen-cpp/Operation_types.cpp:
+	thrift -r --gen cpp Operation.thrift
 
-gen-cpp/KV_RPC_constants.cpp:
-	thrift -r --gen cpp KV_RPC.thrift
+gen-cpp/Operation_types.h:
+	thrift -r --gen cpp Operation.thrift
+
+gen-cpp/Send_Op.cpp:
+	thrift -r --gen cpp Operation.thrift
+
+gen-cpp/Send_Op.h:
+	thrift -r --gen cpp Operation.thrift
 
 clean:
 	rm $(ALL) OpScure.data *.o db/* gen-cpp/*
 
 cleandb:
 	rm db/* OpScure.data
+
+cpdb: 
+	cp db_backup/OpScure.data . && cp db_backup/db/* db/.
