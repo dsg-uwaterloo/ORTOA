@@ -12,15 +12,17 @@
 
 #include "gen-cpp/KV_RPC.h"
 
-#define VALUE_SIZE 300
+#include "constants.h"
 
-#define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES)
+#define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES + 1)
 
 #define CONTEXT "OpScureK"
 
 extern std::set<std::string> keySet;
 extern std::unordered_map<std::string, int> valueSizes;
 extern std::unordered_map<std::string, std::string> masterKeys;
+extern std::unordered_map<std::string, std::atomic<bool>> locks;
+
 
 extern unsigned char randomBytes[VALUE_SIZE];
 
