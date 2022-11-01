@@ -1,20 +1,18 @@
 
-ALL = server client libwaffle.so benchmark encryption_benchmark proxy clients
+ALL = server client benchmark encryption_benchmark proxy clients
 
 all: $(ALL) constants.h
 
 CPPFLAGS = --std=c++11 -g
 
-libwaffle.so: waffle.h waffle.cpp clientHelper.h clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
-	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libwaffle.so waffle.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -fPIC
 
-client: client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
+client: gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o client.o clientHelper.o
 	g++ $(CPPFLAGS) client.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o client
 
 clients: clients.cpp gen-cpp/Send_Op.o gen-cpp/Operation_types.o
 	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
 
-proxy: proxy.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Send_Op.o gen-cpp/Operation_types.o
+proxy: gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Send_Op.o gen-cpp/Operation_types.o proxy.o clientHelper.o
 	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
 
 benchmark: benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
@@ -65,6 +63,3 @@ clean:
 
 cleandb:
 	rm db/* OpScure.data
-
-cpdb: 
-	cp db_backup/OpScure.data . && cp db_backup/db/* db/.
