@@ -12,6 +12,10 @@ Install all:
 sudo apt install thrift-compiler libthrift-dev librocksdb-dev libsodium-dev libboost-all-dev
 ```
 
+# Configuring system
+You can configure many system parameters by modifying ```constants.h```. This file controls ports, db size, value size, and IP addresses. Note that you will have to recompile each executable after modifying the constants file.
+
+
 ## Building
 ```
 $ mkdir db
@@ -21,7 +25,16 @@ $ make
 ```
 ./server
 ```
-will start the server.
+will start the server. The server will run until a value fetch fails or until you quit it.
+
+#clients.cpp
+
+```
+$ make clients
+$ ./clients
+```
+By default, this will run with 64 threads, each making 100 requests to the proxy with equal probability of a get and put request. These values can all be changed by editing the clients.cpp file.
+
 ## CLI Client
 ```
 $ ./client
@@ -30,21 +43,4 @@ $ ./client
 world
 > 
 ```
-Ctrl+C cleans up the program, saves what needs to be persisted into `OpScure.data`, and exits.
-
-## Shared Library for Java Client
-Building the program will output `libwaffle.so`.
-
-## Running Client from YCSB
-First put the shared library in a reasonable folder. In order to ensure that it is found by Java, the folder must be added to the environment variable `LD_LIBRARY_PATH`. If the library is contained in `some/folder`, then run the following:
-```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/some/folder
-```
-Ensure the server is started, then run the following from the YCSB repository:
-```
-./bin/ycsb load waffle -s -P workloads/workloada
-./bin/ycsb run waffle -s -P workloads/workloada
-./bin/ycsb run waffle -s -P workloads/workloadb
-./bin/ycsb run waffle -s -P workloads/workloadc
-```
-Loading only needs to be done once. Then check the `logs` folder in the YCSB repository for throughput and latency numbers (`logs/loga.txt` corresponds to workload A, and so on).
+Ctrl+C cleans up the program, saves what needs to be persisted into `OpScure.data`, and exits. EXIT will also quit the program.
