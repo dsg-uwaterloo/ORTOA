@@ -27,7 +27,7 @@ $ make
 ```
 will start the server. The server will run until a value fetch fails or until you quit it.
 
-#clients.cpp
+# clients.cpp
 
 ```
 $ make clients
