@@ -10,5 +10,9 @@
 #define KEY_MAX 100000
 #define DATA_FILE "./OpScure.data"
 #define HW_THREADS 8
+#define PROXY_NUM_THREADS 8
+#define NUM_CLIENTS 64
+#define SERVER_NUM_THREADS 64
+
 
 #endif

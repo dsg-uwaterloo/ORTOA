@@ -14,7 +14,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#define NUM_THREADS 8
+
 
 std::set<std::string> keySet;
 std::unordered_map<std::string, int> valueSizes;
@@ -73,7 +73,7 @@ void OpScureCleanup(std::string fileName) {
 
 
 bool createEntryParallel(int part, char* paddedVal, unsigned char* masterKey, unsigned char* label) {
-  int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+  int partSize = (VALUE_SIZE / PROXY_NUM_THREADS) + (VALUE_SIZE % PROXY_NUM_THREADS != 0);
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
@@ -110,20 +110,20 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
   entry.encryptedLabelsA.resize(VALUE_SIZE*4*(1 + crypto_secretbox_KEYBYTES));
   unsigned char* label = (unsigned char*) &entry.encryptedLabelsA[0];
 
-  std::future<bool> createThreads[NUM_THREADS];
+  std::future<bool> createThreads[PROXY_NUM_THREADS];
 
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < PROXY_NUM_THREADS; i++) {
     createThreads[i] = pool->submit(createEntryParallel, i, &paddedVal[0], masterKey, label);
   }
 
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < PROXY_NUM_THREADS; i++) {
     createThreads[i].get();
   }
   return entry;
 }
 
 bool getEntryParallel(int part, std::string* key, unsigned char* encryptedLabelA, unsigned char* encryptedLabelB, unsigned char* encryptedLabelC, unsigned char* encryptedLabelD, unsigned char* newMasterKey) {
-  int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+  int partSize = (VALUE_SIZE / PROXY_NUM_THREADS) + (VALUE_SIZE % PROXY_NUM_THREADS != 0);
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
@@ -222,13 +222,13 @@ Entry constructGetEntry(std::string& key) {
 
 
 
-  std::future<bool> getThreads[NUM_THREADS];
+  std::future<bool> getThreads[PROXY_NUM_THREADS];
 
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < PROXY_NUM_THREADS; i++) {
     getThreads[i] = pool->submit(getEntryParallel, i, &key, encryptedLabelA, encryptedLabelB, encryptedLabelC, encryptedLabelD, newMasterKey);
   }
 
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < PROXY_NUM_THREADS; i++) {
     getThreads[i].get();
   }
   
@@ -277,7 +277,7 @@ std::string readValueFromLabels(std::string key, std::string labels) {
 
 
 bool putEntryParallel(int part, std::string* key, std::string* paddedVal, unsigned char* encryptedLabelA, unsigned char* encryptedLabelB, unsigned char* encryptedLabelC, unsigned char* encryptedLabelD, unsigned char* newMasterKey) {
-  int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+  int partSize = (VALUE_SIZE / PROXY_NUM_THREADS) + (VALUE_SIZE % PROXY_NUM_THREADS != 0);
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
@@ -382,13 +382,13 @@ Entry constructPutEntry(std::string& key, std::string& value) {
   unsigned char* encryptedLabelD = (unsigned char*) &entry.encryptedLabelsD[0];
 
 
-  std::future<bool> putThreads[NUM_THREADS];
+  std::future<bool> putThreads[PROXY_NUM_THREADS];
 
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < PROXY_NUM_THREADS; i++) {
     putThreads[i] = pool->submit(putEntryParallel, i, &key, &paddedVal, encryptedLabelA, encryptedLabelB, encryptedLabelC, encryptedLabelD, newMasterKey);
   }
 
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < PROXY_NUM_THREADS; i++) {
     putThreads[i].get();
   }
   

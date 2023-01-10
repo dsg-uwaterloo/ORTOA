@@ -21,8 +21,6 @@ using namespace apache::thrift::transport;
 
 #include "constants.h"
 
-#define NUM_THREADS 64
-
 
 
 
@@ -41,9 +39,10 @@ Operation parseOperation() {
   op.__set_op((tmp == "PUT") ? "PUT" : "GET");
   std::cin >> tmp;
   op.__set_key(tmp);
-  if(op.op == "PUT")
+  if(op.op == "PUT"){
     std::cin >> tmp;
     op.__set_value(tmp);
+  }
   return op;
 }
 
@@ -137,24 +136,24 @@ void client(int i, vector<float>* latencies){
 
 int main() {
     srand( (unsigned)time( NULL ) );
-    std::thread t[NUM_THREADS];
-    vector<float>* latencies[NUM_THREADS];
-    for(int i = 0; i < NUM_THREADS; i++){
+    std::thread t[NUM_CLIENTS];
+    vector<float>* latencies[NUM_CLIENTS];
+    for(int i = 0; i < NUM_CLIENTS; i++){
 	    latencies[i] = new vector<float>;
     }
     auto start = high_resolution_clock::now();
-    for(int i = 0; i < NUM_THREADS; i++){
+    for(int i = 0; i < NUM_CLIENTS; i++){
         t[i] = std::thread(client, i, latencies[i]);
     }
-    for(int i = 0; i < NUM_THREADS; i++){
+    for(int i = 0; i < NUM_CLIENTS; i++){
         t[i].join();
     }
     auto end = high_resolution_clock::now();
     std::cout << "Finished in " << duration_cast<microseconds>(end - start).count() << " microseconds" << std::endl;
     vector<float> totals;
-    for(int i = 0; i < NUM_THREADS; i++){
+    for(int i = 0; i < NUM_CLIENTS; i++){
     	totals.push_back(std::accumulate(latencies[i]->begin(), latencies[i]->end(), 0));
     }
 
-    std::cout << "Average Latency: " << std::accumulate(totals.begin(), totals.end(), 0.0) / (NUM_THREADS * 100) << endl;
+    std::cout << "Average Latency: " << std::accumulate(totals.begin(), totals.end(), 0.0) / (NUM_CLIENTS * 100) << endl;
 }
