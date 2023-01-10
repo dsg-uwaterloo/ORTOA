@@ -34,6 +34,7 @@ struct Operation {
 
 void signal_callback_handler(int signum) {
    OpScureCleanup(DATA_FILE);
+   delete pool;
    exit(signum);
 }
 
@@ -50,6 +51,7 @@ Operation parseOperation() {
 
 int main() {
   OpScureSetup(DATA_FILE);
+  pool = new BS::thread_pool(HW_THREADS);
   srand( (unsigned)time( NULL ) );
 
 
@@ -63,7 +65,6 @@ int main() {
   Operation op;
 
   try {
-    OpScureSetup(DATA_FILE);
     transport->open();
     float diff;
     std::vector<float> put_times, get_times, put_times_encrypt, put_times_access, get_times_encrypt, get_times_access;
