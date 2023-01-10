@@ -80,9 +80,9 @@ void client(int i, vector<float>* latencies){
             op = randGenOperation();
             std::string val;
             auto start = high_resolution_clock::now();
-	    client.access(val, op);
-	    auto end = high_resolution_clock::now();
-	    latencies->push_back(duration_cast<microseconds>(end - start).count());
+            client.access(val, op);
+            auto end = high_resolution_clock::now();
+            latencies->push_back(duration_cast<microseconds>(end - start).count());
             // if(op.op == "GET"){
             //     std::cout << val << std::endl;
             // }

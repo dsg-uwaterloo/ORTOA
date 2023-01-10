@@ -81,18 +81,19 @@ int main() {
         Entry getEntry = constructGetEntry(key);
         auto encrypt_done = high_resolution_clock::now();
         client.access(labels, getEntry);
-        std::string value = readValueFromLabels(key, labels);
+        std::string val = readValueFromLabels(key, labels);
         auto stop = high_resolution_clock::now();
         
 
         get_times.push_back(duration_cast<microseconds>(stop - start).count());
         get_times_access.push_back(duration_cast<microseconds>(stop - encrypt_done).count());
         get_times_encrypt.push_back(duration_cast<microseconds>(encrypt_done - start).count());
-        value = "2";
+
         start = high_resolution_clock::now();
-        Entry putEntry = constructPutEntry(key, value);
+        std::string v = std::string(value);
+        Entry putEntry = constructPutEntry(key, v);
         encrypt_done = high_resolution_clock::now();
-        valueSizes[key] = value.length();
+        valueSizes[key] = VALUE_SIZE;
         client.access(labels, putEntry);
         stop = high_resolution_clock::now();
         put_times.push_back(duration_cast<microseconds>(stop - start).count());
