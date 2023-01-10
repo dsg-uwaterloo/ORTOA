@@ -9,5 +9,6 @@
 #define PROXY_PORT 3000
 #define KEY_MAX 100000
 #define DATA_FILE "./OpScure.data"
+#define HW_THREADS 8
 
 #endif

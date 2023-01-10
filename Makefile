@@ -3,7 +3,7 @@ ALL = server client benchmark encryption_benchmark proxy clients
 
 all: $(ALL) constants.h
 
-CPPFLAGS = --std=c++11 -g
+CPPFLAGS = --std=c++17 -O3 -Wall -pthread -g
 
 
 client: gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o client.o clientHelper.o

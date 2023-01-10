@@ -1,6 +1,5 @@
 #include "clientHelper.h"
 
-#include <thread>
 #include <algorithm>
 #include <fstream>
 #include <atomic>
@@ -21,7 +20,7 @@ std::set<std::string> keySet;
 std::unordered_map<std::string, int> valueSizes;
 std::unordered_map<std::string, std::string> masterKeys;
 std::unordered_map<std::string, std::atomic<bool>> locks;
-
+BS::thread_pool* pool;
 
 
 inline std::string padToLen(std::string& value, int len) {
@@ -73,7 +72,7 @@ void OpScureCleanup(std::string fileName) {
 }
 
 
-void createEntryParallel(int part, char* paddedVal, unsigned char* masterKey, unsigned char* label) {
+bool createEntryParallel(int part, char* paddedVal, unsigned char* masterKey, unsigned char* label) {
   int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
@@ -94,6 +93,7 @@ void createEntryParallel(int part, char* paddedVal, unsigned char* masterKey, un
     }
   }
   free(tmpAux);
+  return true;
 }
 
 Entry constructCreateEntry(std::string& key, std::string& value) {
@@ -110,19 +110,19 @@ Entry constructCreateEntry(std::string& key, std::string& value) {
   entry.encryptedLabelsA.resize(VALUE_SIZE*4*(1 + crypto_secretbox_KEYBYTES));
   unsigned char* label = (unsigned char*) &entry.encryptedLabelsA[0];
 
-  std::thread createThreads[NUM_THREADS];
+  std::future<bool> createThreads[NUM_THREADS];
 
   for(int i = 0; i < NUM_THREADS; i++) {
-    createThreads[i] = std::thread(createEntryParallel, i, &paddedVal[0], masterKey, label);
+    createThreads[i] = pool->submit(createEntryParallel, i, &paddedVal[0], masterKey, label);
   }
 
   for(int i = 0; i < NUM_THREADS; i++) {
-    createThreads[i].join();
+    createThreads[i].get();
   }
   return entry;
 }
 
-void getEntryParallel(int part, std::string* key, unsigned char* encryptedLabelA, unsigned char* encryptedLabelB, unsigned char* encryptedLabelC, unsigned char* encryptedLabelD, unsigned char* newMasterKey) {
+bool getEntryParallel(int part, std::string* key, unsigned char* encryptedLabelA, unsigned char* encryptedLabelB, unsigned char* encryptedLabelC, unsigned char* encryptedLabelD, unsigned char* newMasterKey) {
   int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
@@ -196,6 +196,7 @@ void getEntryParallel(int part, std::string* key, unsigned char* encryptedLabelA
     free(newLabels[i]);
     free(oldLabels[i]);
   }
+  return true;
 
 }
 
@@ -221,14 +222,14 @@ Entry constructGetEntry(std::string& key) {
 
 
 
-    std::thread getThreads[NUM_THREADS];
+  std::future<bool> getThreads[NUM_THREADS];
 
   for(int i = 0; i < NUM_THREADS; i++) {
-    getThreads[i] = std::thread(getEntryParallel, i, &key, encryptedLabelA, encryptedLabelB, encryptedLabelC, encryptedLabelD, newMasterKey);
+    getThreads[i] = pool->submit(getEntryParallel, i, &key, encryptedLabelA, encryptedLabelB, encryptedLabelC, encryptedLabelD, newMasterKey);
   }
 
   for(int i = 0; i < NUM_THREADS; i++) {
-    getThreads[i].join();
+    getThreads[i].get();
   }
   
   masterKeys[key] = newMasterKeyStr;
@@ -275,7 +276,7 @@ std::string readValueFromLabels(std::string key, std::string labels) {
 }
 
 
-void putEntryParallel(int part, std::string* key, std::string* paddedVal, unsigned char* encryptedLabelA, unsigned char* encryptedLabelB, unsigned char* encryptedLabelC, unsigned char* encryptedLabelD, unsigned char* newMasterKey) {
+bool putEntryParallel(int part, std::string* key, std::string* paddedVal, unsigned char* encryptedLabelA, unsigned char* encryptedLabelB, unsigned char* encryptedLabelC, unsigned char* encryptedLabelD, unsigned char* newMasterKey) {
   int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
   int start = part * partSize;
   int limit = std::min((part + 1) * partSize, VALUE_SIZE);
@@ -355,6 +356,7 @@ void putEntryParallel(int part, std::string* key, std::string* paddedVal, unsign
     free(newLabels[i]);
     free(oldLabels[i]);
   }
+  return true;
 }
 
 Entry constructPutEntry(std::string& key, std::string& value) {
@@ -380,14 +382,14 @@ Entry constructPutEntry(std::string& key, std::string& value) {
   unsigned char* encryptedLabelD = (unsigned char*) &entry.encryptedLabelsD[0];
 
 
-  std::thread putThreads[NUM_THREADS];
+  std::future<bool> putThreads[NUM_THREADS];
 
   for(int i = 0; i < NUM_THREADS; i++) {
-    putThreads[i] = std::thread(putEntryParallel, i, &key, &paddedVal, encryptedLabelA, encryptedLabelB, encryptedLabelC, encryptedLabelD, newMasterKey);
+    putThreads[i] = pool->submit(putEntryParallel, i, &key, &paddedVal, encryptedLabelA, encryptedLabelB, encryptedLabelC, encryptedLabelD, newMasterKey);
   }
 
   for(int i = 0; i < NUM_THREADS; i++) {
-    putThreads[i].join();
+    putThreads[i].get();
   }
   
 

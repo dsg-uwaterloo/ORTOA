@@ -12,7 +12,6 @@
 
 #include <atomic>
 
-#include <thread>
 #include <algorithm>
 #include <iostream>
 
@@ -27,6 +26,7 @@ using namespace ::apache::thrift::server;
 
 std::atomic<int> accesses{0};
 std::atomic<int> aborted{0};
+
 
 void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
     if(!keySet.count(op.key)) {
@@ -84,6 +84,7 @@ class Send_OpHandler : virtual public Send_OpIf {
   Send_OpHandler() {
     
     OpScureSetup(DATA_FILE);
+    pool = new BS::thread_pool(HW_THREADS);
 
   }
 
@@ -108,6 +109,7 @@ void signal_callback_handler(int signum) {
    std::cout << "Accesses: " << accesses << std::endl;
    std::cout << "Aborted: " << aborted << std::endl;
    // Terminate program
+   delete pool;
    exit(signum);
 }
 
