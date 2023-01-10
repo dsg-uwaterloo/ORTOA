@@ -6,7 +6,7 @@
 
 #include <cstdint>
 #include <cassert>
-#include <thread>
+#include "BS_thread_pool.hpp"
 #include <algorithm>
 #include <iostream>
 
@@ -26,11 +26,13 @@ using namespace ::apache::thrift::server;
 
 #define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES + 1)
 
+BS::thread_pool* pool;
+
+
 class KV_RPCHandler : virtual public KV_RPCIf {
  public:
 
   rocksdb::DB* db;
-
   KV_RPCHandler() {
     // Your initialization goes here
 
@@ -38,7 +40,6 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     options.create_if_missing = true;
     rocksdb::Status status = rocksdb::DB::Open(options, "db", &db);
     assert(status.ok());
-
   }
 
   void create(const Entry& entry) {
@@ -50,7 +51,7 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
   }
 
-  static void decryptPortion(int part, uint8_t* newKey, uint8_t* oldKey, uint8_t* A, uint8_t* B, uint8_t* C, uint8_t* D) {
+  static bool decryptPortion(int part, uint8_t* newKey, uint8_t* oldKey, uint8_t* A, uint8_t* B, uint8_t* C, uint8_t* D) {
 
     int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
     int start = part * partSize;
@@ -103,6 +104,7 @@ class KV_RPCHandler : virtual public KV_RPCIf {
         oldKey += crypto_secretbox_KEYBYTES + 1;
       }
     }
+    return true;
   }
 
   void access(std::string& _return, const Entry& entry) {
@@ -130,14 +132,14 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     uint8_t* nonce;
     uint8_t* ciphertext;
 
-    std::thread decryptionThreads[NUM_THREADS];
+    std::future<bool> decryptionThreads[NUM_THREADS];
 
     for(int i = 0; i < NUM_THREADS; i++) {
-      decryptionThreads[i] = std::thread(decryptPortion, i, newKey, oldKey, labelListA, labelListB, labelListC, labelListD);
+      decryptionThreads[i] = pool->submit(this->decryptPortion, i, newKey, oldKey, labelListA, labelListB, labelListC, labelListD);
     }
 
     for(int i = 0; i < NUM_THREADS; i++) {
-      decryptionThreads[i].join();
+      decryptionThreads[i].get();
     }
 
     db->Put(rocksdb::WriteOptions(), entry.keyName, _return);
@@ -154,6 +156,8 @@ int main(int argc, char **argv) {
   ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
   ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
   std::shared_ptr<apache::thrift::server::TServer> server;
+  pool = new BS::thread_pool(HW_THREADS);
+
 
 
   server.reset(
