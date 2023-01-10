@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include <chrono>
+
 #include <sodium.h>
 #include "rocksdb/db.h"
 
@@ -17,6 +19,7 @@ using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
+using namespace std::chrono;
 
 #include "constants.h"
 
@@ -26,6 +29,10 @@ using namespace ::apache::thrift::server;
 #define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES + 1)
 
 BS::thread_pool* pool;
+
+std::atomic<long int> avg_access{0};
+std::atomic<long int> access_count{0};
+std::atomic<long int> avg_decrypt{0};
 
 
 class KV_RPCHandler : virtual public KV_RPCIf {
@@ -107,6 +114,7 @@ class KV_RPCHandler : virtual public KV_RPCIf {
   }
 
   void access(std::string& _return, const Entry& entry) {
+    auto access_begin = high_resolution_clock::now();
     // Your implementation goes here
     //printf("access %s\n", entry.keyName.c_str());
 
@@ -132,6 +140,7 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     uint8_t* ciphertext;
 
     std::future<bool> decryptionThreads[SERVER_NUM_THREADS];
+    auto start = high_resolution_clock::now();
 
     for(int i = 0; i < SERVER_NUM_THREADS; i++) {
       decryptionThreads[i] = pool->submit(this->decryptPortion, i, newKey, oldKey, labelListA, labelListB, labelListC, labelListD);
@@ -141,13 +150,26 @@ class KV_RPCHandler : virtual public KV_RPCIf {
       decryptionThreads[i].get();
     }
 
+    auto stop = high_resolution_clock::now();
+    avg_decrypt += duration_cast<microseconds>(stop - start).count();
+    access_count++;
+
     db->Put(rocksdb::WriteOptions(), entry.keyName, _return);
+    auto access_end = high_resolution_clock::now();
+    avg_access += duration_cast<microseconds>(access_end - access_begin).count();
 
   }
 
 };
 
+void signal_callback_handler(int signum) {
+  std::cout << "Avg decrypt time: " << avg_decrypt * 1.0 / access_count << std::endl;
+  std::cout << "Avg access time: " << avg_access * 1.0 / access_count << std::endl;
+   exit(signum);
+}
+
 int main(int argc, char **argv) {
+  signal(SIGINT, signal_callback_handler);
   int port = SERVER_PORT;
   ::std::shared_ptr<KV_RPCHandler> handler(new KV_RPCHandler());
   ::std::shared_ptr<TProcessor> processor(new KV_RPCProcessor(handler));
