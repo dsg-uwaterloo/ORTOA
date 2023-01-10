@@ -20,7 +20,6 @@ using namespace ::apache::thrift::server;
 
 #include "constants.h"
 
-#define NUM_THREADS 64
 
 #define BLOCK_SIZE (VALUE_SIZE*4*(1 + crypto_secretbox_KEYBYTES))
 
@@ -53,7 +52,7 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
   static bool decryptPortion(int part, uint8_t* newKey, uint8_t* oldKey, uint8_t* A, uint8_t* B, uint8_t* C, uint8_t* D) {
 
-    int partSize = (VALUE_SIZE / NUM_THREADS) + (VALUE_SIZE % NUM_THREADS != 0);
+    int partSize = (VALUE_SIZE / SERVER_NUM_THREADS) + (VALUE_SIZE % SERVER_NUM_THREADS != 0);
     int start = part * partSize;
     int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
@@ -132,13 +131,13 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     uint8_t* nonce;
     uint8_t* ciphertext;
 
-    std::future<bool> decryptionThreads[NUM_THREADS];
+    std::future<bool> decryptionThreads[SERVER_NUM_THREADS];
 
-    for(int i = 0; i < NUM_THREADS; i++) {
+    for(int i = 0; i < SERVER_NUM_THREADS; i++) {
       decryptionThreads[i] = pool->submit(this->decryptPortion, i, newKey, oldKey, labelListA, labelListB, labelListC, labelListD);
     }
 
-    for(int i = 0; i < NUM_THREADS; i++) {
+    for(int i = 0; i < SERVER_NUM_THREADS; i++) {
       decryptionThreads[i].get();
     }
 
