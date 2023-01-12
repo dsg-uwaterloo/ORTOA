@@ -37,8 +37,9 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
     std::string labels;
 
     if(!keySet.count(op.key)) {
+        std::cerr << "No such key exists" << std::endl;
+
         if(op.op == "GET") {
-          std::cerr << "No such key exists" << std::endl;
           *_return = "";
           aborted++;
         } else {
