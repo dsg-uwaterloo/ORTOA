@@ -69,7 +69,7 @@ Operation randGenOperation(){
 
 }
 
-void handleOp(Operation op, std::string* _return, KV_RPCClient& client, std::vector<float>& stat){
+void handleOp(Operation op, std::string* _return, KV_RPCClient& client, std::vector<float>* stat){
     std::string labels;
 
     if(!keySet.count(op.key)) {
@@ -110,7 +110,7 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client, std::vec
 
             std::string value = readValueFromLabels(op.key, labels);
             *_return = value;
-            stat.push_back(duration_cast<microseconds>(end - start).count());
+            stat->push_back(duration_cast<microseconds>(end - start).count());
             } else {
             auto start = high_resolution_clock::now();
 
@@ -122,7 +122,7 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client, std::vec
             auto end = high_resolution_clock::now();
             avg_encrypt += duration_cast<microseconds>(encrypt_done - start).count();
             avg_round_trip += duration_cast<microseconds>(end - encrypt_done).count();
-            stat.push_back(duration_cast<microseconds>(end - start).count());
+            stat->push_back(duration_cast<microseconds>(end - start).count());
 
             }
             accesses++;
@@ -136,7 +136,7 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client, std::vec
       //std::cerr << (op.type ? "PUT" : "GET") << " " << op.key << " " << op.value << std::endl;  
 }
 
-void clientThread(int i, std::vector<std::vector<float>>* client_stats){
+void clientThread(int i, std::vector<std::vector<float>*>* client_stats){
   std::shared_ptr<TTransport> socket(new TSocket(SERVER_IP, SERVER_PORT));
   std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
   std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -147,10 +147,10 @@ void clientThread(int i, std::vector<std::vector<float>>* client_stats){
   try {
     transport->open();
     float diff;
-    std::vector<float>& avg_time = (*client_stats)[i];
+    std::vector<float>* avg_time = (*client_stats)[i];
     std::string key;
     std::string value;
-    for(int i = 0; i < 100; i++) {
+    for(int j = 0; j < 100; j++) {
         Operation op = randGenOperation();
         std::string ret;
         handleOp(op, &ret, client, avg_time);
@@ -173,10 +173,10 @@ int main() {
 
   signal(SIGINT, signal_callback_handler);
   std::thread clients[NUM_CLIENTS];
-  std::vector<std::vector<float>> client_stats;
+  std::vector<std::vector<float>*> client_stats;
   auto begin = high_resolution_clock::now();
   for(int i = 0; i < NUM_CLIENTS; i++){
-    client_stats.push_back(std::vector<float>());
+    client_stats.push_back(new std::vector<float>);
     clients[i] = std::thread(clientThread, i, &client_stats);
   }
   for(int i = 0; i < NUM_CLIENTS; i++){
@@ -187,11 +187,12 @@ int main() {
   int total_ops = 0;
   float total_time = 0;
   for(int i = 0; i < NUM_CLIENTS; i++){
-    total_ops += client_stats[i].size();
-    total_time += std::accumulate(client_stats[i].begin(), client_stats[i].end(), 0.0);
+    total_ops += client_stats[i]->size();
+    total_time += std::accumulate(client_stats[i]->begin(), client_stats[i]->end(), 0.0);
+    delete client_stats[i];
   }
   std::cout << "Completed " << total_ops << " in avg " << total_time / total_ops << std::endl;
-  std::cout << "Total time " << duration_cast<microseconds>(end - begin).count() / 1000.0 << "ms" << std::endl;
+  std::cout << "Total time " << duration_cast<microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
   OpScureCleanup(DATA_FILE);
    delete pool;
