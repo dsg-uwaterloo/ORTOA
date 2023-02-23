@@ -80,6 +80,7 @@ int main() {
 
   try {
     OpScureSetup(DATA_FILE);
+    pool = new BS::thread_pool(HW_THREADS);
     transport->open();
 
     while(1) {

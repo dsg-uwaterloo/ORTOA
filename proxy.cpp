@@ -11,8 +11,8 @@
 #include <thrift/transport/TSocket.h>
 
 #include <atomic>
+#include <chrono>
 
-#include <thread>
 #include <algorithm>
 #include <iostream>
 
@@ -20,6 +20,7 @@ using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
+using namespace std::chrono;
 
 
 #include "constants.h"
@@ -28,21 +29,33 @@ using namespace ::apache::thrift::server;
 std::atomic<int> accesses{0};
 std::atomic<int> aborted{0};
 
+std::atomic<long int> avg_encrypt{0};
+std::atomic<long int> avg_round_trip{0};
+
+
 void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
+    std::string labels;
+
     if(!keySet.count(op.key)) {
+        std::cerr << "No such key exists" << std::endl;
+
         if(op.op == "GET") {
-        //   std::cerr << "No such key exists" << std::endl;
           *_return = "";
           aborted++;
         } else {
           if(locks[op.key].exchange(false)){
+            auto start = high_resolution_clock::now();
             Entry createEntry = constructCreateEntry(op.key, op.value);
+            auto encrypt_done = high_resolution_clock::now();
             valueSizes[op.key] = op.value.length();
             keySet.insert(op.key);
 
             client.create(createEntry);
+            auto end = high_resolution_clock::now();
             accesses++;
             locks[op.key].exchange(true);
+            avg_encrypt += duration_cast<microseconds>(encrypt_done - start).count();
+            avg_round_trip += duration_cast<microseconds>(end - encrypt_done).count();
           }
           else{
             aborted++;
@@ -51,18 +64,27 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
       } else {
         if(locks[op.key].exchange(false)){
             if(op.op == "GET") {
+            auto start = high_resolution_clock::now();
             Entry getEntry = constructGetEntry(op.key);
-            std::string labels;
+            auto encrypt_done = high_resolution_clock::now();
             client.access(labels, getEntry);
+            auto end = high_resolution_clock::now();
+            avg_encrypt += duration_cast<microseconds>(encrypt_done - start).count();
+            avg_round_trip += duration_cast<microseconds>(end - encrypt_done).count();
 
             std::string value = readValueFromLabels(op.key, labels);
             *_return = value;
             } else {
+            auto start = high_resolution_clock::now();
+
             Entry putEntry = constructPutEntry(op.key, op.value);
+            auto encrypt_done = high_resolution_clock::now();
             valueSizes[op.key] = op.value.length();
-            std::string labels;
             
             client.access(labels, putEntry);
+            auto end = high_resolution_clock::now();
+            avg_encrypt += duration_cast<microseconds>(encrypt_done - start).count();
+            avg_round_trip += duration_cast<microseconds>(end - encrypt_done).count();
             }
             accesses++;
             locks[op.key].exchange(true);
@@ -84,6 +106,7 @@ class Send_OpHandler : virtual public Send_OpIf {
   Send_OpHandler() {
     
     OpScureSetup(DATA_FILE);
+    pool = new BS::thread_pool(HW_THREADS);
 
   }
 
@@ -107,7 +130,10 @@ void signal_callback_handler(int signum) {
    OpScureCleanup(DATA_FILE);
    std::cout << "Accesses: " << accesses << std::endl;
    std::cout << "Aborted: " << aborted << std::endl;
+   std::cout << "Avg encrypt time: " << 1.0 * avg_encrypt / accesses << std::endl;
+   std::cout << "Avg access time: " << 1.0 * avg_round_trip / accesses << std::endl;
    // Terminate program
+   delete pool;
    exit(signum);
 }
 
