@@ -1,19 +1,19 @@
 #include "gen-cpp/KV_RPC.h"
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TThreadedServer.h>
-#include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
+#include <thrift/transport/TServerSocket.h>
 
-#include <cstdint>
-#include <cassert>
 #include "BS_thread_pool.hpp"
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
 #include <iostream>
 
 #include <chrono>
 
-#include <sodium.h>
 #include "rocksdb/db.h"
+#include <sodium.h>
 
 using namespace ::apache::thrift;
 using namespace ::apache::thrift::protocol;
@@ -23,22 +23,20 @@ using namespace std::chrono;
 
 #include "constants.h"
 
+#define BLOCK_SIZE (VALUE_SIZE * 4 * (1 + crypto_secretbox_KEYBYTES))
 
-#define BLOCK_SIZE (VALUE_SIZE*4*(1 + crypto_secretbox_KEYBYTES))
+#define CIPHERTEXT_LEN                                                         \
+  (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES + 1)
 
-#define CIPHERTEXT_LEN (crypto_secretbox_MACBYTES + crypto_secretbox_KEYBYTES + 1)
-
-BS::thread_pool* pool;
+BS::thread_pool *pool;
 
 std::atomic<long int> avg_access{0};
 std::atomic<long int> access_count{0};
 std::atomic<long int> avg_decrypt{0};
 
-
 class KV_RPCHandler : virtual public KV_RPCIf {
- public:
-
-  rocksdb::DB* db;
+public:
+  rocksdb::DB *db;
   KV_RPCHandler() {
     // Your initialization goes here
 
@@ -48,18 +46,19 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     assert(status.ok());
   }
 
-  void create(const Entry& entry) {
+  void create(const Entry &entry) {
     // Your implementation goes here
-    //printf("create %s\n", entry.keyName.c_str());
-    //fflush(stdout);
+    // printf("create %s\n", entry.keyName.c_str());
+    // fflush(stdout);
 
     db->Put(rocksdb::WriteOptions(), entry.keyName, entry.encryptedLabelsA);
-
   }
 
-  static bool decryptPortion(int part, uint8_t* newKey, uint8_t* oldKey, uint8_t* A, uint8_t* B, uint8_t* C, uint8_t* D) {
+  static bool decryptPortion(int part, uint8_t *newKey, uint8_t *oldKey,
+                             uint8_t *A, uint8_t *B, uint8_t *C, uint8_t *D) {
 
-    int partSize = (VALUE_SIZE / SERVER_NUM_THREADS) + (VALUE_SIZE % SERVER_NUM_THREADS != 0);
+    int partSize = (VALUE_SIZE / SERVER_NUM_THREADS) +
+                   (VALUE_SIZE % SERVER_NUM_THREADS != 0);
     int start = part * partSize;
     int limit = std::min((part + 1) * partSize, VALUE_SIZE);
 
@@ -73,35 +72,32 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
     uint8_t *nonce, *ciphertext;
 
-    for(int i = start; i < limit; i++) {
-      for(int j = 0; j < 4; j++) {
+    for (int i = start; i < limit; i++) {
+      for (int j = 0; j < 4; j++) {
 
         int auxBits = oldKey[0] & 3;
 
-        if(auxBits == 0){
+        if (auxBits == 0) {
           nonce = A;
           ciphertext = A + crypto_secretbox_NONCEBYTES;
-        }
-        else if(auxBits == 1){
+        } else if (auxBits == 1) {
           nonce = B;
           ciphertext = B + crypto_secretbox_NONCEBYTES;
-        }
-        else if(auxBits == 2){
+        } else if (auxBits == 2) {
           nonce = C;
           ciphertext = C + crypto_secretbox_NONCEBYTES;
-        }
-        else{
+        } else {
           nonce = D;
           ciphertext = D + crypto_secretbox_NONCEBYTES;
         }
-        
-        
-        if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN, nonce, oldKey + 1) != 0) {
-            printf("RIP\n");
-            fflush(stdout);
-            exit(1);
+
+        if (crypto_secretbox_open_easy(newKey, ciphertext, CIPHERTEXT_LEN,
+                                       nonce, oldKey + 1) != 0) {
+          printf("RIP\n");
+          fflush(stdout);
+          exit(1);
         }
-              
+
         A += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
         B += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
         C += crypto_secretbox_NONCEBYTES + CIPHERTEXT_LEN;
@@ -113,10 +109,10 @@ class KV_RPCHandler : virtual public KV_RPCIf {
     return true;
   }
 
-  void access(std::string& _return, const Entry& entry) {
+  void access(std::string &_return, const Entry &entry) {
     auto access_begin = high_resolution_clock::now();
     // Your implementation goes here
-    //printf("access %s\n", entry.keyName.c_str());
+    // printf("access %s\n", entry.keyName.c_str());
 
     // std::cout << "Got " << entry << std::endl;
 
@@ -124,29 +120,26 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
     db->Get(rocksdb::ReadOptions(), entry.keyName, &oldKeys);
 
-    uint8_t* oldKey = (uint8_t*) &oldKeys[0];
+    uint8_t *oldKey = (uint8_t *)&oldKeys[0];
 
-    uint8_t* labelListA = (uint8_t*) &entry.encryptedLabelsA[0];
-    uint8_t* labelListB = (uint8_t*) &entry.encryptedLabelsB[0];
-    uint8_t* labelListC = (uint8_t*) &entry.encryptedLabelsC[0];
-    uint8_t* labelListD = (uint8_t*) &entry.encryptedLabelsD[0];
-
-
+    uint8_t *labelListA = (uint8_t *)&entry.encryptedLabelsA[0];
+    uint8_t *labelListB = (uint8_t *)&entry.encryptedLabelsB[0];
+    uint8_t *labelListC = (uint8_t *)&entry.encryptedLabelsC[0];
+    uint8_t *labelListD = (uint8_t *)&entry.encryptedLabelsD[0];
 
     _return.resize(BLOCK_SIZE);
-    uint8_t* newKey = (uint8_t*) &_return[0];
-
-    uint8_t* nonce;
-    uint8_t* ciphertext;
+    uint8_t *newKey = (uint8_t *)&_return[0];
 
     std::future<bool> decryptionThreads[SERVER_NUM_THREADS];
     auto start = high_resolution_clock::now();
 
-    for(int i = 0; i < SERVER_NUM_THREADS; i++) {
-      decryptionThreads[i] = pool->submit(this->decryptPortion, i, newKey, oldKey, labelListA, labelListB, labelListC, labelListD);
+    for (int i = 0; i < SERVER_NUM_THREADS; i++) {
+      decryptionThreads[i] =
+          pool->submit(this->decryptPortion, i, newKey, oldKey, labelListA,
+                       labelListB, labelListC, labelListD);
     }
 
-    for(int i = 0; i < SERVER_NUM_THREADS; i++) {
+    for (int i = 0; i < SERVER_NUM_THREADS; i++) {
       decryptionThreads[i].get();
     }
 
@@ -156,16 +149,17 @@ class KV_RPCHandler : virtual public KV_RPCIf {
 
     db->Put(rocksdb::WriteOptions(), entry.keyName, _return);
     auto access_end = high_resolution_clock::now();
-    avg_access += duration_cast<microseconds>(access_end - access_begin).count();
-
+    avg_access +=
+        duration_cast<microseconds>(access_end - access_begin).count();
   }
-
 };
 
 void signal_callback_handler(int signum) {
-  std::cout << "Avg decrypt time: " << avg_decrypt * 1.0 / access_count << std::endl;
-  std::cout << "Avg access time: " << avg_access * 1.0 / access_count << std::endl;
-   exit(signum);
+  std::cout << "Avg decrypt time: " << avg_decrypt * 1.0 / access_count
+            << std::endl;
+  std::cout << "Avg access time: " << avg_access * 1.0 / access_count
+            << std::endl;
+  exit(signum);
 }
 
 int main(int argc, char **argv) {
@@ -174,17 +168,16 @@ int main(int argc, char **argv) {
   ::std::shared_ptr<KV_RPCHandler> handler(new KV_RPCHandler());
   ::std::shared_ptr<TProcessor> processor(new KV_RPCProcessor(handler));
   ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  ::std::shared_ptr<TTransportFactory> transportFactory(
+      new TBufferedTransportFactory());
+  ::std::shared_ptr<TProtocolFactory> protocolFactory(
+      new TBinaryProtocolFactory());
   std::shared_ptr<apache::thrift::server::TServer> server;
   pool = new BS::thread_pool(HW_THREADS);
 
-
-
-  server.reset(
-        new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory));
+  server.reset(new TThreadedServer(processor, serverTransport, transportFactory,
+                                   protocolFactory));
   server->serve();
 
   return 0;
 }
-
