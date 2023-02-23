@@ -7,6 +7,8 @@
 #include <utility>
 #include <iostream>
 #include <unordered_map>
+#include "BS_thread_pool.hpp"
+
 
 #include <sodium.h>
 
@@ -22,6 +24,8 @@ extern std::set<std::string> keySet;
 extern std::unordered_map<std::string, int> valueSizes;
 extern std::unordered_map<std::string, std::string> masterKeys;
 extern std::unordered_map<std::string, std::atomic<bool>> locks;
+extern BS::thread_pool* pool;
+
 
 
 extern unsigned char randomBytes[VALUE_SIZE];

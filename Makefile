@@ -1,9 +1,9 @@
 
-ALL = server client benchmark encryption_benchmark proxy clients
+ALL = server client benchmark encryption_benchmark proxy clients concurrent_benchmark
 
 all: $(ALL) constants.h
 
-CPPFLAGS = --std=c++11 -g
+CPPFLAGS = --std=c++17 -O3 -Wall -pthread -g
 
 
 client: gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o client.o clientHelper.o
@@ -17,6 +17,10 @@ proxy: gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Send_Op.o gen-cpp/Operati
 
 benchmark: benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
 	g++ $(CPPFLAGS) benchmark.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o benchmark
+
+concurrent_benchmark: gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Operation_types.o gen-cpp/Send_Op.o concurrent_benchmark.cpp clientHelper.o 
+	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
+
 
 encryption_benchmark: estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
 	g++ $(CPPFLAGS) estimate_encryption.cpp clientHelper.o gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o encryption_benchmark
