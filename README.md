@@ -7,6 +7,10 @@ Then run the following command to build the codebase:
 
 make build
 
-Run the following command to run the client (which for now inserts )
+Run the following command to run the client (which for now inserts 2 keys):
+
+make client-run
+
+Run the following command to run ORTOA code in simulation mode:
 
 make simulate
