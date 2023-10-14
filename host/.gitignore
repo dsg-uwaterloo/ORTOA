@@ -4,4 +4,4 @@ ortoa_u.h
 ortoa-host
 redis
 
-.o*
+*.o
