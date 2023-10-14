@@ -5,9 +5,9 @@
 #include <iostream>
 #include <string>
 
-#include "../crypto/encryption_engine.h"
+#include "../../constants/shared.h"
+#include "../../crypto/encryption_engine.h"
 #include "ortoa_t.h"
-#include "shared.h"
 
 using namespace std;
 

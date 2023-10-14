@@ -1,91 +1,130 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <assert.h>
-#include <limits.h>
-#include <openenclave/host.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fstream>
 #include <iostream>
-#include <iterator>
-#include <vector>
-#include "../shared.h"
-#include "redis.h"
+#include "../constants/network.h"
+#include "../gen-cpp/RPC.h"
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/server/TSimpleServer.h>
+#include <thrift/transport/TServerSocket.h>
+#include <thrift/transport/TBufferTransports.h>
 
-#include "ortoa_u.h"
+using namespace ::apache::thrift;
+using namespace ::apache::thrift::protocol;
+using namespace ::apache::thrift::transport;
+using namespace ::apache::thrift::server;
 
-using namespace std;
+class RPCHandler : virtual public RPCIf {
+ public:
+  RPCHandler() {
+    // Your initialization goes here
+  }
 
-oe_enclave_t* enclave = NULL;
+  void access(std::string& _return, const Operation& operation) {
+    // Your implementation goes here
+    std::cout << operation.op << " " << operation.key << " " << operation.value << std::endl;
+  }
 
-bool check_simulate_opt(int* argc, const char* argv[])
-{
-    for (int i = 0; i < *argc; i++)
-    {
-        if (strcmp(argv[i], "--simulate") == 0)
-        {
-            cout << "Running in simulation mode" << endl;
-            memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
-            (*argc)--;
-            return true;
-        }
-    }
-    return false;
+};
+
+int main(int argc, char **argv) {
+  int port = HOST_PORT;
+  ::std::shared_ptr<RPCHandler> handler(new RPCHandler());
+  ::std::shared_ptr<TProcessor> processor(new RPCProcessor(handler));
+  ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+  server.serve();
+  return 0;
 }
 
-int main(int argc, const char* argv[])
-{
-    oe_result_t result;
-    int ret = 0, res;
-    uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
-    redisCli rd;
-    unsigned char* out = NULL;
-    out = new unsigned char[4096];
-    size_t outLen;
-    string val;
-    string opConst = "1";
-    string updateVal;
-    char * copy;
+// #include <assert.h>
+// #include <limits.h>
+// #include <openenclave/host.h>
+// #include <stdio.h>
+// #include <sys/stat.h>
+// #include <sys/types.h>
+// #include <fstream>
+// #include <iostream>
+// #include <iterator>
+// #include <vector>
+// #include "../constants/shared.h"
+// #include "redis.h"
 
-    if (check_simulate_opt(&argc, argv))
-    {
-        flags |= OE_ENCLAVE_FLAG_SIMULATE;
-    }
+// #include "ortoa_u.h"
 
-    cout << "Host: enter main" << endl;
-    if (argc != 2)
-    {
-        cerr << "Usage: " << argv[0]
-             << " enclave_image_path [ --simulate  ]" << endl;
-        return 1;
-    }
+// using namespace std;
 
-    cout << "Host: create enclave for image:" << argv[1] << endl;
-    result = oe_create_ortoa_enclave(
-        argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
-    if (result != OE_OK)
-    {
-        cerr << "oe_create_ortoa_enclave() failed with " << argv[0]
-             << " " << result << endl;
-        ret = 1;
-    }
-    val = rd.get("1");
-    cout << "Host: Redis get: " << val << " with len " << val.length() << endl;
-    result = access_data(enclave, opConst.c_str(), opConst.length(), val.c_str(), val.length(), out, &outLen);
-    if (result == OE_OK)
-    {
-        string updatedVal((const char *)out, outLen);
-        cout << "Host: Output of access_data " << updatedVal << " with len " << outLen << endl;
-        rd.reconnect();
-        rd.put("1", updatedVal);
-    }
+// oe_enclave_t* enclave = NULL;
 
-exit:
-    cout << "Host: terminate the enclave" << endl;
-    cout << "Host: Sample completed successfully." << endl;
-    if (enclave)
-        oe_terminate_enclave(enclave);
-    return ret;
-}
+// bool check_simulate_opt(int* argc, const char* argv[])
+// {
+//     for (int i = 0; i < *argc; i++)
+//     {
+//         if (strcmp(argv[i], "--simulate") == 0)
+//         {
+//             cout << "Running in simulation mode" << endl;
+//             memmove(&argv[i], &argv[i + 1], (*argc - i) * sizeof(char*));
+//             (*argc)--;
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
+// int main(int argc, const char* argv[])
+// {
+//     oe_result_t result;
+//     int ret = 0, res;
+//     uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
+//     redisCli rd;
+//     unsigned char* out = NULL;
+//     out = new unsigned char[4096];
+//     size_t outLen;
+//     string val;
+//     string opConst = "1";
+//     string updateVal;
+//     char * copy;
+
+//     if (check_simulate_opt(&argc, argv))
+//     {
+//         flags |= OE_ENCLAVE_FLAG_SIMULATE;
+//     }
+
+//     cout << "Host: enter main" << endl;
+//     if (argc != 2)
+//     {
+//         cerr << "Usage: " << argv[0]
+//              << " enclave_image_path [ --simulate  ]" << endl;
+//         return 1;
+//     }
+
+//     cout << "Host: create enclave for image:" << argv[1] << endl;
+//     result = oe_create_ortoa_enclave(
+//         argv[1], OE_ENCLAVE_TYPE_SGX, flags, NULL, 0, &enclave);
+//     if (result != OE_OK)
+//     {
+//         cerr << "oe_create_ortoa_enclave() failed with " << argv[0]
+//              << " " << result << endl;
+//         ret = 1;
+//     }
+//     val = rd.get("1");
+//     cout << "Host: Redis get: " << val << " with len " << val.length() << endl;
+//     result = access_data(enclave, opConst.c_str(), opConst.length(), val.c_str(), val.length(), out, &outLen);
+//     if (result == OE_OK)
+//     {
+//         string updatedVal((const char *)out, outLen);
+//         cout << "Host: Output of access_data " << updatedVal << " with len " << outLen << endl;
+//         rd.reconnect();
+//         rd.put("1", updatedVal);
+//     }
+
+// exit:
+//     cout << "Host: terminate the enclave" << endl;
+//     cout << "Host: Sample completed successfully." << endl;
+//     if (enclave)
+//         oe_terminate_enclave(enclave);
+//     return ret;
+// }

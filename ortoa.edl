@@ -5,7 +5,7 @@ enclave {
     from "openenclave/edl/syscall.edl" import *;
     from "platform.edl" import *;
 
-    include "../shared.h"
+    include "../constants/shared.h"
 
     trusted {
         public void access_data([in, count=opConstSize] const char* opConst, 

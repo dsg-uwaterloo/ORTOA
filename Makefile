@@ -27,3 +27,14 @@ simulate:
 client-run:
 	client/client
 
+gen-cpp/Operation_types.cpp:
+	thrift -r --gen cpp thrift/Operation.thrift
+
+gen-cpp/Operation_types.h:
+	thrift -r --gen cpp thrift/Operation.thrift
+
+gen-cpp/RPC.cpp:
+	thrift -r --gen cpp thrift/Operation.thrift
+
+gen-cpp/RPC.h:
+	thrift -r --gen cpp thrift/Operation.thrift
