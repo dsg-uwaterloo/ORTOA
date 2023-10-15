@@ -19,10 +19,9 @@ Operation genRandOperation() {
 	int key = rand() % KEY_MAX;
   
 	Operation op;
-    
-	op.__set_op(r < 0.5 ? "PUT" : "GET");
-  op.__set_key(std::string(std::to_string(key)));
-	if(op.op == "GET") {
+	op.__set_op(r < 0.5 ? OpType::PUT : OpType::GET);
+  op.__set_key(std::to_string(key));
+	if(op.op == OpType::GET) {
 		char value[VALUE_SIZE];
 		randombytes_buf(value, VALUE_SIZE);
 		op.__set_value(std::string(value));
@@ -31,9 +30,9 @@ Operation genRandOperation() {
 }
 
 void client(std::vector <float>* latencies) {
-	std::shared_ptr<TTransport> socket(new TSocket(HOST_IP, HOST_PORT));
-	std::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-	std::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+	auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
+	auto transport = std::make_shared<TBufferedTransport>(socket);
+	auto protocol = std::make_shared<TBinaryProtocol>(transport);
 	RPCClient client(protocol);
 	Operation op;
 
@@ -48,7 +47,7 @@ void client(std::vector <float>* latencies) {
 		
 		transport->close();
 	} catch (TException& tx) {
-    std::cout << "ERROR: " << tx.what() << std::endl;
+		std::cout << "ERROR: " << tx.what() << std::endl;
   }
 }
 

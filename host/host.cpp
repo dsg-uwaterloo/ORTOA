@@ -28,12 +28,11 @@ class RPCHandler : virtual public RPCIf {
 };
 
 int main(int argc, char **argv) {
-  int port = HOST_PORT;
-  ::std::shared_ptr<RPCHandler> handler(new RPCHandler());
-  ::std::shared_ptr<TProcessor> processor(new RPCProcessor(handler));
-  ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  auto handler = std::make_shared<RPCHandler>();
+  auto processor = std::make_shared<RPCProcessor>(handler);
+  auto serverTransport = std::make_shared<TServerSocket>(HOST_PORT);
+  auto transportFactory = std::make_shared<TBufferedTransportFactory>();
+  auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
   server.serve();
