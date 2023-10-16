@@ -6,9 +6,6 @@ add_executable(client
     ../crypto/encryption_engine.cpp
 )
 
-# # Set compiler flags
-# target_compile_options(client PRIVATE -g ${CXXFLAGS})
-
 # Link reuired libraries
 target_link_libraries(client PRIVATE
     /usr/local/lib/libredis++.a
