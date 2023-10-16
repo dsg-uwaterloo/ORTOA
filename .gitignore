@@ -10,8 +10,5 @@ gen-cpp/
 
 server
 
-*.o
-*.so
-
 *.data
 *.rdb
