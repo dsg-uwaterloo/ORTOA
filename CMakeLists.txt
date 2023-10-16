@@ -1,0 +1,75 @@
+cmake_minimum_required(VERSION 3.26)
+
+
+# Setting the cmake compiler when LVI mitigation is not enabled. If the CC
+# environment variable has been specified or the if CMAKE_C_COMPILER cmake
+# variable has been passed to cmake, use the C compiler that has been specified.
+# Otherwise, prefer clang. Same for C++ compiler. This must be done before
+# the `project` command.
+if (UNIX)
+  if (NOT DEFINED ENV{CC} AND NOT DEFINED CMAKE_C_COMPILER)
+    find_program(CMAKE_C_COMPILER clang-11 clang-10 clang)
+  endif ()
+  if (NOT DEFINED ENV{CXX} AND NOT DEFINED CMAKE_CXX_COMPILER)
+    find_program(CMAKE_CXX_COMPILER clang++-11 clang++-10 clang++)
+  endif ()
+endif ()
+
+
+project("ORTOA-TEE" LANGUAGES C CXX)
+
+# Currently the `OpenEnclave` package depends on `project()`.
+find_package(OpenEnclave CONFIG REQUIRED)
+
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Set the OE_CRYPTO_LIB variable
+set(OE_CRYPTO_LIB 
+    openssl
+    CACHE STRING "Crypto library used by enclaves."
+)
+
+# Add subdirectories for the components
+add_subdirectory(enclave)
+add_subdirectory(host)
+add_subdirectory(client)
+
+# Generate key
+add_custom_command(
+  OUTPUT private.pem public.pem
+  COMMAND openssl genrsa -out private.pem -3 3072
+  COMMAND openssl rsa -in private.pem -pubout -out public.pem
+)
+
+# Sign enclave
+add_custom_command(
+  OUTPUT enclave/ortoa-enc.signed
+  DEPENDS enclave enclave/common/ortoa.conf private.pem
+  COMMAND openenclave::oesign sign -e $<TARGET_FILE:ortoa-enc> -c
+          ${CMAKE_SOURCE_DIR}/enclave/common/ortoa.conf -k private.pem
+) 
+
+          
+# Define custom targets (e.g. "run" and "simulate")
+add_custom_target(sign ALL DEPENDS enclave/ortoa-enc.signed)
+
+if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
+  add_custom_target(
+    run
+    DEPENDS host/ortoa-host sign
+    COMMAND host/ortoa-host enclave/ortoa-enc.signed
+  )
+endif ()
+
+add_custom_target(
+  simulate
+  DEPENDS host/ortoa-host sign
+  COMMAND host/ortoa-host ${CMAKE_BINARY_DIR}/enclave/ortoa-enc.signed --simulate
+)
+
+add_custom_target(
+    client-run
+    DEPENDS client/client
+    COMMAND client/client
+)
