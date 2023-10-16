@@ -1,3 +1,5 @@
+build/
+
 .DS_Store
 ._.DS_Store
 **/.DS_Store
@@ -7,9 +9,6 @@ db/
 gen-cpp/
 
 server
-
-*.o
-*.so
 
 *.data
 *.rdb

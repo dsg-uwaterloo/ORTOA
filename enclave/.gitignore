@@ -1,8 +1,0 @@
-ortoa_args.h
-ortoa_t.c
-ortoa_t.h
-ortoa-enc
-ortoa-enc.signed
-
-*.o
-*.pem
