@@ -7,6 +7,12 @@
 | `clang-format` | `sudo apt-get install clang-format` |
 
 
+## Sourcing Scripts & Utilities
+
+```bash
+source ./ortoa-lib.sh
+```
+
 ## Building the codebase
 
 ```bash
