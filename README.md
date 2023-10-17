@@ -1,5 +1,12 @@
 # ORTOA-TEE
 
+## Dependencies
+
+|      Name      |             Installation            |
+| -------------- | ----------------------------------- |
+| `clang-format` | `sudo apt-get install clang-format` |
+
+
 ## Building the codebase
 
 ```bash
@@ -14,6 +21,7 @@ smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ make
 ## Available targets
 
 ### After building the codebase...
+
 #### `make simulate`
 
 ```bash
