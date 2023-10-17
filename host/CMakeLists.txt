@@ -23,4 +23,5 @@ target_link_libraries(ortoa-host
     /usr/local/lib/libredis++.a
     /usr/local/lib/libhiredis.a
     rt
+    spdlog::spdlog
 )
