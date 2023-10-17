@@ -86,6 +86,6 @@ Syntax: ortoa-clang-format [-h]
         esac
     done
 
-    source scripts/clang-format-all.sh host/ enclave/ crypto/ client/
+    source scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
 }
 export -f ortoa-clang-format-all

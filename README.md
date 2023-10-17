@@ -10,7 +10,7 @@
 ## Sourcing Scripts & Utilities
 
 ```bash
-source ./ortoa-lib.sh
+source ./scripts/ortoa-lib.sh
 ```
 
 ## Building the codebase
