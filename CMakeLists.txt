@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
-
+include(FetchContent)
 
 # Setting the cmake compiler when LVI mitigation is not enabled. If the CC
 # environment variable has been specified or the if CMAKE_C_COMPILER cmake
@@ -16,7 +16,22 @@ if (UNIX)
 endif ()
 
 
-project("ORTOA-TEE" LANGUAGES C CXX)
+project(ORTOA-TEE 
+  VERSION 0.1
+  LANGUAGES C CXX
+)
+
+
+# External Dependencies (FetchContent)
+FetchContent_Declare(
+  spdlog
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG v1.12.0  # Specify the version you want
+)
+
+FetchContent_MakeAvailable(spdlog)
+
+
 
 # Currently the `OpenEnclave` package depends on `project()`.
 find_package(OpenEnclave CONFIG REQUIRED)
