@@ -1,7 +1,7 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 #include <openenclave/host.h>
 #include <thrift/protocol/TBinaryProtocol.h>
@@ -55,7 +55,7 @@ class RPCHandler : virtual public RPCIf {
 
   void access(std::string& _return, const Operation& operation) {
     std::string key = operation.key;
-    std::string val = rd.get(key);
+    std::string val = rd.get("1");
     std::string update_val = operation.value;
 
     std::unique_ptr<unsigned char> out(new unsigned char[4096]);
@@ -64,7 +64,7 @@ class RPCHandler : virtual public RPCIf {
     if (result == OE_OK) {
       std::string updated_val((const char *) out.get(), out_len);
       std::cout << "[Host]: Output of access_data " << updated_val << " with len " << out_len << std::endl;
-      rd.put(key, updated_val);
+      rd.put("1", updated_val);
     }
   }
 };
