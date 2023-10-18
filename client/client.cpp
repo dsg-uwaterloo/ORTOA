@@ -4,9 +4,8 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include "../constants/network.h"
+#include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
-#include "../gen-cpp/Operation_types.h"
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
 
@@ -21,11 +20,24 @@ Operation genRandOperation() {
 	Operation op;
 	op.__set_op(r < 0.5 ? OpType::PUT : OpType::GET);
   op.__set_key(std::to_string(key));
-	if(op.op == OpType::GET) {
-		char value[VALUE_SIZE];
-		randombytes_buf(value, VALUE_SIZE);
-		op.__set_value(std::string(value));
+
+	std::string value;
+	if (op.op == OpType::GET) {
+		char rand_val[VALUE_SIZE];
+		randombytes_buf(rand_val, VALUE_SIZE);
+		value = std::string(rand_val);
+	} else {
+		int put_val = rand() % VAL_MAX;
+		value = std::to_string(put_val);
 	}
+
+	encryption_engine engine;
+
+	unsigned char* cipher_text = new unsigned char[4096];
+	size_t out_len = (size_t) engine.encryptNonDeterministic(value, cipher_text);
+	std::string updated_val((const char *) cipher_text, out_len);
+
+	op.__set_value(updated_val);
 	return op;
 }
 
@@ -56,22 +68,3 @@ int main(int argc, char *argv[]) {
 	std::unique_ptr<std::vector<float>> latencies;
 	client(latencies.get());
 }
-
-// int main(int argc, char *argv[]) {
-// 	encryption_engine encryption_engine_;
-// 	redisCli rd;
-// 	unsigned char cipher_text[4096];
-// 	auto encLen = encryption_engine_.encryptNonDeterministic("30", cipher_text);
-// 	string val((const char *)cipher_text, encLen);
-// 	cout << "Encrypted value is: " << val << endl;
-// 	rd.put("1", val);
-// 	cout << "Redis get encrypted for key 1: " << rd.get("1") << endl;
-//     cout << "Decrypted value for key 1: " << encryption_engine_.decryptNonDeterministic(rd.get("1")) << endl;
-    
-//     encLen = encryption_engine_.encryptNonDeterministic("20", cipher_text);
-// 	string val1((const char *)cipher_text, encLen);
-// 	rd.put("2", val1);
-// 	cout << "Redis get encrypted for key 2: " << rd.get("2") << endl;
-//     cout << "Decrypted value for key 1: " << encryption_engine_.decryptNonDeterministic(rd.get("2")) << endl;
-// 	return 0;
-// }
