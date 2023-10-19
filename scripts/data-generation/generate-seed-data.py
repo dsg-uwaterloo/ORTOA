@@ -4,8 +4,8 @@ import sys
 
 from pathlib import Path
 
-from key_generator import KeyFactory, SequentialIntKeyGenerator
-from value_generator import ValueFactory, RandomIntegerGenerator
+from generators.key_generator import KeyFactory, SequentialIntKeyGenerator
+from generators.value_generator import ValueFactory, RandomIntegerGenerator
 
 parser = argparse.ArgumentParser(
     prog="Seed Data Generation script for ORTOA-tee",
