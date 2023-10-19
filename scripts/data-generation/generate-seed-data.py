@@ -24,12 +24,12 @@ def main(argv):
 
     output_file: Path = args.output_file
     if not output_file.suffix == ".csv":
-        raise TypeError("Please create a file with extension .csv")
+        raise ValueError("Please specify a file with extension .csv for the output file")
 
     key_generator: KeyFactory = SequentialIntKeyGenerator(start_key=1)
     value_generator: ValueFactory = RandomIntegerGenerator(min_val=1, max_val=1000000)
     
-    with open(output_file, 'w', newline='') as csvfile:
+    with open(output_file, 'w') as csvfile:
         writer = csv.writer(csvfile)
 
         for _ in range(num_data_points):
