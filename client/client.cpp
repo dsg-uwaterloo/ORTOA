@@ -30,7 +30,7 @@ class ClientHandler {
 	ClientHandler(std::string path) {
 		seed_data.open(path);
 		if (!seed_data.is_open()) {
-        std::cerr << "File failed to open." << std::endl;
+    	throw std::invalid_argument("Invalid path to seed data");
 		}
 	}
 
@@ -40,36 +40,32 @@ class ClientHandler {
 		auto protocol = std::make_shared<TBinaryProtocol>(transport);
 		RPCClient client(protocol);
 
-		try {
-			transport->open();
+		transport->open();
 
-			std::string val;
-			// If seed data exists, run the client with data
-			if (seed_data.is_open()) {
-				std::string line;
-				while (std::getline(seed_data, line)) {
-					Operation op = getSeedOperation(line);
-					auto start = high_resolution_clock::now();
-          client.access(val, op);
-          auto end = high_resolution_clock::now();
-					latencies.push_back(duration_cast<microseconds>(end - start).count());
-				}
-			} 
-			// If seed data does not exist, run client on random values
-			else {
-				for (int i = 0; i < 1000; ++i) {
-					Operation op = genRandOperation();
-					auto start = high_resolution_clock::now();
-					client.access(val, op);
-					auto end = high_resolution_clock::now();
-					latencies.push_back(duration_cast<microseconds>(end - start).count());
-				}
+		std::string val;
+		// If seed data exists, run the client with data
+		if (seed_data.is_open()) {
+			std::string line;
+			while (std::getline(seed_data, line)) {
+				Operation op = getSeedOperation(line);
+				auto start = high_resolution_clock::now();
+				client.access(val, op);
+				auto end = high_resolution_clock::now();
+				latencies.push_back(duration_cast<microseconds>(end - start).count());
 			}
+		} 
+		// If seed data does not exist, run client on random values
+		else {
+			for (int i = 0; i < 1000; ++i) {
+				Operation op = genRandOperation();
+				auto start = high_resolution_clock::now();
+				client.access(val, op);
+				auto end = high_resolution_clock::now();
+				latencies.push_back(duration_cast<microseconds>(end - start).count());
+			}
+		}
 
-			transport->close();
-		} catch (TException& tx) {
-			std::cout << "ERROR: " << tx.what() << std::endl;
-  	}
+		transport->close();
 	}
 
 	void getAveLatency() {
@@ -82,13 +78,19 @@ int main(int argc, char *argv[]) {
   auto start = high_resolution_clock::now();
 
 	// If user runs client with path to seed data, init ClientHandler with seed
-	ClientHandler client;
-	if (argc >= 2){
-		client = ClientHandler(argv[1]);
-	}
-
-	client.run();
-	client.getAveLatency();
+	try {
+		ClientHandler client;
+		if (argc >= 2){
+			std::string seed_data_path = argv[1];
+			client = ClientHandler(seed_data_path);
+		}
+		client.run();
+		client.getAveLatency();
+	} catch (std::invalid_argument& err) {
+		std::cerr << "ERROR: " << err.what() << std::endl;
+	} catch (TException& err) {
+		std::cerr << "ERROR: " << err.what() << std::endl;
+  }
 
 	auto end = high_resolution_clock::now();
   std::cout << "[main]: Entire program finished in " << duration_cast<microseconds>(end - start).count() << " microseconds" << std::endl;
