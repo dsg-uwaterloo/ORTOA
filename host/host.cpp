@@ -9,6 +9,7 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
+#include "../errors/OECreationFailed.h"
 #include "ortoa_u.h"
 #include "redis.h"
 #include "../constants/constants.h"
@@ -38,8 +39,7 @@ class RPCHandler : virtual public RPCIf {
   RPCHandler() {
     oe_result_t result = oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX, simulate_flag, NULL, 0, &enclave);
     if (result != OE_OK) {
-      std::cerr << "oe_create_ortoa_enclave() failed with enclave path " << oe_enclave_path << " " << result << std::endl;
-      throw "oe ortoa enclave init failed";
+      throw OECreationFailed(oe_enclave_path);
     }
   }
 
@@ -72,13 +72,16 @@ class RPCHandler : virtual public RPCIf {
 int main(int argc, char* argv[]) {
   RPCHandler::setEnclaveArgs(argc, argv);
 
-  auto handler = std::make_shared<RPCHandler>();
-  auto processor = std::make_shared<RPCProcessor>(handler);
-  auto serverTransport = std::make_shared<TServerSocket>(HOST_PORT);
-  auto transportFactory = std::make_shared<TBufferedTransportFactory>();
-  auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
+  try {
+    auto handler = std::make_shared<RPCHandler>();
+    auto processor = std::make_shared<RPCProcessor>(handler);
+    auto serverTransport = std::make_shared<TServerSocket>(HOST_PORT);
+    auto transportFactory = std::make_shared<TBufferedTransportFactory>();
+    auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
 
-  TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-  server.serve();
-  return 0;
+    TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+    server.serve();
+  } catch (OECreationFailed err) {
+    std::cerr << "ERROR: " << err.what() << std::endl;
+  }
 }
