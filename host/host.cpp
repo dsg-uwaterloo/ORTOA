@@ -54,17 +54,15 @@ class RPCHandler : virtual public RPCIf {
   }
 
   void access(std::string& _return, const Operation& operation) {
-    std::string key = operation.key;
-    std::string val = rd.get(key);
-    std::string update_val = operation.value;
+    std::string rd_value = rd.get(operation.key);
 
     std::unique_ptr<unsigned char> out(new unsigned char[4096]);
     size_t out_len;
-    oe_result_t result = access_data(enclave, operation.op, val.c_str(), val.length(), update_val.c_str(), update_val.length(), out.get(), &out_len);
+    oe_result_t result = access_data(enclave, operation.op, rd_value.c_str(), rd_value.length(), operation.value.c_str(), operation.value.length(), out.get(), &out_len);
     if (result == OE_OK) {
       std::string updated_val((const char *) out.get(), out_len);
       std::cout << "[Host]: Output of access_data " << updated_val << " with len " << out_len << std::endl;
-      rd.put(key, updated_val);
+      rd.put(operation.key, updated_val);
     }
   }
 };
