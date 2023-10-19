@@ -20,7 +20,7 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
-bool check_simulate(int argc, char *argv[]) {
+bool check_simulate(int argc, char* argv[]) {
   for (int i = 2; i < argc; ++i) {
     if (strcmp(argv[i], "--simulate") == 0) return true;
   }
@@ -43,7 +43,7 @@ class RPCHandler : virtual public RPCIf {
     }
   }
 
-  static void setEnclaveArgs(int argc, char *argv[]) {
+  static void setEnclaveArgs(int argc, char* argv[]) {
     assert(argc >= 2);
 
     oe_enclave_path = argv[1];
@@ -55,7 +55,7 @@ class RPCHandler : virtual public RPCIf {
 
   void access(std::string& _return, const Operation& operation) {
     std::string key = operation.key;
-    std::string val = rd.get("1");
+    std::string val = rd.get(key);
     std::string update_val = operation.value;
 
     std::unique_ptr<unsigned char> out(new unsigned char[4096]);
@@ -64,12 +64,12 @@ class RPCHandler : virtual public RPCIf {
     if (result == OE_OK) {
       std::string updated_val((const char *) out.get(), out_len);
       std::cout << "[Host]: Output of access_data " << updated_val << " with len " << out_len << std::endl;
-      rd.put("1", updated_val);
+      rd.put(key, updated_val);
     }
   }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   RPCHandler::setEnclaveArgs(argc, argv);
 
   auto handler = std::make_shared<RPCHandler>();
