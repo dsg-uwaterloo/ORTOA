@@ -1,5 +1,5 @@
-#ifndef OECREATION_H
-#define OECREATION_H
+#ifndef ERROR_H
+#define ERROR_H
 
 #include <string>
 

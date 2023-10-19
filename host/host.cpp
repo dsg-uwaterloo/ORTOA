@@ -9,7 +9,7 @@
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
-#include "../errors/OECreationFailed.h"
+#include "../errors/errors.h"
 #include "ortoa_u.h"
 #include "redis.h"
 #include "../constants/constants.h"

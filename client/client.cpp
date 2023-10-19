@@ -30,8 +30,7 @@ class ClientHandler {
 	ClientHandler(std::string path) {
 		seed_data.open(path);
 		if (!seed_data.is_open()) {
-			std::string err = "Invalid path to seed data";
-    	throw std::invalid_argument(err);
+    	throw std::invalid_argument("Invalid path to seed data");
 		}
 	}
 
@@ -82,7 +81,8 @@ int main(int argc, char *argv[]) {
 	try {
 		ClientHandler client;
 		if (argc >= 2){
-			client = ClientHandler(argv[1]);
+			std::string seed_data_path = argv[1];
+			client = ClientHandler(seed_data_path);
 		}
 		client.run();
 		client.getAveLatency();
