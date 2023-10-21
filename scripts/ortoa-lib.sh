@@ -86,6 +86,48 @@ Syntax: ortoa-clang-format [-h]
         esac
     done
 
-    source scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
+    source ${REPO_ROOT}/scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
 }
 export -f ortoa-clang-format-all
+
+
+############################################
+# Data Generation
+############################################
+
+ortoa-generate-seed() {
+    local HELP="""\
+usage: Seed Data Generation script for ORTOA-tee [-h] [-o OUTPUT_FILE] [-n N_DATA_POINTS]
+
+Script to generate some seed data the ortoa-tee project
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT_FILE, --output_file OUTPUT_FILE
+                        File into which to write the sample seed data.
+  -n N_DATA_POINTS, --n_data_points N_DATA_POINTS
+                        Number of data points to generate.
+"""
+    python3 ${REPO_ROOT}/scripts/data-generation/generate-seed-data.py "${@}"
+}
+
+ortoa-generate-operations() {
+    local HELP="""\
+usage: Operation Generation script for ORTOA-tee [-h] -i INPUT_FILE [-o OUTPUT_FILE] [-n N_OPERATIONS] [-p P_GET]
+
+Script to generate some operations from a seed file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT_FILE, --input_file INPUT_FILE
+                        Input file. This should be a Path to a csv of generated seed data.
+  -o OUTPUT_FILE, --output_file OUTPUT_FILE
+                        File into which to write the operations.
+  -n N_OPERATIONS, --n_operations N_OPERATIONS
+                        Number of operations to generate.
+  -p P_GET, --p_get P_GET
+                        Probability of a GET request. 1-p_get = p_put (probability of a PUT request).
+"""
+    python3 ${REPO_ROOT}/scripts/data-generation/generate-sample-operations.py "${@}"
+
+}
