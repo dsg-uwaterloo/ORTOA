@@ -34,6 +34,16 @@ class ClientHandler {
 		}
 	}
 
+	void run_threaded() {
+		std::vector<std::thread> threads;
+		for (int i = 0; i < NUM_CLIENTS; i++) {
+			threads.push_back(std::thread(&ClientHandler::run, this));
+		}
+
+		// Wait for all threads to finish
+		for (std::thread& thread : threads) thread.join();
+	}
+
 	void run() {
 		auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
 		auto transport = std::make_shared<TBufferedTransport>(socket);
@@ -84,7 +94,7 @@ int main(int argc, char *argv[]) {
 			std::string seed_data_path = argv[1];
 			client = ClientHandler(seed_data_path);
 		}
-		client.run();
+		client.run_threaded();
 		client.getAveLatency();
 	} catch (std::invalid_argument& err) {
 		std::cerr << "ERROR: " << err.what() << std::endl;

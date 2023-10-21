@@ -5,7 +5,7 @@
 #include <iostream>
 #include <openenclave/host.h>
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 
@@ -77,8 +77,9 @@ int main(int argc, char* argv[]) {
     auto transportFactory = std::make_shared<TBufferedTransportFactory>();
     auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
 
-    TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
-    server.serve();
+    std::shared_ptr<apache::thrift::server::TServer> server;
+    server.reset(new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory));
+    server->serve();
   } catch (OECreationFailed err) {
     std::cerr << "ERROR: " << err.what() << std::endl;
   }
