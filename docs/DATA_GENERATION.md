@@ -22,7 +22,7 @@ A file consisting of entries of two possible types:
 
 ```csv
 GET 1
-PUT 2 00
+PUT 2 200
 GET 2
 ...
 ```
