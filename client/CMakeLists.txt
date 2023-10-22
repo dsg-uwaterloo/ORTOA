@@ -16,7 +16,6 @@ add_dependencies(client generate-thrift)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/constants
-    ../gen-cpp
     ${CMAKE_BINARY_DIR}/gen-cpp
 )
 
