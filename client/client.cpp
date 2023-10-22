@@ -12,7 +12,6 @@
 #include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
 #include "../gen-cpp/RPC.h"
-#include "../host/redis.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
@@ -56,7 +55,7 @@ class ClientHandler {
 		// If seed data exists, run the client with data
 		if (seed_data.is_open()) {
 			std::string line;
-			while (std::getline(seed_data, line)) {
+			while (readFile(seed_data, line)) {
 				Operation op = getSeedOperation(line);
 				auto start = high_resolution_clock::now();
 				client.access(val, op);
