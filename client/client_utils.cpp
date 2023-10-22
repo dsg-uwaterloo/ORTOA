@@ -1,5 +1,7 @@
 #include "client_utils.h"
 
+std::mutex fileMutex;
+
 Operation genRandOperation() {
 	float r = (float) rand() / RAND_MAX;
 	int key = rand() % KEY_MAX;
@@ -48,6 +50,11 @@ Operation getSeedOperation(std::string& line) {
   op.__set_value(clientEncrypt(value));
 
   return op;
+}
+
+std::istream& readFile(std::ifstream &seed_data, std::string &line) {
+  std::lock_guard<std::mutex> lock(fileMutex);
+  return std::getline(seed_data, line);
 }
 
 std::string clientEncrypt(const std::string& value) {

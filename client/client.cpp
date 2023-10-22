@@ -12,7 +12,6 @@
 #include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
 #include "../gen-cpp/RPC.h"
-#include "../host/redis.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
@@ -34,6 +33,16 @@ class ClientHandler {
 		}
 	}
 
+	void run_threaded() {
+		std::vector<std::thread> threads;
+		for (int i = 0; i < NUM_CLIENTS; i++) {
+			threads.push_back(std::thread(&ClientHandler::run, this));
+		}
+
+		// Wait for all threads to finish
+		for (std::thread& thread : threads) thread.join();
+	}
+
 	void run() {
 		auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
 		auto transport = std::make_shared<TBufferedTransport>(socket);
@@ -46,7 +55,7 @@ class ClientHandler {
 		// If seed data exists, run the client with data
 		if (seed_data.is_open()) {
 			std::string line;
-			while (std::getline(seed_data, line)) {
+			while (readFile(seed_data, line)) {
 				Operation op = getSeedOperation(line);
 				auto start = high_resolution_clock::now();
 				client.access(val, op);
@@ -84,7 +93,7 @@ int main(int argc, char *argv[]) {
 			std::string seed_data_path = argv[1];
 			client = ClientHandler(seed_data_path);
 		}
-		client.run();
+		client.run_threaded();
 		client.getAveLatency();
 	} catch (std::invalid_argument& err) {
 		std::cerr << "ERROR: " << err.what() << std::endl;

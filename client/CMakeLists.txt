@@ -28,4 +28,5 @@ target_link_libraries(client PRIVATE
     spdlog::spdlog
     thrift
     sodium
+    pthread
 )
