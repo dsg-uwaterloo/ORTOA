@@ -9,11 +9,24 @@ from generators.value_generator import ValueFactory, RandomIntegerGenerator
 
 parser = argparse.ArgumentParser(
     prog="Seed Data Generation script for ORTOA-tee",
-    description="Script to generate some seed data the ortoa-tee project"
+    description="Script to generate some seed data the ortoa-tee project",
 )
 
-parser.add_argument('-o', '--output_file', type=Path, default=Path("seed_data.csv"), help="File into which to write the sample seed data.")
-parser.add_argument('-n', '--n_data_points', type=int, default=1000, help="Number of data points to generate.")
+parser.add_argument(
+    "-o",
+    "--output_file",
+    type=Path,
+    default=Path("seed_data.csv"),
+    help="File into which to write the sample seed data.",
+)
+parser.add_argument(
+    "-n",
+    "--n_data_points",
+    type=int,
+    default=1000,
+    help="Number of data points to generate.",
+)
+
 
 def main(argv):
     args = parser.parse_args(argv)
@@ -24,20 +37,23 @@ def main(argv):
 
     output_file: Path = args.output_file
     if not output_file.suffix == ".csv":
-        raise ValueError("Please specify a file with extension .csv for the output file")
+        raise ValueError(
+            "Please specify a file with extension .csv for the output file"
+        )
 
     key_generator: KeyFactory = SequentialIntKeyGenerator(start_key=1)
-    value_generator: ValueFactory = RandomIntegerGenerator(min_val=1, max_val=1000000)
-    
-    with open(output_file, 'w') as csvfile:
-        writer = csv.writer(csvfile)
+    value_generator: ValueFactory = RandomIntegerGenerator(min_val=1, max_val=99999)
+
+    with open(output_file, "w") as csvfile:
+        writer = csv.writer(csvfile, delimiter=" ")
 
         for _ in range(num_data_points):
-            writer.writerow(["PUT", key_generator.generate_key(), value_generator.generate_value()])
+            writer.writerow(
+                ["SET", key_generator.generate_key(), value_generator.generate_value()]
+            )
 
     print(f"Data Generation Complete. Wrote data to file {output_file}")
 
 
 if __name__ == "__main__":
-	main(sys.argv[1:])
-    
+    main(sys.argv[1:])
