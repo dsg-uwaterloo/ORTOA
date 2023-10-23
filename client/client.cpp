@@ -1,27 +1,106 @@
+#include <chrono>
+#include <fstream>
 #include <iostream>
+#include <numeric>
+#include <sstream>
+#include <sodium.h>
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TTransportUtils.h>
 
+#include "client_utils.h"
+#include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
-#include "../host/redis.h"
-#include "spdlog/spdlog.h"
+#include "../gen-cpp/RPC.h"
 
-using namespace std;
+using namespace std::chrono;
+using namespace apache::thrift;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
+
+class ClientHandler {
+ private:
+	std::ifstream seed_data; 
+	std::vector<float> latencies;
+
+ public:
+	ClientHandler() = default;
+
+	ClientHandler(std::string path) {
+		seed_data.open(path);
+		if (!seed_data.is_open()) {
+    	throw std::invalid_argument("Invalid path to seed data");
+		}
+	}
+
+	void run_threaded() {
+		std::vector<std::thread> threads;
+		for (int i = 0; i < NUM_CLIENTS; i++) {
+			threads.push_back(std::thread(&ClientHandler::run, this));
+		}
+
+		// Wait for all threads to finish
+		for (std::thread& thread : threads) thread.join();
+	}
+
+	void run() {
+		auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
+		auto transport = std::make_shared<TBufferedTransport>(socket);
+		auto protocol = std::make_shared<TBinaryProtocol>(transport);
+		RPCClient client(protocol);
+
+		transport->open();
+
+		std::string val;
+		// If seed data exists, run the client with data
+		if (seed_data.is_open()) {
+			std::string line;
+			while (readFile(seed_data, line)) {
+				Operation op = getSeedOperation(line);
+				auto start = high_resolution_clock::now();
+				client.access(val, op);
+				auto end = high_resolution_clock::now();
+				latencies.push_back(duration_cast<microseconds>(end - start).count());
+			}
+		} 
+		// If seed data does not exist, run client on random values
+		else {
+			for (int i = 0; i < 1000; ++i) {
+				Operation op = genRandOperation();
+				auto start = high_resolution_clock::now();
+				client.access(val, op);
+				auto end = high_resolution_clock::now();
+				latencies.push_back(duration_cast<microseconds>(end - start).count());
+			}
+		}
+
+		transport->close();
+	}
+
+	void getAveLatency() {
+		std::cout << "[Client]: Data access complete, average latency: " << std::accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size() << " microseconds" << std::endl;
+	}
+};
+
 
 int main(int argc, char *argv[]) {
-    encryption_engine encryption_engine_;
-    redisCli rd;
-    unsigned char cipher_text[4096];
-    auto encLen = encryption_engine_.encryptNonDeterministic("30", cipher_text);
-    string val((const char *)cipher_text, encLen);
-    spdlog::info("Encrypted value is: {0}", val);
-    rd.put("1", val);
-    spdlog::info("Redis get encrypted for key 1: {0}", rd.get("1"));
-    spdlog::info("Decrypted value for key 1: {0}", encryption_engine_.decryptNonDeterministic(rd.get("1")));
+  auto start = high_resolution_clock::now();
 
-    encLen = encryption_engine_.encryptNonDeterministic("20", cipher_text);
-    string val1((const char *)cipher_text, encLen);
-    rd.put("2", val1);
+	// If user runs client with path to seed data, init ClientHandler with seed
+	try {
+		ClientHandler client;
+		if (argc >= 2){
+			std::string seed_data_path = argv[1];
+			client = ClientHandler(seed_data_path);
+		}
+		client.run_threaded();
+		client.getAveLatency();
+	} catch (std::invalid_argument& err) {
+		std::cerr << "ERROR: " << err.what() << std::endl;
+	} catch (TException& err) {
+		std::cerr << "ERROR: " << err.what() << std::endl;
+  }
 
-    spdlog::info("Redis get encrypted for key 2: {0}", rd.get("2"));
-    spdlog::info("Decrypted value for key 2: {0}", encryption_engine_.decryptNonDeterministic(rd.get("2")));
-    return 0;
+	auto end = high_resolution_clock::now();
+  std::cout << "[main]: Entire program finished in " << duration_cast<microseconds>(end - start).count() << " microseconds" << std::endl;
 }

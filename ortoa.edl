@@ -5,33 +5,17 @@ enclave {
     from "openenclave/edl/syscall.edl" import *;
     from "platform.edl" import *;
 
-    include "../shared.h"
+    include "../constants/shared.h"
 
     trusted {
-        public void access_data([in, count=opConstSize] const char* opConst, 
-                                size_t opConstSize,
-                                [in, count=inSize] const char* inVal,
-                                size_t inSize,
-                                [out, count=inSize] unsigned char* outVal,
-                                size_t* outSize);
-
-        //public int initialize_encryptor( bool encrypt, 
-        //                                [in, count=password_len] const char* password, 
-        //                                size_t password_len, 
-        //                                [in, out] encryption_header_t *header); 
-        
-        //public int encrypt_block(bool encrypt, 
-        //                                [in, count=size] unsigned char* input_buf, 
-        //                                [out, count=size] unsigned char* output_buf, 
-        //                                size_t size);
-
-        //public void close_encryptor();
+        public void access_data(int op_const,
+                                [in, count=in_size] const char* in_val,
+                                size_t in_size,
+                                [in, count=update_size] const char* update_val,
+                                size_t update_size,
+                                [out, count=in_size] unsigned char* out_val,
+                                size_t* out_size);
     };
-
-    //untrusted {
-    //    void write_to_redis([in, string] const char* encVal,
-    //                        size_t encSize);
-    //};
 };
 
 
