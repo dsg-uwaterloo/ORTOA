@@ -1,28 +1,30 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <openenclave/enclave.h>
-
 #include <iostream>
+#include <openenclave/enclave.h>
 #include <string>
 
-#include "../crypto/encryption_engine.h"
+#include "constants/shared.h"
+#include "crypto/encryption_engine.h"
 #include "ortoa_t.h"
-#include "shared.h"
-using namespace std;
 
-void access_data(const char* opConst, size_t opConstSize,
-                 const char* inVal, size_t inSize, unsigned char* cipher_text, size_t* outSize) {
-    int c, val, out;
-    string cStr = opConst;
-    encryption_engine encryption_engine_;
-    string inStr((const char*)inVal, inSize);
-    string valStr = encryption_engine_.decryptNonDeterministic(inStr);
-    c = stoi(cStr);
-    val = stoi(valStr);
+void access_data(int op_const, const char* in_val, size_t in_size, const char* update_val, size_t update_size, unsigned char* cipher_text, size_t* out_size) {
+    encryption_engine engine;
 
-    cout << "In enclave: Decryption val is: " << valStr << endl;
-    // TODO: If c == 0: read else write
-    out = c + val;
-    *outSize = (size_t)encryption_engine_.encryptNonDeterministic(to_string(out), cipher_text);
+    // Decrypt value from redis
+    std::string in_str((const char *) in_val, in_size);
+    std::string val_decrypt = engine.decryptNonDeterministic(in_str);
+
+    // Decrypt update value from client
+    std::string update_str((const char *) update_val, update_size);
+    std::string u_val_decrypt = engine.decryptNonDeterministic(update_str);
+
+    std::cout << "[Enclave]: Decrypted value is: " << val_decrypt << std::endl;
+    std::cout << "[Enclave]: Decrypted update value is: " << u_val_decrypt << std::endl;
+    
+    // If operation is GET then re-encrypt the value fetched from redis, 
+    // otherwise, encrypt the update value from client
+    std::string value = (op_const == 0) ? val_decrypt : u_val_decrypt;
+    *out_size = engine.encryptNonDeterministic(value, cipher_text);
 }

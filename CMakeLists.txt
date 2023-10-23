@@ -45,6 +45,7 @@ set(OE_CRYPTO_LIB
     CACHE STRING "Crypto library used by enclaves."
 )
 
+
 # Add subdirectories for the components
 add_subdirectory(enclave)
 add_subdirectory(host)
@@ -65,7 +66,47 @@ add_custom_command(
           ${CMAKE_SOURCE_DIR}/enclave/common/ortoa.conf -k private.pem
 ) 
 
-          
+add_custom_command(
+  OUTPUT gen-cpp/Operation_types.cpp
+  COMMAND thrift -r --gen cpp ${CMAKE_SOURCE_DIR}/thrift/Operation.thrift
+)
+
+add_custom_command(
+  OUTPUT gen-cpp/Operation_types.h
+  COMMAND thrift -r --gen cpp ${CMAKE_SOURCE_DIR}/thrift/Operation.thrift
+)
+
+add_custom_command(
+  OUTPUT gen-cpp/RPC.cpp
+  COMMAND thrift -r --gen cpp ${CMAKE_SOURCE_DIR}/thrift/Operation.thrift
+)
+
+add_custom_command(
+  OUTPUT gen-cpp/RPC.h
+  COMMAND thrift -r --gen cpp ${CMAKE_SOURCE_DIR}/thrift/Operation.thrift
+)
+
+set_source_files_properties(
+  ${CMAKE_BINARY_DIR}/gen-cpp/RPC.h PROPERTIES GENERATED TRUE
+)
+set_source_files_properties(
+  ${CMAKE_BINARY_DIR}/gen-cpp/RPC.cpp PROPERTIES GENERATED TRUE
+)
+set_source_files_properties(
+  ${CMAKE_BINARY_DIR}/gen-cpp/Operation_types.h PROPERTIES GENERATED TRUE
+)
+set_source_files_properties(
+  ${CMAKE_BINARY_DIR}/gen-cpp/Operation_types.cpp PROPERTIES GENERATED TRUE
+)
+
+add_custom_target(generate-thrift
+  DEPENDS
+    gen-cpp/Operation_types.cpp
+    gen-cpp/Operation_types.h
+    gen-cpp/RPC.cpp
+    gen-cpp/RPC.h
+)
+    
 # Define custom targets (e.g. "run" and "simulate")
 add_custom_target(sign ALL DEPENDS enclave/ortoa-enc.signed)
 
