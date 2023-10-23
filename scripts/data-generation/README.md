@@ -25,7 +25,6 @@ class SequentialIntKeyGenerator(KeyFactory[int]):
         generated_key = self.key
         self.key += 1
         return generated_key
-        
 ```
 
 ## Custom Value Generation
