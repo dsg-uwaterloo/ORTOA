@@ -12,6 +12,7 @@
 #include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
 #include "../gen-cpp/RPC.h"
+#include "../host/redis.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
@@ -33,7 +34,22 @@ class ClientHandler {
 		}
 	}
 
-	void run_threaded() {
+	void initDB() {
+		if (seed_data.is_open()) {
+			redisCli rd;
+			auto pipeline = rd.pipe();
+
+			std::string line;
+			while (std::getline(seed_data, line)) {
+				Operation op = getSeedOperation(line);
+				pipeline.set(op.key, op.value);
+			}
+
+			pipeline.exec();
+		} 
+	}
+
+	void runThreaded() {
 		std::vector<std::thread> threads;
 		for (int i = 0; i < NUM_CLIENTS; i++) {
 			threads.push_back(std::thread(&ClientHandler::run, this));
@@ -93,7 +109,7 @@ int main(int argc, char *argv[]) {
 			std::string seed_data_path = argv[1];
 			client = ClientHandler(seed_data_path);
 		}
-		client.run_threaded();
+		client.runThreaded();
 		client.getAveLatency();
 	} catch (std::invalid_argument& err) {
 		std::cerr << "ERROR: " << err.what() << std::endl;
