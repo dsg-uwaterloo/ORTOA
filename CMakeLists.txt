@@ -128,4 +128,5 @@ add_custom_target(
     client-run
     DEPENDS client/client
     COMMAND client/client
+    VERBATIM
 )

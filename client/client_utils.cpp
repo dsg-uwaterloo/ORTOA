@@ -2,12 +2,46 @@
 
 std::mutex fileMutex;
 
-Operation genRandOperation() {
+void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db, int &num_clients, float &p_get) {
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+    
+    // Check if current argument is path to the seed data for init DB
+    if (arg == "--seed" && i + 1 < argc) {
+      std::string seed_name = argv[i + 1];
+      seed.open(seed_name);
+
+		  if (!seed.is_open()) {
+    	  throw std::invalid_argument("Invalid path to seed data");
+      }
+      i++; // Skip the next argument
+		}
+
+    // Check if current argument is number of clients for multithreading
+    else if (arg == "--nthreads" && i + 1 < argc) {
+      num_clients = std::stoi(argv[i + 1]);
+      i++;
+    }
+
+    // Check if current argument is probability of GET operation
+    else if (arg == "--pget" && i + 1 < argc) {
+      p_get = std::stoi(argv[i + 1]);
+      i++;
+    }
+    
+    // Check if client is to initialize database
+    else if (arg == "--initdb") {
+      init_db = true;
+    }
+  }
+}
+
+Operation genRandOperation(int p_get) {
 	float r = (float) rand() / RAND_MAX;
 	int key = rand() % KEY_MAX;
   
 	Operation op;
-	op.__set_op(r < 0.5 ? OpType::PUT : OpType::GET);
+	op.__set_op(r <= p_get ? OpType::GET : OpType::PUT);
   op.__set_key(std::to_string(key));
 
 	std::string value;

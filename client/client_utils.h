@@ -9,7 +9,9 @@
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
 
-Operation genRandOperation();
+void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db, int &num_clients, float &p_get);
+
+Operation genRandOperation(int p_get);
 
 Operation getSeedOperation(std::string& line);
 

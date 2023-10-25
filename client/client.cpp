@@ -22,41 +22,58 @@ using namespace apache::thrift::transport;
 class ClientHandler {
  private:
 	std::ifstream seed_data; 
+	bool init_db = false;
+	int num_clients = 16;
+	float p_get = 0.5;
+
 	std::vector<float> latencies;
 
  public:
-	ClientHandler() = default;
+	ClientHandler(int argc, char *argv[]) {
+		parseArgs(argc, argv, seed_data, init_db, num_clients, p_get);
+	}
 
-	ClientHandler(std::string path) {
-		seed_data.open(path);
-		if (!seed_data.is_open()) {
-    	throw std::invalid_argument("Invalid path to seed data");
+	void start() {
+		if (init_db) {
+			initDB();
+		} else {
+			runThreaded();
 		}
 	}
 
 	void initDB() {
-		if (seed_data.is_open()) {
-			redisCli rd;
-			auto pipeline = rd.pipe();
+		redisCli rd;
+		auto pipeline = rd.pipe();
 
+		// If seed data exists, initialize the db with seed data
+		if (seed_data.is_open()) {
 			std::string line;
 			while (std::getline(seed_data, line)) {
 				Operation op = getSeedOperation(line);
 				pipeline.set(op.key, op.value);
 			}
-
-			pipeline.exec();
 		} 
+		// If seed data does not exist, initialize db with key from 0 to KEY_MAX
+		else {
+			for (int i = 0; i < KEY_MAX; ++i) {
+				std::string value = std::to_string(rand() % VAL_MAX);
+				pipeline.set(std::to_string(i), clientEncrypt(value));
+			}
+		}
+
+		pipeline.exec();
 	}
 
 	void runThreaded() {
 		std::vector<std::thread> threads;
-		for (int i = 0; i < NUM_CLIENTS; i++) {
+		for (int i = 0; i < num_clients; i++) {
 			threads.push_back(std::thread(&ClientHandler::run, this));
 		}
 
 		// Wait for all threads to finish
 		for (std::thread& thread : threads) thread.join();
+		
+		getAveLatency();
 	}
 
 	void run() {
@@ -82,7 +99,7 @@ class ClientHandler {
 		// If seed data does not exist, run client on random values
 		else {
 			for (int i = 0; i < 1000; ++i) {
-				Operation op = genRandOperation();
+				Operation op = genRandOperation(p_get);
 				auto start = high_resolution_clock::now();
 				client.access(val, op);
 				auto end = high_resolution_clock::now();
@@ -102,15 +119,10 @@ class ClientHandler {
 int main(int argc, char *argv[]) {
   auto start = high_resolution_clock::now();
 
-	// If user runs client with path to seed data, init ClientHandler with seed
+	ClientHandler client(argc, argv);
+
 	try {
-		ClientHandler client;
-		if (argc >= 2){
-			std::string seed_data_path = argv[1];
-			client = ClientHandler(seed_data_path);
-		}
-		client.runThreaded();
-		client.getAveLatency();
+		client.start();
 	} catch (std::invalid_argument& err) {
 		std::cerr << "ERROR: " << err.what() << std::endl;
 	} catch (TException& err) {
