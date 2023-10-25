@@ -123,15 +123,15 @@ class ClientHandler {
 
 int main(int argc, char *argv[]) {
     try {
-				ClientHandler client(argc, argv);
+        ClientHandler client(argc, argv);
 
-				auto start = high_resolution_clock::now();
+        auto start = high_resolution_clock::now();
         client.start();
-				auto end = high_resolution_clock::now();
-				
-				std::cout << "[main]: Entire program finished in "
-									<< duration_cast<microseconds>(end - start).count()
-									<< " microseconds" << std::endl;
+        auto end = high_resolution_clock::now();
+
+        std::cout << "[main]: Entire program finished in "
+                  << duration_cast<microseconds>(end - start).count()
+                  << " microseconds" << std::endl;
     } catch (std::invalid_argument &err) {
         std::cerr << "ERROR: " << err.what() << std::endl;
     } catch (TException &err) {
