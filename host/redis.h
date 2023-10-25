@@ -10,6 +10,7 @@ class redisCli
         redisCli();
         std::string get(const std::string &key);
         void put(const std::string &key, const std::string &value);
+        sw::redis::Pipeline pipe();
         void reconnect();
 
     private:
