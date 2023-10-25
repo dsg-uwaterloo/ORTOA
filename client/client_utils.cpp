@@ -65,10 +65,7 @@ Operation genRandOperation(int p_get) {
 Operation getSeedOperation(std::string &line) {
     std::istringstream ss(line);
     std::string operation, key, value;
-
-    std::getline(ss, operation, ',');
-    std::getline(ss, key, ',');
-    std::getline(ss, value, ',');
+    ss >> operation >> key >> value;
 
     Operation op;
 
