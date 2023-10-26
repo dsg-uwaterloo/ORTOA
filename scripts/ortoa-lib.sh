@@ -87,7 +87,7 @@ Syntax: ortoa-simulate [-h]
         esac
     done
 
-    ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/enclave/ortoa-enc.signed --simulate
+    ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
 export -f ortoa-simulate
 
