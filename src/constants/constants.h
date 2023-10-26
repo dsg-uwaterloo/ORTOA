@@ -2,7 +2,7 @@
 #define CONSTANTS_H
 
 #define HOST_IP "localhost"
-#define HOST_PORT 9090
+#define HOST_PORT 9000
 
 #define KEY_MAX 100000
 #define VAL_MAX 100000
