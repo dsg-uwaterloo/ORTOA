@@ -15,8 +15,8 @@ add_executable(client
 add_dependencies(client generate-thrift)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/constants
-    ${CMAKE_BINARY_DIR}/gen-cpp
+    ${CMAKE_SOURCE_DIR}/src/constants
+    ${CMAKE_BINARY_DIR}/src/gen-cpp
 )
 
 # Link reuired libraries

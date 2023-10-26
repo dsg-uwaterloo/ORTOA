@@ -23,8 +23,9 @@ target_compile_definitions(ortoa-enc PUBLIC OE_API_VERSION=2)
 
 target_include_directories(
   ortoa-enc
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # Needed for #include "../shared.h"
-          ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src # Needed for #include "../shared.h"
+          ${CMAKE_CURRENT_BINARY_DIR} 
+          ${CMAKE_SOURCE_DIR}/src
 )
 
 target_link_libraries(ortoa-enc 
