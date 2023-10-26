@@ -14,7 +14,7 @@ if (OE_CRYPTO_LIB STREQUAL "openssl_3")
 endif ()
 
 add_executable(ortoa-enc 
-    common/ecalls.cpp
+    ecalls.cpp
     ../crypto/encryption_engine.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/ortoa_t.c
 )

@@ -9,21 +9,24 @@
 #include "crypto/encryption_engine.h"
 #include "ortoa_t.h"
 
-void access_data(int op_const, const char* in_val, size_t in_size, const char* update_val, size_t update_size, unsigned char* cipher_text, size_t* out_size) {
+void access_data(int op_const, const char *in_val, size_t in_size,
+                 const char *update_val, size_t update_size,
+                 unsigned char *cipher_text, size_t *out_size) {
     encryption_engine engine;
 
     // Decrypt value from redis
-    std::string in_str((const char *) in_val, in_size);
+    std::string in_str((const char *)in_val, in_size);
     std::string val_decrypt = engine.decryptNonDeterministic(in_str);
 
     // Decrypt update value from client
-    std::string update_str((const char *) update_val, update_size);
+    std::string update_str((const char *)update_val, update_size);
     std::string u_val_decrypt = engine.decryptNonDeterministic(update_str);
 
     std::cout << "[Enclave]: Decrypted value is: " << val_decrypt << std::endl;
-    std::cout << "[Enclave]: Decrypted update value is: " << u_val_decrypt << std::endl;
-    
-    // If operation is GET then re-encrypt the value fetched from redis, 
+    std::cout << "[Enclave]: Decrypted update value is: " << u_val_decrypt
+              << std::endl;
+
+    // If operation is GET then re-encrypt the value fetched from redis,
     // otherwise, encrypt the update value from client
     std::string value = (op_const == 0) ? val_decrypt : u_val_decrypt;
     *out_size = engine.encryptNonDeterministic(value, cipher_text);
