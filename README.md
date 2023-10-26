@@ -11,18 +11,18 @@
 ## Sourcing Scripts & Utilities
 
 ```bash
-smaiyya@tem121:~/sgx/adrian/ORTOA/ $ source scripts/ortoa-lib.sh
+ORTOA/ $ source scripts/ortoa-lib.sh
 ```
 
 ## Building the codebase
 
 ```bash
 # Create build directory
-smaiyya@tem121:~/sgx/adrian/ORTOA/ $ mkdir build && cd build
+ORTOA/ $ mkdir build && cd build
 
 # Build
-smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ cmake ..
-smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ make
+ORTOA/build/ $ cmake ..
+ORTOA/build/ $ make
 ```
 
 ## Running ORTOA
@@ -32,13 +32,13 @@ smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ make
 #### `ortoa-simulate`
 
 ```bash
-smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ ortoa-simulate -h
+ORTOA/ $ ortoa-simulate -h
 ```
 
 #### `ortoa-client-run`
 
 ```bash
-smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ ortoa-client-run -h
+ORTOA/ $ ortoa-client-run -h
 ```
 
 
