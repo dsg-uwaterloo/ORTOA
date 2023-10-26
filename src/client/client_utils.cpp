@@ -2,47 +2,25 @@
 
 std::mutex fileMutex;
 
-void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
-               int &num_clients, float &p_get) {
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
+bool moreOperationsExist(ClientConfig &config) {
+    return (config.seed_data.is_open() && config.seed_data.peek() != EOF) ||
+           config.num_operations > 0;
+}
 
-        // Check if current argument is path to the seed data for init DB
-        if (arg == "--seed" && i + 1 < argc) {
-            std::string seed_name = argv[i + 1];
-            seed.open(seed_name);
-
-            if (!seed.is_open()) {
-                throw std::invalid_argument("Invalid path to seed data");
-            }
-            i++; // Skip the next argument
-        }
-
-        // Check if current argument is number of clients for multithreading
-        else if (arg == "--nthreads" && i + 1 < argc) {
-            num_clients = std::stoi(argv[i + 1]);
-            i++;
-        }
-
-        // Check if current argument is probability of GET operation
-        else if (arg == "--pget" && i + 1 < argc) {
-            p_get = std::stoi(argv[i + 1]);
-            i++;
-        }
-
-        // Check if client is to initialize database
-        else if (arg == "--initdb") {
-            init_db = true;
-        }
+Operation getOperation(ClientConfig &config) {
+    if (config.seed_data.is_open()) {
+        return getSeedOperation(config);
+    } else {
+        return genRandOperation(config);
     }
 }
 
-Operation genRandOperation(int p_get) {
-    float r = (float)rand() / RAND_MAX;
-    int key = rand() % KEY_MAX;
+Operation genRandOperation(ClientConfig &config) {
+    double r = (double)rand() / RAND_MAX;
+    int key = rand() % config.key_max;
 
     Operation op;
-    op.__set_op(r <= p_get ? OpType::GET : OpType::PUT);
+    op.__set_op(r < config.p_get ? OpType::GET : OpType::PUT);
     op.__set_key(std::to_string(key));
 
     std::string value;
@@ -59,16 +37,20 @@ Operation genRandOperation(int p_get) {
     }
     op.__set_value(clientEncrypt(value));
 
+    // Decrement config.num_operations
+    --config.num_operations;
     return op;
 }
 
-Operation getSeedOperation(std::string &line) {
+Operation getSeedOperation(ClientConfig &config) {
+    std::string line;
+    readFile(config.seed_data, line);
+
     std::istringstream ss(line);
     std::string operation, key, value;
     ss >> operation >> key >> value;
 
     Operation op;
-
     op.__set_op((operation == "GET") ? OpType::GET : OpType::PUT);
     op.__set_key(key);
 
@@ -97,4 +79,30 @@ std::string clientEncrypt(const std::string &value) {
         (size_t)engine.encryptNonDeterministic(value, cipher_text.get());
     std::string updated_val((const char *)cipher_text.get(), out_len);
     return updated_val;
+}
+
+void parseArgs(int argc, char *argv[], ClientConfig &config) {
+    argparse::ArgumentParser program("ortoa-tee");
+
+    program.add_argument("--seed").default_value(std::string{"test"});
+
+    program.add_argument("--initdb").default_value(false).implicit_value(true);
+
+    program.add_argument("--nthreads").default_value(16).scan<'d', int>();
+
+    program.add_argument("--pget").default_value(0.5).scan<'g', double>();
+
+    program.parse_args(argc, argv);
+
+    if (program.is_used("--seed")) {
+        auto seed_path = program.get<std::string>("--seed");
+        config.seed_data.open(seed_path);
+        if (!config.seed_data.is_open()) {
+            throw std::runtime_error("Invalid path to seed data");
+        }
+    }
+
+    config.init_db = program.get<bool>("--initdb");
+    config.num_clients = program.get<int>("--nthreads");
+    config.p_get = program.get<double>("--pget");
 }

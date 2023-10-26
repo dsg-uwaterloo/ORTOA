@@ -21,35 +21,23 @@ using namespace apache::thrift::transport;
 
 class ClientHandler {
   private:
-    std::ifstream seed_data;
-    bool init_db = false;
-    int num_clients = 16;
-    float p_get = 0.5;
-
-    std::vector<float> latencies;
+    ClientConfig config;
+    std::vector<double> latencies;
 
   public:
-    ClientHandler(int argc, char *argv[]) {
-        parseArgs(argc, argv, seed_data, init_db, num_clients, p_get);
-    }
+    ClientHandler(int argc, char *argv[]) { parseArgs(argc, argv, config); }
 
-    void start() {
-        if (init_db) {
-            initDB();
-        } else {
-            runThreaded();
-        }
-    }
+    void start() { (config.init_db) ? initDB() : runThreaded(); }
 
     void initDB() {
         redisCli rd;
         auto pipeline = rd.pipe();
 
         // If seed data exists, initialize the db with seed data
-        if (seed_data.is_open()) {
+        if (config.seed_data.is_open()) {
             std::string line;
-            while (std::getline(seed_data, line)) {
-                Operation op = getSeedOperation(line);
+            while (std::getline(config.seed_data, line)) {
+                Operation op = getSeedOperation(config);
                 pipeline.set(op.key, op.value);
             }
         }
@@ -66,7 +54,7 @@ class ClientHandler {
 
     void runThreaded() {
         std::vector<std::thread> threads;
-        for (int i = 0; i < num_clients; i++) {
+        for (int i = 0; i < config.num_clients; i++) {
             threads.push_back(std::thread(&ClientHandler::run, this));
         }
 
@@ -87,27 +75,13 @@ class ClientHandler {
 
         std::string val;
         // If seed data exists, run the client with data
-        if (seed_data.is_open()) {
-            std::string line;
-            while (readFile(seed_data, line)) {
-                Operation op = getSeedOperation(line);
-                auto start = high_resolution_clock::now();
-                client.access(val, op);
-                auto end = high_resolution_clock::now();
-                latencies.push_back(
-                    duration_cast<microseconds>(end - start).count());
-            }
-        }
-        // If seed data does not exist, run client on random values
-        else {
-            for (int i = 0; i < 1000; ++i) {
-                Operation op = genRandOperation(p_get);
-                auto start = high_resolution_clock::now();
-                client.access(val, op);
-                auto end = high_resolution_clock::now();
-                latencies.push_back(
-                    duration_cast<microseconds>(end - start).count());
-            }
+        while (moreOperationsExist(config)) {
+            Operation op = getOperation(config);
+            auto start = high_resolution_clock::now();
+            client.access(val, op);
+            auto end = high_resolution_clock::now();
+            latencies.push_back(
+                duration_cast<microseconds>(end - start).count());
         }
 
         transport->close();
@@ -132,7 +106,7 @@ int main(int argc, char *argv[]) {
         std::cout << "[main]: Entire program finished in "
                   << duration_cast<microseconds>(end - start).count()
                   << " microseconds" << std::endl;
-    } catch (std::invalid_argument &err) {
+    } catch (std::runtime_error err) {
         std::cerr << "ERROR: " << err.what() << std::endl;
     } catch (TException &err) {
         std::cerr << "ERROR: " << err.what() << std::endl;

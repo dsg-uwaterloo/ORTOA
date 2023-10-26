@@ -8,14 +8,30 @@
 #include "../crypto/encryption_engine.h"
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
+#include <argparse/argparse.hpp>
 
-void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
-               int &num_clients, float &p_get);
+struct ClientConfig {
+    std::ifstream seed_data;
+    int num_clients = 16;
+    int num_operations = 1000;
+    double p_get = 0.5;
+    bool init_db = false;
 
-Operation genRandOperation(int p_get);
+    int key_max = 100000;
+    int value_max = 100000;
+    int value_size = 160;
+};
 
-Operation getSeedOperation(std::string &line);
+bool moreOperationsExist(ClientConfig &config);
+
+Operation getOperation(ClientConfig &config);
+
+Operation genRandOperation(ClientConfig &config);
+
+Operation getSeedOperation(ClientConfig &config);
 
 std::istream &readFile(std::ifstream &seed_data, std::string &line);
 
 std::string clientEncrypt(const std::string &value);
+
+void parseArgs(int argc, char *argv[], ClientConfig &config);
