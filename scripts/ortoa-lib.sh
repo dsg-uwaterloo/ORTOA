@@ -67,7 +67,7 @@ Syntax: ortoa-client-run [-h]
     done
 
 
-    ${BUILD_DIR}/client/client "${@}"
+    ${BUILD_DIR}/src/client/client "${@}"
 }
 export -f ortoa-client-run
 
@@ -87,7 +87,7 @@ Syntax: ortoa-simulate [-h]
         esac
     done
 
-    ${BUILD_DIR}/host/ortoa-host ${BUILD_DIR}/enclave/ortoa-enc.signed --simulate
+    ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/enclave/ortoa-enc.signed --simulate
 }
 export -f ortoa-simulate
 
