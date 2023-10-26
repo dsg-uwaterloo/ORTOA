@@ -1,9 +1,9 @@
 
 add_custom_command(
   OUTPUT ortoa_u.h ortoa_u.c ortoa_args.h
-  DEPENDS ${CMAKE_SOURCE_DIR}/ortoa.edl
+  DEPENDS ${CMAKE_SOURCE_DIR}/src/ortoa.edl
   COMMAND
-    openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/ortoa.edl
+    openenclave::oeedger8r --untrusted ${CMAKE_SOURCE_DIR}/src/ortoa.edl
     --search-path ${OE_INCLUDEDIR} 
     --search-path ${OE_INCLUDEDIR}/openenclave/edl/sgx)
 
