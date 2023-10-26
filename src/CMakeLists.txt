@@ -54,9 +54,9 @@ add_custom_command(
 # Sign enclave
 add_custom_command(
   OUTPUT enclave/ortoa-enc.signed
-  DEPENDS enclave enclave/common/ortoa.conf private.pem
+  DEPENDS enclave enclave/ortoa.conf private.pem
   COMMAND openenclave::oesign sign -e $<TARGET_FILE:ortoa-enc> -c
-          ${CMAKE_SOURCE_DIR}/src/enclave/common/ortoa.conf -k private.pem
+          ${CMAKE_SOURCE_DIR}/src/enclave/ortoa.conf -k private.pem
 ) 
 
 
