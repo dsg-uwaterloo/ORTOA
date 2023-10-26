@@ -100,15 +100,3 @@ if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
     COMMAND host/ortoa-host enclave/ortoa-enc.signed
   )
 endif ()
-
-add_custom_target(
-  simulate
-  DEPENDS host/ortoa-host sign
-  COMMAND host/ortoa-host ${CMAKE_BINARY_DIR}/enclave/ortoa-enc.signed --simulate
-)
-
-add_custom_target(
-    client-run
-    DEPENDS client/client
-    COMMAND client/client
-)
