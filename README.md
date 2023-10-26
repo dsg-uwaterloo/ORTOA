@@ -40,3 +40,22 @@ smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ ortoa-simulate -h
 ```bash
 smaiyya@tem121:~/sgx/adrian/ORTOA/build/ $ ortoa-client-run -h
 ```
+
+
+# Previously in `dependencies.txt`
+
+```bash
+git clone https://github.com/redis/hiredis.git
+cd hiredis
+make
+sudo make install
+cd ..
+git clone https://github.com/sewenew/redis-plus-plus.git
+cd redis-plus-plus
+mkdir build
+cd build/
+cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 ..
+make
+make install
+sudo make install
+```
