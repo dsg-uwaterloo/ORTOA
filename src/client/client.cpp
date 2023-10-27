@@ -41,10 +41,10 @@ class ClientHandler {
                 pipeline.set(op.key, op.value);
             }
         }
-        // If seed data does not exist, initialize db with key from 0 to KEY_MAX
+        // If seed data does not exist, initialize db with key from 0 to config.max_key
         else {
-            for (int i = 0; i < KEY_MAX; ++i) {
-                std::string value = std::to_string(rand() % VAL_MAX);
+            for (int i = 0; i < config.max_key; ++i) {
+                std::string value = std::to_string(rand() % config.max_value);
                 pipeline.set(std::to_string(i), clientEncrypt(value));
             }
         }

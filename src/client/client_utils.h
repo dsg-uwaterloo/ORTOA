@@ -17,9 +17,8 @@ struct ClientConfig {
     double p_get = 0.5;
     bool init_db = false;
 
-    int key_max = 100000;
-    int value_max = 100000;
-    int value_size = 160;
+    int max_key = 100000;
+    int max_value = 100000;
 };
 
 bool moreOperationsExist(ClientConfig &config);

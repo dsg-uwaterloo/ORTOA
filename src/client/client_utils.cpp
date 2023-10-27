@@ -17,7 +17,7 @@ Operation getOperation(ClientConfig &config) {
 
 Operation genRandOperation(ClientConfig &config) {
     double r = (double)rand() / RAND_MAX;
-    int key = rand() % config.key_max;
+    int key = rand() % config.max_key;
 
     Operation op;
     op.__set_op(r < config.p_get ? OpType::GET : OpType::PUT);
@@ -32,7 +32,7 @@ Operation genRandOperation(ClientConfig &config) {
         randombytes_buf(rand_val, VALUE_SIZE);
         value = std::string(rand_val);
     } else {
-        int put_val = rand() % VAL_MAX;
+        int put_val = rand() % config.max_value;
         value = std::to_string(put_val);
     }
     op.__set_value(clientEncrypt(value));
@@ -86,11 +86,17 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
 
     program.add_argument("--seed").default_value(std::string{"test"});
 
-    program.add_argument("--initdb").default_value(false).implicit_value(true);
-
     program.add_argument("--nthreads").default_value(16).scan<'d', int>();
 
+    program.add_argument("--noperations").default_value(1000).scan<'d', int>();
+
+    program.add_argument("--initdb").default_value(false).implicit_value(true);
+
     program.add_argument("--pget").default_value(0.5).scan<'g', double>();
+
+    program.add_argument("--max-key").default_value(100000).scan<'d', int>();
+
+    program.add_argument("--max-val").default_value(100000).scan<'d', int>();
 
     program.parse_args(argc, argv);
 
@@ -102,7 +108,10 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
         }
     }
 
-    config.init_db = program.get<bool>("--initdb");
     config.num_clients = program.get<int>("--nthreads");
+    config.num_operations = program.get<int>("--noperations");
+    config.init_db = program.get<bool>("--initdb");
     config.p_get = program.get<double>("--pget");
+    config.max_key = program.get<int>("--max-key");
+    config.max_value = program.get<int>("--max-val");
 }
