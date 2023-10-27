@@ -1,5 +1,4 @@
 #include <fstream>
-#include <iostream>
 #include <mutex>
 #include <sodium.h>
 #include <sstream>

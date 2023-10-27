@@ -1,6 +1,5 @@
 #include <chrono>
 #include <fstream>
-#include <iostream>
 #include <numeric>
 #include <sodium.h>
 #include <sstream>
@@ -13,6 +12,7 @@
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
 #include "client_utils.h"
+#include "spdlog/spdlog.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
@@ -88,10 +88,9 @@ class ClientHandler {
     }
 
     void getAveLatency() {
-        std::cout << "[Client]: Data access complete, average latency: "
-                  << std::accumulate(latencies.begin(), latencies.end(), 0.0) /
-                         latencies.size()
-                  << " microseconds" << std::endl;
+        double aveLatency = std::accumulate(latencies.begin(), latencies.end(), 0.0) /
+                         latencies.size();
+        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", aveLatency);
     }
 };
 
@@ -103,12 +102,10 @@ int main(int argc, char *argv[]) {
         client.start();
         auto end = high_resolution_clock::now();
 
-        std::cout << "[main]: Entire program finished in "
-                  << duration_cast<microseconds>(end - start).count()
-                  << " microseconds" << std::endl;
+        spdlog::info("[main]: Entire program finished in {0} microseconds", duration_cast<microseconds>(end - start).count());
     } catch (std::runtime_error err) {
-        std::cerr << "ERROR: " << err.what() << std::endl;
+        spdlog::error("Client | {0}", err.what());
     } catch (TException &err) {
-        std::cerr << "ERROR: " << err.what() << std::endl;
+        spdlog::error("Client | {0}", err.what());
     }
 }

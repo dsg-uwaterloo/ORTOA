@@ -84,7 +84,7 @@ std::string clientEncrypt(const std::string &value) {
 void parseArgs(int argc, char *argv[], ClientConfig &config) {
     argparse::ArgumentParser program("ortoa-tee");
 
-    program.add_argument("--seed").default_value(std::string{"test"});
+    program.add_argument("--seed").default_value(std::string{""});
 
     program.add_argument("--nthreads").default_value(16).scan<'d', int>();
 
