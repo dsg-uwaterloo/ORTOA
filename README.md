@@ -1,12 +1,17 @@
 # ORTOA-TEE
 
-## Dependencies
+## Project Dependencies
 
-|      Name      |             Installation            |
-| -------------- | ----------------------------------- |
-| `clang-format` | `sudo apt-get install clang-format` |
+|      Name        |             Installation            |
+| ---------------- | ----------------------------------- |
+| `clang-format`   | `sudo apt-get install clang-format` |
 | Open Enclave SDK | [OpenEnclave documentation](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md) |
 
+## Python Dependencies
+
+|      Name        |             Installation            |
+| ---------------- | ----------------------------------- |
+| `pydantic`   | `TODO` |
 
 ## Sourcing Scripts & Utilities
 
