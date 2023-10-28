@@ -16,7 +16,7 @@ class IntType(BaseModel):
 class Parameter(BaseModel, ABC):
     @abstractmethod
     def generate_values(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 NumberT = TypeVar("NumberT", bound=Union[int, float])

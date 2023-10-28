@@ -32,7 +32,7 @@ class ClientConfig(Config[AnnotatedClientFlag]):
     data: ClientData
 
     def get_flag_combinations(self) -> List[str]:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class HostConfig(Config[AnnotatedHostFlag]):
