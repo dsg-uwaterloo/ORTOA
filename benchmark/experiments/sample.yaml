@@ -1,6 +1,6 @@
 name: Sample Experiment
 
-output_path: out/benchmark/
+output_directory: out/benchmark/
 
 metadata:
   description: Sample experiment configuration :)
