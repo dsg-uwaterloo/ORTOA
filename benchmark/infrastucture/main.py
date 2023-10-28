@@ -1,8 +1,9 @@
 import argparse
-from argparse import ArgumentParser
 import datetime
+from argparse import ArgumentParser
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Optional, Union
+
 from benchmark.infrastucture.experiment_collection import collect_experiments
 
 

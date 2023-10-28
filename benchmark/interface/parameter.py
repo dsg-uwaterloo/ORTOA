@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Union, List, Literal, TypeVar, Generic
+from typing import Generic, List, Literal, TypeVar, Union
+
 from pydantic import BaseModel, Field
 
 T = TypeVar("T", bound=Union[int, str, bool])

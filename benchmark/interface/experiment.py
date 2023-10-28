@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Generic, TypeVar, Union
-from pydantic import BaseModel, Field
 from pathlib import Path
+from typing import Any, Generic, List, Optional, TypeVar, Union
+
+from pydantic import BaseModel, Field
 
 from benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
-
 
 FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
 

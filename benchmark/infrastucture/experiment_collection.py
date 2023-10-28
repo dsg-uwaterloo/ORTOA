@@ -1,7 +1,8 @@
-from typing import Any, List, Iterable, Union
-from typing_extensions import Self
 from pathlib import Path
+from typing import Any, Iterable, List, Union
+
 from pydantic import BaseModel
+from typing_extensions import Self
 
 
 def collect_experiments(
