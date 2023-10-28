@@ -1,20 +1,21 @@
+from concurrent import Futures as fs
+from pathlib import Path
 from typing import (
     Any,
-    runtime_checkable,
-    Protocol,
     Callable,
-    Union,
-    TypeVar,
-    Generic,
-    Sequence,
-    Optional,
     Dict,
+    Generic,
     List,
+    Optional,
+    Protocol,
+    Sequence,
+    TypeVar,
+    Union,
+    runtime_checkable,
 )
-from typing_extensions import Self
-from pathlib import Path
-from concurrent import Futures as fs
+
 from pydantic import BaseModel, Field
+from typing_extensions import Self
 
 
 @runtime_checkable

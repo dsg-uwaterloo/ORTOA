@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from benchmark.interface.experiment import Experiment
 
 
