@@ -19,6 +19,8 @@ class ExperimentPaths(BaseModel):
     Experiment and associated files as an object on local filesystem
     """
 
+    experiment_path: Path
+
     def model_post_init(self, __context: Any) -> None:
         # TODO: verify that all paths are files
         return super().model_post_init(__context)

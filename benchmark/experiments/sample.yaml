@@ -7,8 +7,26 @@ metadata:
 
 client_config:
   data:
+    generator:
+      type: IntegerGenerator
+    generator:
+      type: ByteSizeGenerator
+      bytes: 160
+    generator:
+      type: ByteSizeGenerator
+      bytes:
+        minimum: 100
+        maximum: 500
+        step: 20
+        
+    seed_size: 100000
+    n_operations: 1000
+    operation_key_access_distribution: uniform
+
+  data:
     seed: data/sample_generated_seed/seed_data.csv
     operations: data/sample_generated_seed/sample_operations.csv
+
   flags:
   - name: initdb
     value: false

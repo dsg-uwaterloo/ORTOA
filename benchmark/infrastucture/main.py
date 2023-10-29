@@ -83,6 +83,10 @@ def benchmark(
     # Get a path to every experiment file and verify the paths
     experiments = collect_experiments(experiment_names)
 
+    # TODO: Load experiments from paths
+
+    # Do a pass to generate experiment data if needed
+
     # Create the jobs from the experiments
     jobs: List[Job] = make_jobs(experiment_base, experiments)
 
