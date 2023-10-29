@@ -33,24 +33,6 @@ class JobProtocol(Protocol):
         """Name of the job, used for logging output"""
         raise NotImplementedError
 
-    @property
-    def group(self) -> str:
-        """Group the job belongs to, used to group jobs when cancelling or displaying progress"""
-        raise NotImplementedError
-
-    def handle_errors(
-        self, exc: BaseException
-    ) -> Union[Callable[[Self, fs.Future], bool], bool]:
-        """
-        Determine how to proceed when this job errors. When returning
-            - True: JobOrchestration will stop all remaining jobs
-            - False: JobOrchestration will continue with all remaining jobs
-            - Callable[[Self, fs.Future], bool]: JobOrchestration will use the predicate to determine which jobs to cancel
-
-        If all predicates evaluate True, error handling still continues
-        """
-        raise NotImplementedError
-
     def __str__(self) -> str:
         raise NotImplementedError
 
