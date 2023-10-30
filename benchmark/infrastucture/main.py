@@ -4,7 +4,12 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Optional, Union
 
-from benchmark.infrastucture.experiment_collection import collect_experiments
+from benchmark.infrastucture.experiment_collection import (
+    collect_experiments,
+    ExperimentPath,
+)
+from benchmark.infrastucture.jobs import ClientJob, make_jobs
+from benchmark.interface.experiment import Experiment, load_experiments
 
 
 class Stats:
@@ -65,7 +70,7 @@ def parse_args() -> argparse.Namespace:
 
 def benchmark(
     experiment_base: Path,
-    experiment_names: List[Union[str, Path]],
+    experiment_names: List[Path],
     max_processes: Optional[int] = None,
     log_errors_in_main_thread: bool = False,
 ) -> Stats:
@@ -81,14 +86,16 @@ def benchmark(
     """
 
     # Get a path to every experiment file and verify the paths
-    experiments = collect_experiments(experiment_names)
+    experiment_paths: List[ExperimentPath] = collect_experiments(experiment_names)
 
-    # TODO: Load experiments from paths
+    # Load the experiments in to the Experiment class
+    experiments: List[Experiment] = load_experiments(experiment_paths)
 
-    # Do a pass to generate experiment data if needed
+    # Generate data for the experiments that require it
+    generate_experiment_data(experiments)
 
     # Create the jobs from the experiments
-    jobs: List[Job] = make_jobs(experiment_base, experiments)
+    jobs: List[ClientJob] = make_jobs(experiment_base, experiments)
 
     # Orchestrate and the jobs
     orchestration = JobOrchestration(jobs, max_processes, log_errors_in_main_thread)
@@ -102,7 +109,7 @@ def main():
     args = parse_args()
     args.working_dir.mkdir(parents=True, exist_py=False)
 
-    stats = benchmark(
+    stats: Stats = benchmark(
         args.working_dir, args.experiments + args.experiments_dirs, args.max_processes
     )
 
