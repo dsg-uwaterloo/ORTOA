@@ -23,3 +23,8 @@ client_config:
     value: true
   - name: nthreads
     value: 2
+
+host_config:
+  flags:
+  - name: nthreads
+    value: 1
