@@ -1,10 +1,12 @@
-from abc import ABC, abstractmethod
+import yaml
+
 from pathlib import Path
 from typing import Any, Generic, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel, Field
 
 from benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
+from benchmark.infrastucture.experiment_collection import ExperimentPath
 
 FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
 
@@ -53,3 +55,15 @@ class Experiment(BaseModel):
 
     def get_client_flag_combinations(self) -> List[str]:
         return ClientConfig.get_flag_combinations()
+
+
+def load_experiments(experiment_paths: List[ExperimentPath]) -> List[Experiment]:
+    experiments: List[Experiment] = []
+    for e in experiment_paths:
+        with open(e.experiment_path, "r") as f:
+            loaded_experiment = yaml.safe_load(f)
+
+        experiment = Experiment.model_validate(loaded_experiment)
+        experiments.append(experiment)
+
+    return experiments
