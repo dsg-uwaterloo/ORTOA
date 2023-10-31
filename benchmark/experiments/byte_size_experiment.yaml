@@ -7,20 +7,17 @@ metadata:
 
 client_config:
   data:
-    generator:
-      type: ByteSizeGenerator
-      bytes:
-        type: int
-        minimum: 100
-        maximum: 500
-        step: 20
-      seed_size: 100000
-      num_operations: 1000
-      key_access_distribution: uniform
+    generator: ByteSizeGenerator
+    n_bytes:
+      type: int
+      minimum: 100
+      maximum: 500
+      step: 20
+    seed_size: 100000
+    num_operations: 1000
+    key_access_distribution: uniform
 
   flags:
-  - name: initdb
-    value: true
   - name: nthreads
     value: 2
 
