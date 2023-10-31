@@ -6,6 +6,11 @@ from pydantic import BaseModel, Field
 T = TypeVar("T", bound=Union[int, str, bool])
 
 
+##########################
+# Abstractions
+##########################
+
+
 class FloatType(BaseModel):
     type: Literal["float"] = Field(default="float", frozen=True)
 
@@ -28,34 +33,6 @@ class RangeParameter(Parameter, Generic[NumberT]):
     maximum: NumberT
 
 
-class IntegerIncrementRange(RangeParameter[int], IntType):
-    step: int
-
-    def generate_values(self) -> List[str]:
-        raise NotImplementedError
-
-
-class IntegerMultiplyRange(RangeParameter[int], IntType):
-    multiplier: int
-
-    def generate_values(self) -> List[str]:
-        raise NotImplementedError
-
-
-class FloatIncrementRange(RangeParameter[int], FloatType):
-    step: float
-
-    def generate_values(self) -> List[str]:
-        raise NotImplementedError
-
-
-class FloatMultiplyRange(RangeParameter[float], FloatType):
-    multiplier: float
-
-    def generate_values(self) -> List[str]:
-        raise NotImplementedError
-
-
 class StaticParameter(Parameter, Generic[T]):
     value: T
 
@@ -63,25 +40,79 @@ class StaticParameter(Parameter, Generic[T]):
         return [str(self.value)]
 
 
-class IntegerParameter(StaticParameter[int], IntType):
-    pass
-
-    def generate_values(self) -> List[str]:
-        raise NotImplementedError
-
-
-class FloatParameter(StaticParameter[float], FloatType):
-    pass
-
-    def generate_values(self) -> List[str]:
-        raise NotImplementedError
-
-
 # class ArrayParameter(Parameter, Generic[T]):
 #     value: List[T]
 
 #     def generate_values(self) -> List[str]:
 #         return [str(v) for v in self.value]
+
+##########################
+# Parameter Types
+##########################
+
+
+class IntegerIncrementRange(RangeParameter[int], IntType):
+    step: int
+
+    def generate_values(self) -> List[str]:
+        res = [self.minimum]
+
+        i = self.minimum
+        while i <= self.maximum:
+            i += self.multiplier
+            res.append(i)
+
+        return [str(val) for val in res]
+
+
+class IntegerMultiplyRange(RangeParameter[int], IntType):
+    multiplier: int
+
+    def generate_values(self) -> List[str]:
+        res = [self.minimum]
+
+        i = self.minimum
+        while i <= self.maximum:
+            i *= self.multiplier
+            res.append(i)
+
+        return [str(val) for val in res]
+
+
+class FloatIncrementRange(RangeParameter[int], FloatType):
+    step: float
+
+    def generate_values(self) -> List[str]:
+        res = [self.minimum]
+
+        i = self.minimum
+        while i <= self.maximum:
+            i += self.multiplier
+            res.append(i)
+
+        return [str(val) for val in res]
+
+
+class FloatMultiplyRange(RangeParameter[float], FloatType):
+    multiplier: float
+
+    def generate_values(self) -> List[str]:
+        res = [self.minimum]
+
+        i = self.minimum
+        while i <= self.maximum:
+            i *= self.multiplier
+            res.append(i)
+
+        return [str(val) for val in res]
+
+
+class IntegerParameter(StaticParameter[int], IntType):
+    pass
+
+
+class FloatParameter(StaticParameter[float], FloatType):
+    pass
 
 
 # class IntegerArray(ArrayParameter[int], IntType):
