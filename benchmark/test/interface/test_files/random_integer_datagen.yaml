@@ -1,0 +1,6 @@
+generator: RandomIntegerGenerator
+minimum: 10
+maximum: 100
+seed_size: 100
+num_operations: 20
+key_access_distribution: uniform

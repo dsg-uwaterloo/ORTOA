@@ -1,0 +1,9 @@
+generator: ByteSizeGenerator
+n_bytes:
+  type: int
+  minimum: 100
+  maximum: 500
+  multiplier: 2
+seed_size: 100
+num_operations: 20
+key_access_distribution: uniform
