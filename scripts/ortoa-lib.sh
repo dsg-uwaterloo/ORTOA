@@ -91,6 +91,30 @@ Syntax: ortoa-simulate [-h]
 }
 export -f ortoa-simulate
 
+
+############################################
+# Testing
+############################################
+
+ortoa-test-python() {
+    local HELP="""\
+Run ORTOA python tests
+
+Syntax: ortoa-test-python [-h]
+----------------------------------------------
+    -h                  Print this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+        esac
+    done
+
+    
+}
+
+
 ############################################
 # Formatting and linting
 ############################################
