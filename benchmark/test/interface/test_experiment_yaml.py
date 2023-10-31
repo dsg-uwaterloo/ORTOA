@@ -1,6 +1,7 @@
 import yaml
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Union
+from typing_extensions import Annotated
 import pytest
 
 from benchmark.interface.data import (
@@ -12,6 +13,8 @@ from benchmark.interface.parameter import (
     IntegerIncrementRange,
     IntegerMultiplyRange,
 )
+
+from pydantic import BaseModel, Field
 
 
 def get_path(filename: str) -> Path:
@@ -42,6 +45,24 @@ def test_basic_data_generation_config():
     assert config.seed_size == 100
     assert config.num_operations == 20
     assert config.key_access_distribution == "uniform"
+
+
+def test_datagen_config_discrimination():
+    class MockClientConfig(BaseModel):
+        data_generations: List[
+            Annotated[
+                Union[RandomIntegerGenerationConfig, ByteSizeGenerationConfig],
+                Field(discriminator="generator"),
+            ]
+        ]
+
+    bsg_static_int_yaml = load_yaml(get_path("byte_size_datagen_int"))
+    rig_static_int_yaml = load_yaml(get_path("random_integer_datagen"))
+    mock_list = {"data_generations": [bsg_static_int_yaml, rig_static_int_yaml]}
+
+    model = MockClientConfig.model_validate(mock_list)
+    assert isinstance(model.data_generations[0], ByteSizeGenerationConfig)
+    assert isinstance(model.data_generations[1], RandomIntegerGenerationConfig)
 
 
 @pytest.mark.xfail
