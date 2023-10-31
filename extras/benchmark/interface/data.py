@@ -2,7 +2,7 @@ from typing import Union, Literal, Tuple
 from typing_extensions import Annotated
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
-from benchmark.interface.parameter import (
+from extras.benchmark.interface.parameter import (
     IntegerIncrementRange,
     IntegerParameter,
     IntegerMultiplyRange,

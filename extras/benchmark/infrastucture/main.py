@@ -4,12 +4,12 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Optional, Union
 
-from benchmark.infrastucture.experiment_collection import (
+from extras.benchmark.infrastucture.experiment_collection import (
     collect_experiments,
     ExperimentPath,
 )
-from benchmark.infrastucture.jobs import ClientJob, make_jobs
-from benchmark.interface.experiment import Experiment, load_experiments
+from extras.benchmark.infrastucture.jobs import ClientJob, make_jobs
+from extras.benchmark.interface.experiment import Experiment, load_experiments
 
 
 class Stats:

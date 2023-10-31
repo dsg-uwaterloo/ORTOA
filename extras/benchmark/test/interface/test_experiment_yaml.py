@@ -4,11 +4,11 @@ from typing import Any, List, Union
 from typing_extensions import Annotated
 import pytest
 
-from benchmark.interface.data import (
+from extras.benchmark.interface.data import (
     ByteSizeGenerationConfig,
     RandomIntegerGenerationConfig,
 )
-from benchmark.interface.parameter import (
+from extras.benchmark.interface.parameter import (
     IntegerParameter,
     IntegerIncrementRange,
     IntegerMultiplyRange,

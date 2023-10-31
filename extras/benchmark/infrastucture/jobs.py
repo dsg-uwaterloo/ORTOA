@@ -2,7 +2,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import List
 
-from benchmark.interface.experiment import Experiment
+from extras.benchmark.interface.experiment import Experiment
 
 
 class ExperimentParameters:
