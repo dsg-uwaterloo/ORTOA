@@ -5,13 +5,19 @@ from typing import List
 from benchmark.interface.experiment import Experiment
 
 
+class ExperimentParameters:
+    ...
+
+
 class ClientJob(BaseModel):
     """
     Job for testing and benchmarking the client. Satisfies runner.JobProtocol
     """
 
     directory: Path
-    experiment: Experiment
+    experiment_parameters: ExperimentParameters
+    client_flags: str
+    host_flags: str
 
     @property
     def name(self) -> str:
@@ -49,5 +55,6 @@ class ClientJob(BaseModel):
         self._flush_db()
 
 
-def make_jobs(experiment_root: Path, experiments: List[Experiment]):
+def make_jobs(experiment_root: Path, experiments: List[Experiment]) -> List[ClientJob]:
     jobs: List[ClientJob] = []
+    raise NotImplementedError

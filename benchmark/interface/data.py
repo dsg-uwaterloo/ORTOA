@@ -17,6 +17,11 @@ class DataGenerationConfigBase(BaseModel, ABC):
 
     @abstractmethod
     def generate_files(self, output_dir: Path) -> Tuple[Path, Path]:
+        """Generates the seed and operations files based on the configuration object
+
+        Returns:
+            Tuple[Path, Path]: tuple containing (seed_data, operations_data)
+        """
         raise NotImplementedError
 
 
