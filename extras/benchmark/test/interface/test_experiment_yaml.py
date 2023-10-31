@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 
 def get_path(filename: str) -> Path:
-    return Path(f"benchmark/test/interface/test_files/{filename}.yaml")
+    return Path(f"extras/benchmark/test/interface/test_files/{filename}.yaml")
 
 
 def load_yaml(file_path: Path) -> Any:
