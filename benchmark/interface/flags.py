@@ -19,14 +19,6 @@ class ClientFlag(Flag):
     pass
 
 
-class InitDB(ClientFlag):
-    name: Literal["initdb"] = Field(default="initdb", frozen=True)
-    value: bool = False
-
-    def __str__(self):
-        raise NotImplementedError("Haven't implemented InitDB flag yet!")
-
-
 class NClientThreads(ClientFlag):
     name: Literal["nthreads"] = Field(default="nthreads", frozen=True)
     # TODO: Value
@@ -52,7 +44,7 @@ class ClientLoggingEnabled(ClientFlag):
 
 
 AnnotatedClientFlag = Annotated[
-    Union[InitDB, NClientThreads, PGet, ClientLoggingEnabled],
+    Union[NClientThreads, PGet, ClientLoggingEnabled],
     Field(discriminator="name"),
 ]
 
