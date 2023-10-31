@@ -69,7 +69,7 @@ Syntax: ortoa-client-run [-h]
 
     ${BUILD_DIR}/src/client/client "${@}"
 }
-export -f ortoa-client-run
+# export -f ortoa-client-run
 
 
 ortoa-simulate() {
@@ -89,7 +89,7 @@ Syntax: ortoa-simulate [-h]
 
     ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
-export -f ortoa-simulate
+# export -f ortoa-simulate
 
 
 ############################################
@@ -111,8 +111,10 @@ Syntax: ortoa-test-python [-h]
         esac
     done
 
-    
+    source "${REPO_ROOT}/scripts/test/run_benchmark_tests.sh"
+    run_unit_tests
 }
+# export -f ortoa-test-python
 
 
 ############################################
@@ -143,7 +145,7 @@ Syntax: ortoa-clang-format [-h] [DIRECTORY]...
         git clang-format ${REPO_ROOT}
     fi
 }
-export -f ortoa-clang-format
+# export -f ortoa-clang-format
 
 
 ortoa-clang-format-all() {
@@ -164,7 +166,7 @@ Syntax: ortoa-clang-format [-h]
 
     source ${REPO_ROOT}/scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
 }
-export -f ortoa-clang-format-all
+# export -f ortoa-clang-format-all
 
 
 ############################################
