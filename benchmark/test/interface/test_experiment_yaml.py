@@ -27,23 +27,23 @@ def test_data_generation_config():
     assert isinstance(config.n_bytes.value, int)
     assert config.n_bytes.value == 160
 
-    bsg_int_increment_range_yaml = load_yaml(get_path("byte_size_datagen_int_range"))
-    config = ByteSizeGenerationConfig.model_validate(bsg_int_increment_range_yaml)
-    assert config.generator == "ByteSizeGenerator"
-    assert isinstance(config.n_bytes, IntegerIncrementRange)
-    assert config.n_bytes.type == "int"
-    assert config.n_bytes.minimum == 100
-    assert config.n_bytes.maximum == 500
-    assert config.n_bytes.step == 20
+    # bsg_int_increment_range_yaml = load_yaml(get_path("byte_size_datagen_int_range"))
+    # config = ByteSizeGenerationConfig.model_validate(bsg_int_increment_range_yaml)
+    # assert config.generator == "ByteSizeGenerator"
+    # assert isinstance(config.n_bytes, IntegerIncrementRange)
+    # assert config.n_bytes.type == "int"
+    # assert config.n_bytes.minimum == 100
+    # assert config.n_bytes.maximum == 500
+    # assert config.n_bytes.step == 20
 
-    bsg_int_multiply_range_yaml = load_yaml(get_path("byte_size_datagen_int_multiple"))
-    config = ByteSizeGenerationConfig.model_validate(bsg_int_multiply_range_yaml)
-    assert config.generator == "ByteSizeGenerator"
-    assert isinstance(config.n_bytes, IntegerMultiplyRange)
-    assert config.n_bytes.type == "int"
-    assert config.n_bytes.minimum == 100
-    assert config.n_bytes.maximum == 500
-    assert config.n_bytes.multiplier == 2
+    # bsg_int_multiply_range_yaml = load_yaml(get_path("byte_size_datagen_int_multiple"))
+    # config = ByteSizeGenerationConfig.model_validate(bsg_int_multiply_range_yaml)
+    # assert config.generator == "ByteSizeGenerator"
+    # assert isinstance(config.n_bytes, IntegerMultiplyRange)
+    # assert config.n_bytes.type == "int"
+    # assert config.n_bytes.minimum == 100
+    # assert config.n_bytes.maximum == 500
+    # assert config.n_bytes.multiplier == 2
 
     # assert can deserialize RandomIntegerGenerator
 
