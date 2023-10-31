@@ -186,7 +186,7 @@ optional arguments:
   -n N_DATA_POINTS, --n_data_points N_DATA_POINTS
                         Number of data points to generate.
 """
-    python3 ${REPO_ROOT}/extras/data-generation/generate-seed-data.py "${@}"
+    python3 ${REPO_ROOT}/extras/data_generation/generate_seed_data.py "${@}"
 }
 
 ortoa-generate-operations() {
@@ -206,6 +206,6 @@ optional arguments:
   -p P_GET, --p_get P_GET
                         Probability of a GET request. 1-p_get = p_put (probability of a PUT request).
 """
-    python3 ${REPO_ROOT}/extras/data-generation/generate-sample-operations.py "${@}"
+    python3 ${REPO_ROOT}/extras/data_generation/generate_sample_operations.py "${@}"
 
 }
