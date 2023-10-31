@@ -29,6 +29,9 @@ ortoa-lib: a collection of bash functions to ease development
         ortoa-client-run: ----------- Run the ORTOA client
         ortoa-simulate: ------------- Run ORTOA in simulation mode
     
+    Testing ORTOA:
+        ortoa-test-python: ---------- Run pytest on python targets
+    
     Data Generation:
         ortoa-generate-seed: -------- Seed Data Generation script for ORTOA-tee
         ortoa-generate-operations: -- Operation Generation script for ORTOA-tee 
