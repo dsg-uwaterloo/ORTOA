@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Literal, Union
+from typing_extensions import Annotated
 
-from pydantic import Annotated, BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class Flag(BaseModel, ABC):
