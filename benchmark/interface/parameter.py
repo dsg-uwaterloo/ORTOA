@@ -16,7 +16,7 @@ class IntType(BaseModel):
 
 class Parameter(BaseModel, ABC):
     @abstractmethod
-    def generate_values(self):
+    def generate_values(self) -> List[str]:
         raise NotImplementedError
 
 
@@ -31,37 +31,62 @@ class RangeParameter(Parameter, Generic[NumberT]):
 class IntegerIncrementRange(RangeParameter[int], IntType):
     step: int
 
+    def generate_values(self) -> List[str]:
+        raise NotImplementedError
+
 
 class IntegerMultiplyRange(RangeParameter[int], IntType):
     multiplier: int
+
+    def generate_values(self) -> List[str]:
+        raise NotImplementedError
 
 
 class FloatIncrementRange(RangeParameter[int], FloatType):
     step: float
 
+    def generate_values(self) -> List[str]:
+        raise NotImplementedError
+
 
 class FloatMultiplyRange(RangeParameter[float], FloatType):
     multiplier: float
+
+    def generate_values(self) -> List[str]:
+        raise NotImplementedError
 
 
 class StaticParameter(Parameter, Generic[T]):
     value: T
 
     def generate_values(self):
-        return str(self.value)
+        return [str(self.value)]
 
 
 class IntegerParameter(StaticParameter[int], IntType):
     pass
 
+    def generate_values(self) -> List[str]:
+        raise NotImplementedError
+
 
 class FloatParameter(StaticParameter[float], FloatType):
     pass
 
+    def generate_values(self) -> List[str]:
+        raise NotImplementedError
 
-class IntegerArray(Parameter, IntType):
-    value: List[int]
+
+# class ArrayParameter(Parameter, Generic[T]):
+#     value: List[T]
+
+#     def generate_values(self) -> List[str]:
+#         return [str(v) for v in self.value]
 
 
-class FloatArray(Parameter, FloatType):
-    value: List[float]
+# class IntegerArray(ArrayParameter[int], IntType):
+#     pass
+
+
+# class FloatArray(ArrayParameter[float], FloatType):
+#     pass
