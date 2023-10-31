@@ -92,7 +92,8 @@ def benchmark(
     experiments: List[Experiment] = load_experiments(experiment_paths)
 
     # Generate data for the experiments that require it
-    generate_experiment_data(experiments)
+    for experiment in experiments:
+        experiment.generate_data()
 
     # Create the jobs from the experiments
     jobs: List[ClientJob] = make_jobs(experiment_base, experiments)
