@@ -1,6 +1,7 @@
 import argparse
+from argparse import ArgumentParser
+
 import csv
-import sys
 import random
 
 from enum import Enum
@@ -8,45 +9,56 @@ from pathlib import Path
 
 from generators.value_generator import ValueFactory, RandomIntegerGenerator
 
-parser = argparse.ArgumentParser(
-    prog="Operation Generation script for ORTOA-tee",
-    description="Script to generate some operations from a seed file",
-)
 
-parser.add_argument(
-    "-i",
-    "--input_file",
-    type=Path,
-    required=True,
-    help="Input file. This should be a Path to a csv of generated seed data.",
-)
-parser.add_argument(
-    "-o",
-    "--output_file",
-    type=Path,
-    default=Path("sample_operations.csv"),
-    help="File into which to write the operations.",
-)
-parser.add_argument(
-    "-n",
-    "--n_operations",
-    type=int,
-    default=100,
-    help="Number of operations to generate.",
-)
-parser.add_argument(
-    "-p",
-    "--p_get",
-    type=float,
-    default=0.5,
-    help="Probability of a GET request. 1-p_get = p_put (probability of a PUT request).",
-)
+def parse_args() -> argparse.Namespace:
+    parser = ArgumentParser(
+        prog="Operation Generation script for ORTOA-tee",
+        description="Script to generate some operations from a seed file",
+    )
 
+    parser.add_argument(
+        "-i",
+        "--input_file",
+        type=Path,
+        required=True,
+        help="Input file. This should be a Path to a csv of generated seed data.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output_file",
+        type=Path,
+        default=Path("sample_operations.csv"),
+        help="File into which to write the operations.",
+    )
+    parser.add_argument(
+        "-n",
+        "--n_operations",
+        type=int,
+        default=100,
+        help="Number of operations to generate.",
+    )
+    parser.add_argument(
+        "-p",
+        "--p_get",
+        type=float,
+        default=0.5,
+        help="Probability of a GET request. 1-p_get = p_put (probability of a PUT request).",
+    )
 
-# TODO: Fix the comment saying what input csv format is expected
-"""
-This is expecting a csv in the format specified by the DATA.md
-"""
+    args = parser.parse_args()
+
+    if not args.input_file.exists():
+        raise FileNotFoundError(f"Input file {args.input_file} was not found.")
+
+    if not args.output_file.suffix == ".csv":
+        raise ValueError(
+            "Please specify a file with extension .csv for the output file"
+        )
+
+    if not 0 <= args.p_get <= 1:
+        raise ValueError(f"p_get must be in the range [0, 1]. Got {args.p_get=}")
+
+    return args
 
 
 def get_keys_from_csv(input_file: Path) -> set:
@@ -74,29 +86,14 @@ def get_random_op(p_get: float) -> Operation:
         return Operation.PUT
 
 
-def main(argv):
-    args = parser.parse_args(argv)
-
-    num_operations = args.n_operations
-    if not num_operations > 0:
-        raise ValueError(f"Expected n_operations > 0. Received {num_operations=}")
-
-    input_file: Path = args.input_file
-    if not input_file.exists():
-        raise FileNotFoundError(f"Input file {input_file} was not found.")
-
-    output_file: Path = args.output_file
-    if not output_file.suffix == ".csv":
-        raise ValueError(
-            "Please specify a file with extension .csv for the output file"
-        )
-
-    p_get: float = args.p_get
-    if not 0 <= p_get <= 1:
-        raise ValueError(f"p_get must be in the range [0, 1]. Got {p_get=}")
-
+def generate_operations(
+    num_operations: int,
+    input_file: Path,
+    output_file: Path,
+    p_get: float,
+    value_generator: ValueFactory,
+) -> None:
     keys = list(get_keys_from_csv(input_file))
-    value_generator: ValueFactory = RandomIntegerGenerator(min_val=1, max_val=99999)
 
     with open(output_file, "w") as csvfile:
         writer = csv.writer(csvfile, delimiter=" ")
@@ -115,8 +112,22 @@ def main(argv):
                     "Unsupported Operation in operation generation."
                 )
 
-    print(f"Operation Generation Complete. Write data to file {output_file}")
+
+def main():
+    args = parse_args()
+
+    value_generator: ValueFactory = RandomIntegerGenerator(min_val=1, max_val=99999)
+
+    generate_operations(
+        num_operations=args.n_operations,
+        input_file=args.input_file,
+        output_file=args.output_file,
+        p_get=args.p_get,
+        value_generator=value_generator,
+    )
+
+    print(f"Operation Generation Complete. Write data to file {args.output_file}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
