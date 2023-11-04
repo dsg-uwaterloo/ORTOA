@@ -1,12 +1,20 @@
 from pathlib import Path
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 
-from extras.benchmark.interface.experiment import (
-    AtomicExperiment,
-)
+from extras.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
-from extras.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
+
+class ClientFlags(BaseModel):
+    initdb: bool = True
+    seed: Path = Field(required=True)
+    operations: Path = Field(required=True)
+    nthreads: int = 1
+
+
+class HostFlags(BaseModel):
+    nthreads: int = 1
+    simulate: bool = True
 
 
 class ClientJob(BaseModel):
@@ -61,6 +69,36 @@ def make_jobs(
     jobs: List[ClientJob] = []
 
     for experiment in experiments:
-        pass  # TODO:
+        e_client_flags = ClientFlags(
+            seed=experiment.seed_data, operations=experiment.operations
+        )
 
-    raise NotImplementedError
+        for flag in experiment.client_flags:
+            if flag.name == "nthreads":
+                e_client_flags.nthreads = flag.value
+            elif flag.name == "client_logging_enabled":
+                pass
+            else:
+                raise ValueError("Client flag not recognized")
+
+        e_host_flags = HostFlags()
+        for flag in experiment.host_flags:
+            if flag.name == "nthreads":
+                e_host_flags.nthreads = flag.value
+            elif flag.name == "host_logging_enabled":
+                pass
+            else:
+                raise ValueError("Host flag not recognized")
+
+        jobs.append(
+            ClientJob(
+                directory=experiment_root / experiment.name,
+                metadata=experiment.metadata,
+                seed_data=experiment.seed_data,
+                operations=experiment.operations,
+                client_flags=e_client_flags,
+                host_flags=e_host_flags,
+            )
+        )
+
+    return jobs

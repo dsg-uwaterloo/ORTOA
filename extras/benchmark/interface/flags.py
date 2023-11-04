@@ -56,29 +56,29 @@ class NClientThreads(ClientFlag):
         return atomic_selfs
 
 
-class PGet(ClientFlag):
-    name: Literal["pget"] = Field(default="pget", frozen=True)
-    value: Union[float, FloatIncrementRange, FloatMultiplyRange]
+# class PGet(ClientFlag):
+#     name: Literal["pget"] = Field(default="pget", frozen=True)
+#     value: Union[float, FloatIncrementRange, FloatMultiplyRange]
 
-    def __str__(self):
-        if not isinstance(self.value, float):
-            raise ValueError("The value of the Client flag --pget is not atomic")
+#     def __str__(self):
+#         if not isinstance(self.value, float):
+#             raise ValueError("The value of the Client flag --pget is not atomic")
 
-        return f"--pget {self.value}"
+#         return f"--pget {self.value}"
 
-    def get_atomic_flags(self) -> List[Self]:
-        atomic_selfs: List[Self] = []
-        if isinstance(self.value, float):
-            atomic_selfs.append(self)
-        elif isinstance(self.value, (FloatIncrementRange, FloatMultiplyRange)):
-            for val in self.value.generate_values():
-                atomic_selfs.append(PGet(name=self.name, value=val))
-        else:
-            raise TypeError(
-                "PGet::get_atomic_flags() did not recognize the type of self.value"
-            )
+#     def get_atomic_flags(self) -> List[Self]:
+#         atomic_selfs: List[Self] = []
+#         if isinstance(self.value, float):
+#             atomic_selfs.append(self)
+#         elif isinstance(self.value, (FloatIncrementRange, FloatMultiplyRange)):
+#             for val in self.value.generate_values():
+#                 atomic_selfs.append(PGet(name=self.name, value=val))
+#         else:
+#             raise TypeError(
+#                 "PGet::get_atomic_flags() did not recognize the type of self.value"
+#             )
 
-        return atomic_selfs
+#         return atomic_selfs
 
 
 class ClientLoggingEnabled(ClientFlag):
@@ -95,7 +95,7 @@ class ClientLoggingEnabled(ClientFlag):
 
 
 AnnotatedClientFlag = Annotated[
-    Union[NClientThreads, PGet, ClientLoggingEnabled],
+    Union[NClientThreads, ClientLoggingEnabled],
     Field(discriminator="name"),
 ]
 

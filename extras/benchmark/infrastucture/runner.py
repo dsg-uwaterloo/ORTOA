@@ -60,7 +60,7 @@ class JobOrchestration(BaseModel, Generic[JobT]):
     """
 
     jobs: Sequence[JobT]
-
+    max_processes: Optional[int]
     log_errors_in_main_thread: bool = False
 
     executor: Optional[fs.Executor] = Field(init_var=False, default=None)
@@ -74,6 +74,7 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         return super().model_post_init(__context)
 
     def run(self) -> List[Result[JobT]]:
+        assert self.max_processes >= 1
         raise NotImplementedError
 
     def run_sequential(self) -> List[Result[JobT]]:
