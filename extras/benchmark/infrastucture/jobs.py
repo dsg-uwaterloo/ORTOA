@@ -2,11 +2,11 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import List
 
-from extras.benchmark.interface.experiment import Experiment
+from extras.benchmark.interface.experiment import (
+    AtomicExperiment,
+)
 
-
-class ExperimentParameters:
-    ...
+from extras.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
 
 
 class ClientJob(BaseModel):
@@ -15,13 +15,13 @@ class ClientJob(BaseModel):
     """
 
     directory: Path
-    experiment_parameters: ExperimentParameters
-    client_flags: str
-    host_flags: str
+    metadata: ExperimentMetatadata
 
-    @property
-    def name(self) -> str:
-        return f"Job {self.experiment.name}"
+    seed_data: Path
+    operations: Path
+
+    client_flags: ClientFlags
+    host_flags: HostFlags
 
     def __str__(self) -> str:
         return self.name()
@@ -44,7 +44,7 @@ class ClientJob(BaseModel):
 
     def __call__(self) -> None:
         """
-        Setup the environment (flush & seed the database), then run the client operations
+        Setup the environment (flush & seed the database), then run the client operations in self.directory
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
@@ -55,6 +55,12 @@ class ClientJob(BaseModel):
         self._flush_db()
 
 
-def make_jobs(experiment_root: Path, experiments: List[Experiment]) -> List[ClientJob]:
+def make_jobs(
+    experiment_root: Path, experiments: List[AtomicExperiment]
+) -> List[ClientJob]:
     jobs: List[ClientJob] = []
+
+    for experiment in experiments:
+        pass  # TODO:
+
     raise NotImplementedError
