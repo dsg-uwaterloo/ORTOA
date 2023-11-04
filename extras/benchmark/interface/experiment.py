@@ -1,4 +1,5 @@
 import yaml
+import itertools
 
 from pathlib import Path
 from typing import Any, Generic, List, Optional, TypeVar, Union, Literal
@@ -65,7 +66,10 @@ class Experiment(BaseModel):
     host_config: HostConfig
 
     def get_client_flag_combinations(self) -> List[str]:
-        return ClientConfig.get_flag_combinations()
+        return self.client_config.get_flag_combinations()
+
+    def get_host_flag_combinations(self) -> List[str]:
+        return self.host_config.get_flag_combinations()
 
     def generate_data(self) -> None:
         if isinstance(self.client_config.data, DataGenerationConfigBase):
@@ -82,3 +86,71 @@ def load_experiments(experiment_paths: List[ExperimentPath]) -> List[Experiment]
         experiments.append(experiment)
 
     return experiments
+
+
+class AtomicExperiment(BaseModel):
+    name: str
+    output_directory: Path
+    metadata: ExperimentMetatadata
+
+    seed_data: Path
+    operations: Path
+
+    client_flags: List[AnnotatedClientFlag]
+    host_flags: List[AnnotatedHostFlag]
+
+
+def combine(lst):
+    combinations = []
+
+    def backtrack(curr, idx: int):
+        nonlocal lst, combinations
+
+        if idx == len(lst):
+            combinations.append(curr[:])
+            return
+
+        for i in range(len(lst[idx])):
+            curr.append(lst[idx[i]])
+            backtrack(curr, idx + 1)
+            curr.pop()
+
+    tmp = []
+    backtrack(tmp, 0)
+    return combinations
+
+
+def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperiment]:
+    atomic_experiments: List[AtomicExperiment] = []
+    for experiment in experiments:
+        assert isinstance(experiment.client_config.data, SeedData)
+
+        all_client_flags = [
+            flag.get_atomic_flags() for flag in experiment.client_config.flags
+        ]
+
+        all_host_flags = [
+            flag.get_atomic_flags() for flag in experiment.host_config.flags
+        ]
+
+        client_flag_combinations = combine(all_client_flags)
+        host_flag_combinations = combine(all_host_flags)
+
+        _id = 0
+        for cflags, hflags in itertools.product(
+            client_flag_combinations, host_flag_combinations
+        ):
+            atomic_experiments.append(
+                AtomicExperiment(
+                    name=experiment.name,
+                    output_directory=experiment.output_directory / f"_id-{_id}",
+                    metadata=experiment.metadata,
+                    seed_data=experiment.client_config.data.seed,
+                    operations=experiment.client_config.data.operations,
+                    client_flags=cflags,
+                    host_flags=hflags,
+                )
+            )
+            _id += 1
+
+    return atomic_experiments

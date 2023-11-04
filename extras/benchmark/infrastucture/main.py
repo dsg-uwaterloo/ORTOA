@@ -9,7 +9,12 @@ from extras.benchmark.infrastucture.experiment_collection import (
     ExperimentPath,
 )
 from extras.benchmark.infrastucture.jobs import ClientJob, make_jobs
-from extras.benchmark.interface.experiment import Experiment, load_experiments
+from extras.benchmark.interface.experiment import (
+    Experiment,
+    load_experiments,
+    atomicize_experiments,
+    AtomicExperiment,
+)
 
 
 class Stats:
@@ -74,33 +79,36 @@ def benchmark(
     max_processes: Optional[int] = None,
     log_errors_in_main_thread: bool = False,
 ) -> Stats:
-    """Main entrypoint to benchmarking flow
+    """Main entrypoint to the benchmarking flow
 
     Args:
-        experiment_base (Path): Directory to use as base for experiment directory tree
-        experiment_names (List[str]): _description_
+        experiment_base (Path): _description_
+        experiment_names (List[Path]): _description_
         max_processes (Optional[int], optional): _description_. Defaults to None.
+        log_errors_in_main_thread (bool, optional): _description_. Defaults to False.
 
     Returns:
         Stats: _description_
     """
-
     # Get a path to every experiment file and verify the paths
     experiment_paths: List[ExperimentPath] = collect_experiments(experiment_names)
 
-    # Load the experiments in to the Experiment class
+    # Load the experiments from yalm into the Experiment dataclass
     experiments: List[Experiment] = load_experiments(experiment_paths)
 
     # Generate data for the experiments that require it
     for experiment in experiments:
         experiment.generate_data()
 
+    # Convert the experiments into a list of atomic (fully reduced) experiments
+    atomic_experiments: List[AtomicExperiment] = atomicize_experiments(experiments)
+
     # Create the jobs from the experiments
-    jobs: List[ClientJob] = make_jobs(experiment_base, experiments)
+    jobs: List[ClientJob] = make_jobs(atomic_experiments, experiments)
 
     # Orchestrate and the jobs
     orchestration = JobOrchestration(jobs, max_processes, log_errors_in_main_thread)
-    results = orchestration.run()
+    results = orchestration.run_sequential()
 
     # Generate and return the statistics from the run
     return Stats.from_results(results)

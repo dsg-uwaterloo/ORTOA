@@ -54,57 +54,57 @@ class StaticParameter(Parameter, Generic[T]):
 class IntegerIncrementRange(RangeParameter[int], IntType):
     step: int
 
-    def generate_values(self) -> List[str]:
-        res = [self.minimum]
+    def generate_values(self) -> List[int]:
+        res: List[int] = [self.minimum]
 
         i = self.minimum
         while i <= self.maximum:
             i += self.multiplier
             res.append(i)
 
-        return [str(val) for val in res]
+        return res
 
 
 class IntegerMultiplyRange(RangeParameter[int], IntType):
     multiplier: int
 
-    def generate_values(self) -> List[str]:
-        res = [self.minimum]
+    def generate_values(self) -> List[int]:
+        res: List[int] = [self.minimum]
 
         i = self.minimum
         while i <= self.maximum:
             i *= self.multiplier
             res.append(i)
 
-        return [str(val) for val in res]
+        return res
 
 
 class FloatIncrementRange(RangeParameter[int], FloatType):
     step: float
 
-    def generate_values(self) -> List[str]:
-        res = [self.minimum]
+    def generate_values(self) -> List[float]:
+        res: List[float] = [self.minimum]
 
         i = self.minimum
         while i <= self.maximum:
             i += self.multiplier
             res.append(i)
 
-        return [str(val) for val in res]
+        return res
 
 
 class FloatMultiplyRange(RangeParameter[float], FloatType):
     multiplier: float
 
     def generate_values(self) -> List[str]:
-        res = [self.minimum]
+        res: List[float] = [self.minimum]
 
         i = self.minimum
         while i <= self.maximum:
             i *= self.multiplier
             res.append(i)
 
-        return [str(val) for val in res]
+        return res
 
 
 class IntegerParameter(StaticParameter[int], IntType):

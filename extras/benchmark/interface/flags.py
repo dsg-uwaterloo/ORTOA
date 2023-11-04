@@ -1,14 +1,25 @@
 from abc import ABC, abstractmethod
-from typing import Literal, Union
-from typing_extensions import Annotated
+from typing import Literal, Union, List
+from typing_extensions import Annotated, Self
 
 from pydantic import BaseModel, Field
+
+from extras.benchmark.interface.parameter import (
+    IntegerIncrementRange,
+    IntegerMultiplyRange,
+    FloatIncrementRange,
+    FloatMultiplyRange,
+)
 
 
 class Flag(BaseModel, ABC):
     @abstractmethod
     def __str__(self):
         raise NotImplementedError("Cannot get string repr of abstract Flag class")
+
+    @abstractmethod
+    def get_atomic_flags(self):
+        raise NotImplementedError("Cannot get atomic version of abstract Flag class")
 
 
 #########################
@@ -22,26 +33,65 @@ class ClientFlag(Flag):
 
 class NClientThreads(ClientFlag):
     name: Literal["nthreads"] = Field(default="nthreads", frozen=True)
-    # TODO: Value
+    value: Union[int, IntegerIncrementRange, IntegerMultiplyRange]
 
     def __str__(self):
-        raise NotImplementedError("Haven't implemented NClientThreads flag yet!")
+        if not isinstance(self.value, int):
+            raise ValueError("The value of the Client flag --nthreads is not atomic")
+
+        return f"--nthreads {self.value}"
+
+    def get_atomic_flags(self) -> List[Self]:
+        atomic_selfs: List[Self] = []
+        if isinstance(self.value, int):
+            atomic_selfs.append(NClientThreads(name=self.name, value=self.value))
+        elif isinstance(self.value, (IntegerIncrementRange, IntegerMultiplyRange)):
+            for val in self.value.generate_values():
+                atomic_selfs.append(NClientThreads(name=self.name, value=val))
+        else:
+            raise TypeError(
+                "NClientThreads::get_atomic_flags() did not recognize type of self.value"
+            )
+
+        return atomic_selfs
 
 
 class PGet(ClientFlag):
     name: Literal["pget"] = Field(default="pget", frozen=True)
-    # TODO: Value
+    value: Union[float, FloatIncrementRange, FloatMultiplyRange]
 
     def __str__(self):
-        raise NotImplementedError("Haven't implemented PGet flag yet!")
+        if not isinstance(self.value, float):
+            raise ValueError("The value of the Client flag --pget is not atomic")
+
+        return f"--pget {self.value}"
+
+    def get_atomic_flags(self) -> List[Self]:
+        atomic_selfs: List[Self] = []
+        if isinstance(self.value, float):
+            atomic_selfs.append(self)
+        elif isinstance(self.value, (FloatIncrementRange, FloatMultiplyRange)):
+            for val in self.value.generate_values():
+                atomic_selfs.append(PGet(name=self.name, value=val))
+        else:
+            raise TypeError(
+                "PGet::get_atomic_flags() did not recognize the type of self.value"
+            )
+
+        return atomic_selfs
 
 
 class ClientLoggingEnabled(ClientFlag):
-    # TODO: Name
-    # TODO: Value
+    name: Literal["client_logging_enabled"] = Field(
+        default="client_logging_enabled", frozen=True
+    )
+    value: bool
 
     def __str__(self):
-        raise NotImplementedError("Haven't implemented ClientLoggingEnabled flag yet!")
+        return f"--logging_enabled {str(self.value)}"
+
+    def get_atomic_flags(self) -> List[Self]:
+        return [self]
 
 
 AnnotatedClientFlag = Annotated[
@@ -60,18 +110,40 @@ class HostFlag(Flag):
 
 class NHostThreads(HostFlag):
     name: Literal["nthreads"] = Field(default="nthreads", frozen=True)
-    # TODO: VAlue
+    value: Union[int, IntegerIncrementRange, IntegerMultiplyRange]
 
     def __str__(self):
-        raise NotImplementedError("Haven't implemented NHostThreads flag yet!")
+        if not isinstance(self.value, int):
+            raise ValueError("The value of the Client flag --nthreads is not atomic")
+
+        return f"--nthreads {self.value}"
+
+    def get_atomic_flags(self) -> List[Self]:
+        atomic_selfs: List[Self] = []
+        if isinstance(self.value, int):
+            atomic_selfs.append(NClientThreads(name=self.name, value=self.value))
+        elif isinstance(self.value, (IntegerIncrementRange, IntegerMultiplyRange)):
+            for val in self.value.generate_values():
+                atomic_selfs.append(NClientThreads(name=self.name, value=val))
+        else:
+            raise TypeError(
+                "NHostThreads::get_atomic_flags() did not recognize type of self.value"
+            )
+
+        return atomic_selfs
 
 
 class HostLoggingEnabled(HostFlag):
-    # TODO: Name
-    # TODO: Value
+    name: Literal["host_logging_enabled"] = Field(
+        default="host_logging_enabled", frozen=True
+    )
+    value: bool
 
     def __str__(self):
-        raise NotImplementedError("Haven't implemented HostLoggingEnabled flag yet!")
+        return f"--logging_enabled {str(self.value)}"
+
+    def get_atomic_flags(self) -> List[Self]:
+        return [self]
 
 
 AnnotatedHostFlag = Annotated[
