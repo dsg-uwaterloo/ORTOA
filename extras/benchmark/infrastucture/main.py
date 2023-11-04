@@ -15,6 +15,7 @@ from extras.benchmark.interface.experiment import (
     atomicize_experiments,
     AtomicExperiment,
 )
+from extras.benchmark.infrastucture.runner import JobOrchestration
 
 
 class Stats:
@@ -104,10 +105,16 @@ def benchmark(
     atomic_experiments: List[AtomicExperiment] = atomicize_experiments(experiments)
 
     # Create the jobs from the experiments
-    jobs: List[ClientJob] = make_jobs(atomic_experiments, experiments)
+    jobs: List[ClientJob] = make_jobs(
+        experiment_root=experiment_base, experiments=atomic_experiments
+    )
 
     # Orchestrate and the jobs
-    orchestration = JobOrchestration(jobs, max_processes, log_errors_in_main_thread)
+    orchestration = JobOrchestration(
+        jobs=jobs,
+        max_processes=max_processes,
+        log_errors_in_main_thread=log_errors_in_main_thread,
+    )
     results = orchestration.run_sequential()
 
     # Generate and return the statistics from the run
