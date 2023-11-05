@@ -46,6 +46,9 @@ JobT = TypeVar("JobT", bound=JobProtocol)
 
 
 class Result(BaseModel, Generic[JobT]):
+    class Config:
+        arbitrary_types_allowed = True
+
     """
     Result[Job] is a Job and an exception
     """
@@ -55,6 +58,9 @@ class Result(BaseModel, Generic[JobT]):
 
 
 class JobOrchestration(BaseModel, Generic[JobT]):
+    class Config:
+        arbitrary_types_allowed = True
+
     """
     Given a sequence of jobs, schedule the jobs in a process pool, managing job cancellation and progress reporting
     """
