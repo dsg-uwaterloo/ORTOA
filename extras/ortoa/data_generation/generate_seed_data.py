@@ -4,11 +4,11 @@ from argparse import ArgumentParser
 import csv
 from pathlib import Path
 
-from extras.data_generation.generators.key_generator import (
+from ortoa.data_generation.generators.key_generator import (
     KeyFactory,
     SequentialIntKeyGenerator,
 )
-from extras.data_generation.generators.value_generator import (
+from ortoa.data_generation.generators.value_generator import (
     ValueFactory,
     RandomIntegerGenerator,
 )

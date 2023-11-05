@@ -4,7 +4,7 @@ from typing_extensions import Annotated, Self
 
 from pydantic import BaseModel, Field
 
-from extras.benchmark.interface.parameter import (
+from ortoa.benchmark.interface.parameter import (
     IntegerIncrementRange,
     IntegerMultiplyRange,
     FloatIncrementRange,

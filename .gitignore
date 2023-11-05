@@ -22,3 +22,5 @@ server
 .pytest_cache/
 */pytest_cache/
 **/pytest_cache/
+
+*.egg-info/

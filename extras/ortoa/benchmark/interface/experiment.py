@@ -7,9 +7,9 @@ from typing_extensions import Self
 
 from pydantic import BaseModel, Field
 
-from extras.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
-from extras.benchmark.interface.data import DataGenerationConfigBase, DataGenConfig
-from extras.benchmark.infrastucture.experiment_collection import ExperimentPath
+from ortoa.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
+from ortoa.benchmark.interface.data import DataGenerationConfigBase, DataGenConfig
+from ortoa.benchmark.infrastucture.experiment_collection import ExperimentPath
 
 FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
 

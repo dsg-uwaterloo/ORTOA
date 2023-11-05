@@ -106,7 +106,7 @@ ortoa-benchmark() {
     local HELP="""\
 
 """
-    python3 "${REPO_ROOT}/extras/benchmark/infrastucture/main.py" "${@}"
+    python3 "${REPO_ROOT}/extras/ortoa/benchmark/infrastucture/main.py" "${@}"
 }
 
 
