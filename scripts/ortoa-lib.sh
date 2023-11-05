@@ -29,6 +29,9 @@ ortoa-lib: a collection of bash functions to ease development
         ortoa-client-run: ----------- Run the ORTOA client
         ortoa-simulate: ------------- Run ORTOA in simulation mode
     
+    Benchmarking ORTOA:
+        ortoa-benchmark: ------------ Benchmark ORTOA with configured experiments
+    
     Testing ORTOA:
         ortoa-test-python: ---------- Run pytest on python targets
     
@@ -96,6 +99,17 @@ Syntax: ortoa-simulate [-h]
 
 
 ############################################
+# Benchmarking
+############################################
+
+ortoa-benchmark() {
+    local HELP="""\
+
+"""
+    python3 "${REPO_ROOT}/extras/benchmark/infrastucture/main.py" "${@}"
+}
+
+
 # Testing
 ############################################
 
