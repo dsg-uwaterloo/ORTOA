@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
     experiment_group.add_argument(
         "-d",
         "--experiment-dirs",
-        narg="+",
+        nargs="+",
         type=Path,
         default=[],
         required=False,

@@ -1,4 +1,4 @@
-from concurrent import Futures as fs
+from concurrent import futures as fs
 from pathlib import Path
 from typing import (
     Any,
