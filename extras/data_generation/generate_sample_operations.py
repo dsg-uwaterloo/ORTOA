@@ -7,7 +7,10 @@ import random
 from enum import Enum
 from pathlib import Path
 
-from generators.value_generator import ValueFactory, RandomIntegerGenerator
+from extras.data_generation.generators.value_generator import (
+    ValueFactory,
+    RandomIntegerGenerator,
+)
 
 
 def parse_args() -> argparse.Namespace:

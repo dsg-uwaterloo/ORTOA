@@ -4,8 +4,14 @@ from argparse import ArgumentParser
 import csv
 from pathlib import Path
 
-from generators.key_generator import KeyFactory, SequentialIntKeyGenerator
-from generators.value_generator import ValueFactory, RandomIntegerGenerator
+from extras.data_generation.generators.key_generator import (
+    KeyFactory,
+    SequentialIntKeyGenerator,
+)
+from extras.data_generation.generators.value_generator import (
+    ValueFactory,
+    RandomIntegerGenerator,
+)
 
 
 def parse_args() -> argparse.Namespace:
