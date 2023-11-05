@@ -4,11 +4,11 @@ from typing import Any, List, Union
 from typing_extensions import Annotated
 import pytest
 
-from extras.benchmark.interface.data import (
+from ortoa.benchmark.interface.data import (
     ByteSizeGenerationConfig,
     RandomIntegerGenerationConfig,
 )
-from extras.benchmark.interface.parameter import (
+from ortoa.benchmark.interface.parameter import (
     IntegerParameter,
     IntegerIncrementRange,
     IntegerMultiplyRange,
@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 
 def get_path(filename: str) -> Path:
-    return Path(f"extras/benchmark/test/interface/test_files/{filename}.yaml")
+    return Path(f"extras/ortoa/benchmark/test/interface/test_files/{filename}.yaml")
 
 
 def load_yaml(file_path: Path) -> Any:

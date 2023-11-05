@@ -2,7 +2,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List
 
-from extras.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
+from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
 
 class ClientFlags(BaseModel):

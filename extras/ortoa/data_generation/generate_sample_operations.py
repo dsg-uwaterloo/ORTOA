@@ -7,7 +7,7 @@ import random
 from enum import Enum
 from pathlib import Path
 
-from extras.data_generation.generators.value_generator import (
+from ortoa.data_generation.generators.value_generator import (
     ValueFactory,
     RandomIntegerGenerator,
 )

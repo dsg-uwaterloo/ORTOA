@@ -4,18 +4,18 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Optional, Union
 
-from extras.benchmark.infrastucture.experiment_collection import (
+from ortoa.benchmark.infrastucture.experiment_collection import (
     collect_experiments,
     ExperimentPath,
 )
-from extras.benchmark.infrastucture.jobs import ClientJob, make_jobs
-from extras.benchmark.interface.experiment import (
+from ortoa.benchmark.infrastucture.jobs import ClientJob, make_jobs
+from ortoa.benchmark.interface.experiment import (
     Experiment,
     load_experiments,
     atomicize_experiments,
     AtomicExperiment,
 )
-from extras.benchmark.infrastucture.runner import JobOrchestration
+from ortoa.benchmark.infrastucture.runner import JobOrchestration
 
 
 class Stats:
