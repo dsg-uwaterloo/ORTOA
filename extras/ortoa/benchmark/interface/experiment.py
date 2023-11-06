@@ -153,7 +153,7 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
             atomic_experiments.append(
                 AtomicExperiment(
                     name=experiment.name,
-                    output_directory=experiment.output_directory / f"_id-{_id}",
+                    output_directory=experiment.output_directory / f"combination_{_id}",
                     metadata=experiment.metadata,
                     seed_data=experiment.client_config.data.seed,
                     operations=experiment.client_config.data.operations,

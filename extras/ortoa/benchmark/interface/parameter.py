@@ -55,12 +55,12 @@ class IntegerIncrementRange(RangeParameter[int], IntType):
     step: int
 
     def generate_values(self) -> List[int]:
-        res: List[int] = [self.minimum]
+        res: List[int] = []
 
         i = self.minimum
         while i <= self.maximum:
-            i += self.multiplier
             res.append(i)
+            i += self.step
 
         return res
 
@@ -69,12 +69,12 @@ class IntegerMultiplyRange(RangeParameter[int], IntType):
     multiplier: int
 
     def generate_values(self) -> List[int]:
-        res: List[int] = [self.minimum]
+        res: List[int] = []
 
         i = self.minimum
         while i <= self.maximum:
-            i *= self.multiplier
             res.append(i)
+            i *= self.multiplier
 
         return res
 
@@ -83,12 +83,12 @@ class FloatIncrementRange(RangeParameter[int], FloatType):
     step: float
 
     def generate_values(self) -> List[float]:
-        res: List[float] = [self.minimum]
+        res: List[float] = []
 
         i = self.minimum
         while i <= self.maximum:
-            i += self.multiplier
             res.append(i)
+            i += self.step
 
         return res
 
@@ -97,12 +97,12 @@ class FloatMultiplyRange(RangeParameter[float], FloatType):
     multiplier: float
 
     def generate_values(self) -> List[str]:
-        res: List[float] = [self.minimum]
+        res: List[float] = []
 
         i = self.minimum
         while i <= self.maximum:
-            i *= self.multiplier
             res.append(i)
+            i *= self.multiplier
 
         return res
 
