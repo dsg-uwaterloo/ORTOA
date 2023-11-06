@@ -12,9 +12,6 @@ from ortoa.benchmark.interface.data import DataGenerationConfigBase, DataGenConf
 from ortoa.benchmark.infrastucture.experiment_collection import ExperimentPath
 
 
-from icecream import ic
-
-
 FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
 
 
@@ -148,8 +145,6 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
 
         client_flag_combinations = combine(all_client_flags)
         host_flag_combinations = combine(all_host_flags)
-
-        ic(experiment.client_config)
 
         _id = 0
         for cflags, hflags in itertools.product(
