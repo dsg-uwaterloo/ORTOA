@@ -16,10 +16,7 @@ from ortoa.benchmark.interface.experiment import (
     AtomicExperiment,
 )
 from ortoa.benchmark.infrastucture.runner import JobOrchestration
-
-
-class Stats:
-    ...
+from ortoa.benchmark.infrastucture.stats_collection import Stats
 
 
 def parse_args() -> argparse.Namespace:
