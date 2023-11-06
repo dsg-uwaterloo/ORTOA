@@ -14,8 +14,13 @@ Our package requires `python>=3.8.*` and can be initialized via `pip`:
 ```bash
 ORTOA/ $ python3 -m venv .venv
 ORTOA/ $ . .venv/bin/activate
-ORTOA/ $ pip install -r TODO:REQUIREMENTS
-ORTOA/ $ pip install -e ./extras
+ORTOA/ $ pip install -e extras/
+```
+
+The dev dependencies can be installed via `pip` as well:
+
+```bash
+ORTOA/ $ pip install -e extras/[dev]
 ```
 
 ## Sourcing Scripts & Utilities
