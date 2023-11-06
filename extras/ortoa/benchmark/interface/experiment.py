@@ -11,13 +11,17 @@ from ortoa.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFl
 from ortoa.benchmark.interface.data import DataGenerationConfigBase, DataGenConfig
 from ortoa.benchmark.infrastucture.experiment_collection import ExperimentPath
 
+
+from icecream import ic
+
+
 FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
 
 
 class SeedData(BaseModel):
     data_type: Literal["seed"] = Field(default="seed", frozen=True, init_var=False)
-    seed: Optional[Path] = None
-    operations: Optional[Path] = None
+    seed: Optional[Path]
+    operations: Optional[Path]
 
     @classmethod
     def from_generation_config(
@@ -73,7 +77,13 @@ class Experiment(BaseModel):
 
     def generate_data(self) -> None:
         if isinstance(self.client_config.data, DataGenerationConfigBase):
-            self.client_config.data = SeedData.from_generation_config(self.config.data)
+            output_file: Path = self.output_directory / "generated_data"
+            output_file.mkdir(parents=True, exist_ok=True)
+
+            self.client_config.data = SeedData.from_generation_config(
+                self.client_config.data,
+                output_file,
+            )
 
 
 def load_experiments(experiment_paths: List[ExperimentPath]) -> List[Experiment]:
@@ -111,7 +121,7 @@ def combine(lst):
             return
 
         for i in range(len(lst[idx])):
-            curr.append(lst[idx[i]])
+            curr.append(lst[idx][i])
             backtrack(curr, idx + 1)
             curr.pop()
 
@@ -135,6 +145,8 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
 
         client_flag_combinations = combine(all_client_flags)
         host_flag_combinations = combine(all_host_flags)
+
+        ic(experiment.client_config)
 
         _id = 0
         for cflags, hflags in itertools.product(

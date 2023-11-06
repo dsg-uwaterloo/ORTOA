@@ -6,16 +6,7 @@ from typing import Any, Iterable, List
 from pydantic import BaseModel
 from typing_extensions import Self
 
-
-def collect_experiments(experiments: Iterable[Path]) -> List["ExperimentPath"]:
-    """
-    Given a list of experiment names, find the experiments and collect them into an interable
-    """
-    return list(
-        itertools.chain.from_iterable(
-            [ExperimentPath.construct(experiment) for experiment in experiments]
-        )
-    )
+from icecream import ic
 
 
 class ExperimentPath(BaseModel):
@@ -35,10 +26,13 @@ class ExperimentPath(BaseModel):
         Construct an list of ExperimentPath instances
         """
 
-        if experiment.is_dir():
+        if experiment.is_file():
+            return cls.from_path(experiment)
+
+        elif experiment.is_dir():
             return cls.from_dir(experiment)
 
-        return cls.from_path(experiment)
+        raise TypeError
 
     @classmethod
     def from_path(cls, experiment: Path) -> List[Self]:
@@ -46,5 +40,17 @@ class ExperimentPath(BaseModel):
 
     @classmethod
     def from_dir(cls, experiment_dir: Path) -> List[Self]:
-        assert experiment_dir.is_dir()
-        return [ExperimentPath(e) for e in experiment_dir.glob("**/*.yaml")]
+        return [
+            ExperimentPath(experiment_path=e) for e in experiment_dir.glob("**/*.yaml")
+        ]
+
+
+def collect_experiments(experiments: Iterable[Path]) -> List[ExperimentPath]:
+    """
+    Given a list of experiment names, find the experiments and collect them into an interable
+    """
+    return list(
+        itertools.chain.from_iterable(
+            [ExperimentPath.construct(experiment) for experiment in experiments]
+        )
+    )

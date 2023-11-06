@@ -121,10 +121,10 @@ class NHostThreads(HostFlag):
     def get_atomic_flags(self) -> List[Self]:
         atomic_selfs: List[Self] = []
         if isinstance(self.value, int):
-            atomic_selfs.append(NClientThreads(name=self.name, value=self.value))
+            atomic_selfs.append(NHostThreads(name=self.name, value=self.value))
         elif isinstance(self.value, (IntegerIncrementRange, IntegerMultiplyRange)):
             for val in self.value.generate_values():
-                atomic_selfs.append(NClientThreads(name=self.name, value=val))
+                atomic_selfs.append(NHostThreads(name=self.name, value=val))
         else:
             raise TypeError(
                 "NHostThreads::get_atomic_flags() did not recognize type of self.value"

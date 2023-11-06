@@ -1,4 +1,3 @@
-from concurrent import futures as fs
 from pathlib import Path
 from typing import (
     Any,
@@ -69,9 +68,6 @@ class JobOrchestration(BaseModel, Generic[JobT]):
     max_processes: Optional[int]
     log_errors_in_main_thread: bool = False
 
-    executor: Optional[fs.Executor] = Field(init_var=False, default=None)
-    futures: Dict[fs.Future, JobT] = Field(init_var=False)
-
     def model_post_init(self, __context: Any) -> None:
         if len(self.jobs) == 0:
             raise ValueError(
@@ -80,6 +76,7 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         return super().model_post_init(__context)
 
     def run(self) -> List[Result[JobT]]:
+        """Leaving this for when I'm ready to implement multithreading for the benchmarking"""
         assert self.max_processes >= 1
         raise NotImplementedError
 
