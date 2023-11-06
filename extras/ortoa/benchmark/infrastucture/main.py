@@ -127,7 +127,8 @@ def main():
         args.working_dir, args.experiments + args.experiment_dirs, args.max_processes
     )
 
-    # TODO: Save the stats somewhere
+    # Save the stats
+    stats.save_to(args.working_dir)
 
     # TODO: create the HTML
 
