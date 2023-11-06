@@ -32,9 +32,8 @@ def test_basic_data_generation_config():
     bsg_static_int_yaml = load_yaml(get_path("byte_size_datagen_int"))
     config = ByteSizeGenerationConfig.model_validate(bsg_static_int_yaml)
     assert config.generator == "ByteSizeGenerator"
-    assert isinstance(config.n_bytes, IntegerParameter)
-    assert isinstance(config.n_bytes.value, int)
-    assert config.n_bytes.value == 160
+    assert isinstance(config.n_bytes, int)
+    assert config.n_bytes == 160
 
     # Check can deserialize RandomIntegerGenerator
     rig_static_int_yaml = load_yaml(get_path("random_integer_datagen"))
