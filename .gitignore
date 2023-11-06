@@ -24,3 +24,4 @@ server
 **/pytest_cache/
 
 *.egg-info/
+out/

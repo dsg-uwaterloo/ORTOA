@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
         "-w",
         "--working-dir",
         type=Path,
-        default=Path.cwd() / f"benchmark-{datetime.date.today()}",
+        default=Path.cwd() / "out" / f"benchmark-{datetime.date.today()}",
         required=False,
         help="Directory to use as base for experiment directory tree (default: %(default)s)",
     )
@@ -93,7 +93,9 @@ def benchmark(
     experiment_paths: List[ExperimentPath] = collect_experiments(experiment_names)
 
     # Load the experiments from yalm into the Experiment dataclass
-    experiments: List[Experiment] = load_experiments(experiment_paths)
+    experiments: List[Experiment] = load_experiments(
+        experiment_paths, base_dir=experiment_base
+    )
 
     # Generate data for the experiments that require it
     for experiment in experiments:
