@@ -120,8 +120,7 @@ def benchmark(
 
 def main():
     args = parse_args()
-    working_dir: Path = args.working_dir
-    working_dir.mkdir(parents=True, exist_ok=True)
+    args.working_dir.mkdir(parents=True, exist_ok=True)
 
     stats: Stats = benchmark(
         args.working_dir, args.experiments + args.experiment_dirs, args.max_processes
