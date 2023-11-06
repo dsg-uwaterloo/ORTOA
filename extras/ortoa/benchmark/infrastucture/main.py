@@ -1,5 +1,5 @@
 import argparse
-import datetime
+from datetime import datetime
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Optional, Union
@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
         "-w",
         "--working-dir",
         type=Path,
-        default=Path.cwd() / "out" / f"benchmark-{datetime.date.today()}",
+        default=Path.cwd() / "out" / f"benchmark-{datetime.now()}",
         required=False,
         help="Directory to use as base for experiment directory tree (default: %(default)s)",
     )
