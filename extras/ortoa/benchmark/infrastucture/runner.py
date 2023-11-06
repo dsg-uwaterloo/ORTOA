@@ -16,6 +16,8 @@ from typing import (
 from pydantic import BaseModel, Field
 from typing_extensions import Self
 
+from icecream import ic
+
 
 @runtime_checkable
 class JobProtocol(Protocol):
@@ -45,24 +47,24 @@ JobT = TypeVar("JobT", bound=JobProtocol)
 
 
 class Result(BaseModel, Generic[JobT]):
-    class Config:
-        arbitrary_types_allowed = True
-
     """
     Result[Job] is a Job and an exception
     """
+
+    class Config:
+        arbitrary_types_allowed = True
 
     job: JobT
     exception: Optional[BaseException]
 
 
 class JobOrchestration(BaseModel, Generic[JobT]):
-    class Config:
-        arbitrary_types_allowed = True
-
     """
     Given a sequence of jobs, schedule the jobs in a process pool, managing job cancellation and progress reporting
     """
+
+    class Config:
+        arbitrary_types_allowed = True
 
     jobs: Sequence[JobT]
     max_processes: Optional[int]
@@ -81,4 +83,6 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         raise NotImplementedError
 
     def run_sequential(self) -> List[Result[JobT]]:
-        raise NotImplementedError
+        for job in self.jobs:
+            ic(job)
+        return []

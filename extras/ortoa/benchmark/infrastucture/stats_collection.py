@@ -7,6 +7,9 @@ import pandas as pd
 
 
 class Stats(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+
     raw_df: pd.DataFrame  # Entry from every experiment
     summary_df: pd.DataFrame = Field(init_var=False)
 

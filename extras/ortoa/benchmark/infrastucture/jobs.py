@@ -94,7 +94,7 @@ def make_jobs(
         jobs.append(
             ClientJob(
                 name=experiment.name,
-                directory=experiment_root / experiment.name,
+                directory=experiment.output_directory,
                 metadata=experiment.metadata,
                 seed_data=experiment.seed_data,
                 operations=experiment.operations,

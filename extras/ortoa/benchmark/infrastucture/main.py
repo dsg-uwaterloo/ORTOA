@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
         "-w",
         "--working-dir",
         type=Path,
-        default=Path.cwd() / "out" / f"benchmark-{datetime.now()}",
+        default=Path("out") / f"benchmark-{datetime.now()}",
         required=False,
         help="Directory to use as base for experiment directory tree (default: %(default)s)",
     )
