@@ -32,9 +32,8 @@ def parse_args() -> argparse.Namespace:
         "-e",
         "--experiments",
         nargs="+",
-        type=str,
+        type=Path,
         default=[],
-        required=True,
         help="List of experiments to compile (experiment name should match zoo object)",
     )
     experiment_group.add_argument(
@@ -43,7 +42,6 @@ def parse_args() -> argparse.Namespace:
         nargs="+",
         type=Path,
         default=[],
-        required=False,
         help="List of local directories to use for experiment files",
     )
 
@@ -66,7 +64,7 @@ def parse_args() -> argparse.Namespace:
 
     args = parser.parse_args()
 
-    if len(args.networks + args.network_dirs) == 0:
+    if len(args.experiments + args.experiment_dirs) == 0:
         parser.error(
             "one of the arguments -e/--experiments or -d/--experiment-dirs is required"
         )
@@ -123,10 +121,11 @@ def benchmark(
 
 def main():
     args = parse_args()
-    args.working_dir.mkdir(parents=True, exist_py=False)
+    working_dir: Path = args.working_dir
+    working_dir.mkdir(parents=True, exist_ok=True)
 
     stats: Stats = benchmark(
-        args.working_dir, args.experiments + args.experiments_dirs, args.max_processes
+        args.working_dir, args.experiments + args.experiment_dirs, args.max_processes
     )
 
     # TODO: Save the stats somewhere

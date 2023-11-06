@@ -18,7 +18,7 @@ from ortoa.data_generation.generators.value_generator import RandomIntegerGenera
 class DataGenerationConfigBase(BaseModel, ABC):
     seed_size: int
     num_operations: int
-    key_access_distribution: Literal["uniform"]
+    key_access_distribution: Literal["uniform"] = Field(default="uniform")
 
     @abstractmethod
     def generate_files(self, output_dir: Path) -> Tuple[Path, Path]:
@@ -32,7 +32,7 @@ class DataGenerationConfigBase(BaseModel, ABC):
 
 class ByteSizeGenerationConfig(DataGenerationConfigBase):
     generator: Literal["ByteSizeGenerator"]
-    n_bytes: IntegerParameter
+    n_bytes: int
 
     def _generate_seed(self, output_file: Path) -> Path:
         raise NotImplementedError
@@ -64,6 +64,8 @@ class RandomIntegerGenerationConfig(DataGenerationConfigBase):
             output_file=output_file,
         )
 
+        return output_file
+
     def _generate_operations(self, seed_file: Path, output_file: Path) -> Path:
         value_generator = RandomIntegerGenerator(
             min_val=self.minimum, max_val=self.maximum
@@ -75,6 +77,8 @@ class RandomIntegerGenerationConfig(DataGenerationConfigBase):
             p_get=0.5,
             value_generator=value_generator,
         )
+
+        return output_file
 
     def generate_files(self, output_dir: Path) -> Tuple[Path, Path]:
         seed = self._generate_seed(output_dir / "seed.csv")

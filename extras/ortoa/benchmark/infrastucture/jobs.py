@@ -22,6 +22,7 @@ class ClientJob(BaseModel):
     Job for testing and benchmarking the client. Satisfies runner.JobProtocol
     """
 
+    name: str
     directory: Path
     metadata: ExperimentMetatadata
 
@@ -32,7 +33,7 @@ class ClientJob(BaseModel):
     host_flags: HostFlags
 
     def __str__(self) -> str:
-        return self.name()
+        return self.name
 
     def _flush_db(self) -> None:
         """Flush (empty) the database"""
@@ -92,6 +93,7 @@ def make_jobs(
 
         jobs.append(
             ClientJob(
+                name=experiment.name,
                 directory=experiment_root / experiment.name,
                 metadata=experiment.metadata,
                 seed_data=experiment.seed_data,

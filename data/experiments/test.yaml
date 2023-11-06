@@ -1,0 +1,23 @@
+name: Byte Size Experiment
+
+output_directory: out/benchmark/byte_size_experiment
+
+metadata:
+  description: Modelling the effect of Byte Size of values on ORTOA-tee
+
+client_config:
+  data:
+    generator: RandomIntegerGenerator
+    minimum: 10
+    maximum: 100
+    seed_size: 100000
+    num_operations: 1000
+
+  flags:
+    - name: nthreads
+      value: 2
+
+host_config:
+  flags:
+    - name: nthreads
+      value: 1
