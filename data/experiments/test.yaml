@@ -1,6 +1,6 @@
 name: Byte Size Experiment
 
-output_directory: out/benchmark/byte_size_experiment
+output_directory: byte_size_experiment/
 
 metadata:
   description: Modelling the effect of Byte Size of values on ORTOA-tee

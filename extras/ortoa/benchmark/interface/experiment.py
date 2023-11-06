@@ -86,13 +86,16 @@ class Experiment(BaseModel):
             )
 
 
-def load_experiments(experiment_paths: List[ExperimentPath]) -> List[Experiment]:
+def load_experiments(
+    experiment_paths: List[ExperimentPath], base_dir: Path
+) -> List[Experiment]:
     experiments: List[Experiment] = []
     for e in experiment_paths:
         with open(e.experiment_path, "r") as f:
             loaded_experiment = yaml.safe_load(f)
 
         experiment = Experiment.model_validate(loaded_experiment)
+        experiment.output_directory = base_dir / experiment.output_directory
         experiments.append(experiment)
 
     return experiments
