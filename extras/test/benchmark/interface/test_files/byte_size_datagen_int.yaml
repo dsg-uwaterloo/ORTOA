@@ -1,7 +1,0 @@
-generator: ByteSizeGenerator
-n_bytes:
-  type: int
-  value: 160
-seed_size: 100
-num_operations: 20
-key_access_distribution: uniform

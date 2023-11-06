@@ -29,12 +29,6 @@ ortoa-lib: a collection of bash functions to ease development
         ortoa-client-run: ----------- Run the ORTOA client
         ortoa-simulate: ------------- Run ORTOA in simulation mode
     
-    Benchmarking ORTOA:
-        ortoa-benchmark: ------------ Benchmark ORTOA with configured experiments
-    
-    Testing ORTOA:
-        ortoa-test-python: ---------- Run pytest on python targets
-    
     Data Generation:
         ortoa-generate-seed: -------- Seed Data Generation script for ORTOA-tee
         ortoa-generate-operations: -- Operation Generation script for ORTOA-tee 
@@ -75,7 +69,7 @@ Syntax: ortoa-client-run [-h]
 
     ${BUILD_DIR}/src/client/client "${@}"
 }
-# export -f ortoa-client-run
+export -f ortoa-client-run
 
 
 ortoa-simulate() {
@@ -95,59 +89,7 @@ Syntax: ortoa-simulate [-h]
 
     ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
-# export -f ortoa-simulate
-
-
-############################################
-# Benchmarking
-############################################
-
-ortoa-benchmark() {
-    local HELP="""\
-usage: main.py [-h] -e EXPERIMENTS [EXPERIMENTS ...] [-d EXPERIMENT_DIRS [EXPERIMENT_DIRS ...]] [-w WORKING_DIR] [-m MAX_PROCESSES]
-
-options:
-  -h, --help            show this help message and exit
-  -w WORKING_DIR, --working-dir WORKING_DIR
-                        Directory to use as base for experiment directory tree (default: /Users/adrian/projects/ORTOA/benchmark-2023-11-05)
-  -m MAX_PROCESSES, --max-processes MAX_PROCESSES
-                        Maximum number of processes to use when running experiments (default: None)
-
-Experiments:
-  Options to control experiments selected for compilation
-
-  -e EXPERIMENTS [EXPERIMENTS ...], --experiments EXPERIMENTS [EXPERIMENTS ...]
-                        List of experiments to compile (experiment name should match zoo object)
-  -d EXPERIMENT_DIRS [EXPERIMENT_DIRS ...], --experiment-dirs EXPERIMENT_DIRS [EXPERIMENT_DIRS ...]
-                        List of local directories to use for experiment files
-"""
-    python3 "${REPO_ROOT}/extras/ortoa/benchmark/infrastucture/main.py" "${@}"
-}
-
-
-# Testing
-############################################
-
-ortoa-test-python() {
-    local HELP="""\
-Run ORTOA python tests
-
-Syntax: ortoa-test-python [-h]
-----------------------------------------------
-    -h                  Print this help message
-"""
-    OPTIND=1
-    while getopts ":h" option; do
-        case "${option}" in
-            h) echo "${HELP}"; return 0 ;;
-        esac
-    done
-
-    source "${REPO_ROOT}/scripts/test/run_benchmark_tests.sh"
-    run_unit_tests
-}
-# export -f ortoa-test-python
-
+export -f ortoa-simulate
 
 ############################################
 # Formatting and linting
@@ -177,7 +119,7 @@ Syntax: ortoa-clang-format [-h] [DIRECTORY]...
         git clang-format ${REPO_ROOT}
     fi
 }
-# export -f ortoa-clang-format
+export -f ortoa-clang-format
 
 
 ortoa-clang-format-all() {
@@ -198,7 +140,7 @@ Syntax: ortoa-clang-format [-h]
 
     source ${REPO_ROOT}/scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
 }
-# export -f ortoa-clang-format-all
+export -f ortoa-clang-format-all
 
 
 ############################################
@@ -218,7 +160,7 @@ optional arguments:
   -n N_DATA_POINTS, --n_data_points N_DATA_POINTS
                         Number of data points to generate.
 """
-    python3 ${REPO_ROOT}/extras/data_generation/generate_seed_data.py "${@}"
+    python3 ${REPO_ROOT}/scripts/data-generation/generate-seed-data.py "${@}"
 }
 
 ortoa-generate-operations() {
@@ -238,6 +180,6 @@ optional arguments:
   -p P_GET, --p_get P_GET
                         Probability of a GET request. 1-p_get = p_put (probability of a PUT request).
 """
-    python3 ${REPO_ROOT}/extras/data_generation/generate_sample_operations.py "${@}"
+    python3 ${REPO_ROOT}/scripts/data-generation/generate-sample-operations.py "${@}"
 
 }
