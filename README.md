@@ -1,22 +1,12 @@
 # ORTOA-TEE
 
-## Project Dependencies
+## Dependencies
 
-| Name             | Installation                                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `clang-format`   | `sudo apt-get install clang-format`                                                                                                        |
+|      Name      |             Installation            |
+| -------------- | ----------------------------------- |
+| `clang-format` | `sudo apt-get install clang-format` |
 | Open Enclave SDK | [OpenEnclave documentation](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md) |
 
-## Python Packages
-
-Our package requires `python>=3.8.*` and can be initialized via `pip`:
-
-```bash
-ORTOA/ $ python3 -m venv .venv
-ORTOA/ $ . .venv/bin/activate
-ORTOA/ $ pip install -r TODO:REQUIREMENTS
-ORTOA/ $ pip install -e ./extras
-```
 
 ## Sourcing Scripts & Utilities
 
@@ -50,6 +40,7 @@ ORTOA/ $ ortoa-simulate -h
 ```bash
 ORTOA/ $ ortoa-client-run -h
 ```
+
 
 # Previously in `dependencies.txt`
 
