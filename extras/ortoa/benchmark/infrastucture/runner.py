@@ -86,8 +86,8 @@ class JobOrchestration(BaseModel, Generic[JobT]):
     def run_sequential(self) -> List[Result[JobT]]:
         for job in self.jobs:
             job.directory.mkdir(parents=True)
-            with open(job.directory / "output.csv", "w") as f:
-                f.write("Output for job " + job.name)
+            with open(job.directory / "output.yaml", "w") as f:
+                f.write("meta: Output for job " + job.name)
 
         raise NotImplementedError
         return []

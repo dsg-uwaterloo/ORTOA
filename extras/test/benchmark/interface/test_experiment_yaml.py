@@ -88,9 +88,12 @@ def test_range_data_generation_config():
 
 # def test_flag_deserialization():
 #     # Test every flag individually
-#     # Test a list containing every type of flag (ensure that pydantic correctly discriminates in the union)
 #     pass
 
+# def test_flag_discrimination():
+#     #     # Test a list containing every type of flag (ensure that pydantic correctly discriminates in the union)
+
+#     pass
 
 # def test_client_config():
 #     # Test that a ClientConfig can be deserialized
