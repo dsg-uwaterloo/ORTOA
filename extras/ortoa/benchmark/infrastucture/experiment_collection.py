@@ -36,7 +36,7 @@ class ExperimentPath(BaseModel):
 
     @classmethod
     def from_path(cls, experiment: Path) -> List[Self]:
-        return [ExperimentPath(experiment)]
+        return [ExperimentPath(experiment_path=experiment)]
 
     @classmethod
     def from_dir(cls, experiment_dir: Path) -> List[Self]:
