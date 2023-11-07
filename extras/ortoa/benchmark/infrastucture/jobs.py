@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from typing import List
 
 import redis
+import subprocess
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
@@ -13,10 +14,20 @@ class ClientFlags(BaseModel):
     operations: Path = Field(required=True)
     nthreads: int = 1
 
+    @property
+    def initdb_flags(self) -> str:
+        return f"--initdb --seed {self.seed} --nthreads {self.nthreads}"
+
+    def operation_flags(self) -> str:
+        return f"--seed {self.operations} --nthreads {self.nthreads}"
+
 
 class HostFlags(BaseModel):
     nthreads: int = 1
     simulate: bool = True
+
+    def __str__(self) -> str:
+        return f"--nthreads {self.nthreads}"
 
 
 class ClientJob(BaseModel):
@@ -45,11 +56,15 @@ class ClientJob(BaseModel):
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
-        raise NotImplementedError
+        seed_command = ["ortoa-client-run"] + self.client_flags.initdb_flags.split()
+        subprocess.run(seed_command)
 
     def _perform_operations(self) -> None:
         """Perform operations based on file linked in experiment"""
-        raise NotImplementedError
+        operations_command = [
+            "ortoa-client-run"
+        ] + self.client_flags.operation_flags.split()
+        subprocess.run(operations_command)
 
     def _save_results(self) -> None:
         """Save the results of this job"""
@@ -61,12 +76,13 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
-        """
-        with subprocess.Popen([])
-        """
         self._flush_db()
-        self._seed_db()
-        self._perform_operations()
+
+        host_command = ["ortoa-simulate"] + str(self.host_flags).split()
+        with subprocess.Popen(host_command):
+            self._seed_db()
+            self._perform_operations()
+
         self._save_results()
         self._flush_db()
 
