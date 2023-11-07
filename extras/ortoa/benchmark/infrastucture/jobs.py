@@ -2,6 +2,8 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List
 
+import redis
+
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
 
@@ -32,12 +34,14 @@ class ClientJob(BaseModel):
     client_flags: ClientFlags
     host_flags: HostFlags
 
+    r: redis.Redis = redis.Redis(host="localhost", port=6397)
+
     def __str__(self) -> str:
         return self.name
 
     def _flush_db(self) -> None:
         """Flush (empty) the database"""
-        raise NotImplementedError
+        self.r.flushdb()
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
