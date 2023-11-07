@@ -7,8 +7,6 @@ import subprocess
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
-import time
-
 
 class ClientFlags(BaseModel):
     initdb: bool = True
@@ -84,23 +82,19 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
-        # subprocess.run(["source", "scripts/ortoa-lib.sh"])
-
         host_command = [
             "./build/src/host/ortoa-host",
             "./build/src/enclave/ortoa-enc.signed",
             "--simulate",
         ] + str(self.host_flags).split()
-        with subprocess.Popen(host_command) as proc:
+        with subprocess.Popen(host_command) as host_proc:
             self._flush_db()
             self._seed_db()
             self._perform_operations()
             self._flush_db()
-            proc.terminate()
+            host_proc.terminate()
 
-        print("Exited!")
-
-        # self._save_results()
+        self._save_results()
 
 
 def make_jobs(
