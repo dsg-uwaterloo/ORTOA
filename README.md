@@ -4,7 +4,7 @@
 
 ### 1. OpenEnclave SDK
 
-Follow the installation instructions found in the [OpenEnclave documentation](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md).
+Follow the installation instructions found in the [OpenEnclave documentation](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md). If only using in simulation mode, you can skip step 2.
 
 ### 2. Apache Thrift
 
