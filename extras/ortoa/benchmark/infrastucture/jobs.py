@@ -1,6 +1,6 @@
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, ClassVar
 
 import redis
 import subprocess
@@ -35,6 +35,9 @@ class ClientJob(BaseModel):
     Job for testing and benchmarking the client. Satisfies runner.JobProtocol
     """
 
+    class Config:
+        arbitrary_types_allowed = True
+
     name: str
     directory: Path
     metadata: ExperimentMetatadata
@@ -45,7 +48,7 @@ class ClientJob(BaseModel):
     client_flags: ClientFlags
     host_flags: HostFlags
 
-    rd: redis.Redis = redis.Redis(host="localhost", port=6397)
+    rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6397)
 
     def __str__(self) -> str:
         return self.name
