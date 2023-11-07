@@ -73,9 +73,7 @@ class JobOrchestration(BaseModel, Generic[JobT]):
 
     def model_post_init(self, __context: Any) -> None:
         if len(self.jobs) == 0:
-            raise ValueError(
-                f"{__class__} configured with no jobs"
-            )  # TODO: Move to logger
+            raise ValueError(f"{__class__} configured with no jobs")
         return super().model_post_init(__context)
 
     def run(self) -> List[Result[JobT]]:
@@ -85,9 +83,6 @@ class JobOrchestration(BaseModel, Generic[JobT]):
 
     def run_sequential(self) -> List[Result[JobT]]:
         for job in self.jobs:
-            job.directory.mkdir(parents=True)
-            with open(job.directory / "output.yaml", "w") as f:
-                f.write("meta: Output for job " + job.name)
+            job()
 
-        raise NotImplementedError
         return []

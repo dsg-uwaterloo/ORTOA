@@ -7,6 +7,8 @@ import subprocess
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
+import time
+
 
 class ClientFlags(BaseModel):
     initdb: bool = True
@@ -18,6 +20,7 @@ class ClientFlags(BaseModel):
     def initdb_flags(self) -> str:
         return f"--initdb --seed {self.seed} --nthreads {self.nthreads}"
 
+    @property
     def operation_flags(self) -> str:
         return f"--seed {self.operations} --nthreads {self.nthreads}"
 
@@ -48,24 +51,26 @@ class ClientJob(BaseModel):
     client_flags: ClientFlags
     host_flags: HostFlags
 
-    rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6397)
+    rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
 
     def __str__(self) -> str:
         return self.name
 
     def _flush_db(self) -> None:
         """Flush (empty) the database"""
-        self.rd.flushdb()
+        self.rd.flushdb(asynchronous=False)
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
-        seed_command = ["ortoa-client-run"] + self.client_flags.initdb_flags.split()
+        seed_command = [
+            "./build/src/client/client"
+        ] + self.client_flags.initdb_flags.split()
         subprocess.run(seed_command)
 
     def _perform_operations(self) -> None:
         """Perform operations based on file linked in experiment"""
         operations_command = [
-            "ortoa-client-run"
+            "./build/src/client/client"
         ] + self.client_flags.operation_flags.split()
         subprocess.run(operations_command)
 
@@ -79,17 +84,23 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
-        subprocess.run(["source", "scripts/ortoa-lib.sh"])
+        # subprocess.run(["source", "scripts/ortoa-lib.sh"])
 
-        self._flush_db()
-
-        host_command = ["ortoa-simulate"] + str(self.host_flags).split()
-        with subprocess.Popen(host_command):
+        host_command = [
+            "./build/src/host/ortoa-host",
+            "./build/src/enclave/ortoa-enc.signed",
+            "--simulate",
+        ] + str(self.host_flags).split()
+        with subprocess.Popen(host_command) as proc:
+            self._flush_db()
             self._seed_db()
             self._perform_operations()
+            self._flush_db()
+            proc.terminate()
 
-        self._save_results()
-        self._flush_db()
+        print("Exited!")
+
+        # self._save_results()
 
 
 def make_jobs(
