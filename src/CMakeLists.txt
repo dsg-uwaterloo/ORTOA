@@ -83,13 +83,4 @@ add_custom_target(generate-thrift
     gen-cpp/RPC.h
 )
     
-# Define custom targets (e.g. "run" and "simulate")
 add_custom_target(sign ALL DEPENDS enclave/ortoa-enc.signed)
-
-if ((NOT DEFINED ENV{OE_SIMULATION}) OR (NOT $ENV{OE_SIMULATION}))
-  add_custom_target(
-    run
-    DEPENDS host/ortoa-host sign
-    COMMAND host/ortoa-host enclave/ortoa-enc.signed
-  )
-endif ()
