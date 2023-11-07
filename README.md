@@ -2,10 +2,35 @@
 
 ## Project Dependencies
 
-| Name             | Installation                                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `clang-format`   | `sudo apt-get install clang-format`                                                                                                        |
-| Open Enclave SDK | [OpenEnclave documentation](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md) |
+### 1. Open Enclave SDK
+
+Follow the installation instructions found in the [OpenEnclave documentation](https://github.com/openenclave/openenclave/blob/master/docs/GettingStartedDocs/install_oe_sdk-Ubuntu_20.04.md).
+
+### 2. Apache Thrift
+
+First, install the tools and libraries required to build and install the Apache Thrift compiler and C++ libraries. The following instructions are for an Ubuntu Linux based system. Pulled from [this documentation](https://thrift.apache.org/docs/install/debian.html).
+
+```bash
+sudo apt-get install automake bison flex g++ git libboost-all-dev libevent-dev libssl-dev libtool make pkg-config
+```
+
+Then, install the Thrift compiler:
+
+```bash
+sudo apt install thrift-compiler
+```
+
+Finally, install the Thrift C++ library:
+
+```bash
+sudo apt install libthrift-dev
+```
+
+## Dev Dependencies
+
+| Name           | Installation                        |
+| -------------- | ----------------------------------- |
+| `clang-format` | `sudo apt-get install clang-format` |
 
 ## Python Packages
 
