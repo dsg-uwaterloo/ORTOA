@@ -26,9 +26,9 @@ Finally, install the Thrift C++ library:
 sudo apt install libthrift-dev
 ```
 
-### 3. Redis C/C++ Client (`hiredis` & `redis-plus-plus`)
+### 3. Redis C/C++ Client
 
-First, install [`hiredis`](https://github.com/redis/hiredis). _Note: do not install multiple versions of `hiredis`. Otherwise, there might be some bizarre conflicts._
+First, install [`hiredis`](https://github.com/redis/hiredis). _(Note: do not install multiple versions of `hiredis`. Otherwise, there might be some bizarre conflicts.)_
 
 ```bash
 # Clone hiredis
@@ -40,7 +40,7 @@ ORTOA/hiredis $ make
 ORTOA/hiredis $ sudo make install
 ```
 
-Then, install [`redis-plus-plus`](https://github.com/sewenew/redis-plus-plus). _Since `redis-plus-plus` depends on `hiredis`, ensure that `hiredis` is installed first._
+Then, install [`redis-plus-plus`](https://github.com/sewenew/redis-plus-plus). _(Since `redis-plus-plus` depends on `hiredis`, ensure that `hiredis` is installed first.)_
 
 ```bash
 # Clone redis-plus-plus
@@ -58,6 +58,14 @@ ORTOA/redis-plus-plus/build $ sudo make install
 ```
 
 Finally, you can clean up the repo by deleting the `hiredis/` and `redis-plus-plus/` directories. This is because (by default) they are installed at `/usr/local`.
+
+### 4. Sodium
+
+[Sodium](https://github.com/jedisct1/libsodium) is a modern, easy-to-use software library for encryption, decryption, signatures, password hashing, and more. It can be installed with the following command:
+
+```bash
+sudo apt-get install -y libsodium-dev
+```
 
 ### [Optional] Dev Dependencies
 
