@@ -76,6 +76,8 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
+        subprocess.run(["source", "scripts/ortoa-lib.sh"])
+
         self._flush_db()
 
         host_command = ["ortoa-simulate"] + str(self.host_flags).split()
