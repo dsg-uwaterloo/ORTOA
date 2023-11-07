@@ -1,9 +1,9 @@
-name: Byte Size Experiment
+name: Test Experiment
 
-output_directory: byte_size_experiment/
+output_directory: test_experiment/
 
 metadata:
-  description: Modelling the effect of Byte Size of values on ORTOA-tee
+  description: Test experiment on ORTOA-tee
 
 client_config:
   data:
