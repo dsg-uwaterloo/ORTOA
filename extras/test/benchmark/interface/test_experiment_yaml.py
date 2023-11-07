@@ -32,9 +32,8 @@ def test_basic_data_generation_config():
     bsg_static_int_yaml = load_yaml(get_path("byte_size_datagen_int"))
     config = ByteSizeGenerationConfig.model_validate(bsg_static_int_yaml)
     assert config.generator == "ByteSizeGenerator"
-    assert isinstance(config.n_bytes, IntegerParameter)
-    assert isinstance(config.n_bytes.value, int)
-    assert config.n_bytes.value == 160
+    assert isinstance(config.n_bytes, int)
+    assert config.n_bytes == 160
 
     # Check can deserialize RandomIntegerGenerator
     rig_static_int_yaml = load_yaml(get_path("random_integer_datagen"))
@@ -88,9 +87,12 @@ def test_range_data_generation_config():
 
 # def test_flag_deserialization():
 #     # Test every flag individually
-#     # Test a list containing every type of flag (ensure that pydantic correctly discriminates in the union)
 #     pass
 
+# def test_flag_discrimination():
+#     #     # Test a list containing every type of flag (ensure that pydantic correctly discriminates in the union)
+
+#     pass
 
 # def test_client_config():
 #     # Test that a ClientConfig can be deserialized

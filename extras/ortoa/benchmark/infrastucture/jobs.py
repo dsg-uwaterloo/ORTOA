@@ -57,6 +57,9 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
+        """
+        with subprocess.Popen([])
+        """
         self._flush_db()
         self._seed_db()
         self._perform_operations()
