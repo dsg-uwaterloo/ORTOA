@@ -55,6 +55,7 @@ class Result(BaseModel, Generic[JobT]):
         arbitrary_types_allowed = True
 
     job: JobT
+    result_path: Path
     exception: Optional[BaseException]
 
 
@@ -84,5 +85,9 @@ class JobOrchestration(BaseModel, Generic[JobT]):
 
     def run_sequential(self) -> List[Result[JobT]]:
         for job in self.jobs:
-            ic(job)
+            job.directory.mkdir(parents=True)
+            with open(job.directory / "output.yaml", "w") as f:
+                f.write("meta: Output for job " + job.name)
+
+        raise NotImplementedError
         return []
