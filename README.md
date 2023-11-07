@@ -59,6 +59,22 @@ ORTOA/redis-plus-plus/build $ sudo make install
 
 Finally, you can clean up the repo by deleting the `hiredis/` and `redis-plus-plus/` directories. This is because (by default) they are installed at `/usr/local`.
 
+#### Debugging `hiredis` and `redis-plus-plus`
+
+When linking with shared libraries, and running the application, you might get the following error message:
+
+```bash
+error while loading shared libraries: xxx: cannot open shared object file: No such file or directory.
+```
+
+That's because the linker cannot find the shared libraries. In order to solve the problem, you can add the path where you installed `hiredis` and `redis-plus-plus` libraries, to `LD_LIBRARY_PATH` environment variable. For example:
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+```
+
+Check [this StackOverflow question](https://stackoverflow.com/questions/480764/linux-error-while-loading-shared-libraries-cannot-open-shared-object-file-no-s) for details on how to solve the problem.
+
 ### 4. Sodium
 
 [Sodium](https://github.com/jedisct1/libsodium) is a modern, easy-to-use software library for encryption, decryption, signatures, password hashing, and more. It can be installed with the following command:
