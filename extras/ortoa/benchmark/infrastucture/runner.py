@@ -80,10 +80,7 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         for job in self.jobs:
             job()
             results.append(
-                Result(
-                    job=job,
-                    result_path=job.directory / "results.csv",
-                )
+                Result(job=job, result_path=job.client_flags.output, exception=None)
             )
 
         return results

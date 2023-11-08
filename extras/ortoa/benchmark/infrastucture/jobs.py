@@ -5,6 +5,9 @@ from typing import Any, List, ClassVar
 import redis
 import subprocess
 
+import yaml
+import json
+
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
 
@@ -53,14 +56,14 @@ class ClientJob(BaseModel):
     client_flags: ClientFlags
     host_flags: HostFlags
 
-    rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
+    _rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
 
     def __str__(self) -> str:
         return self.name
 
     def _flush_db(self) -> None:
         """Flush (empty) the database"""
-        self.rd.flushdb(asynchronous=False)
+        self._rd.flushdb(asynchronous=False)
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
@@ -78,7 +81,11 @@ class ClientJob(BaseModel):
 
     def _save_results(self) -> None:
         """Save the results of this job"""
-        raise NotImplementedError
+        config_dump_path = self.directory / "config.yaml"
+        data = json.loads(self.model_dump_json())
+
+        with config_dump_path.open("w") as f:
+            yaml.safe_dump(data, f)
 
     def __call__(self) -> None:
         """
