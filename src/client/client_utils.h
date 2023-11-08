@@ -2,12 +2,12 @@
 #include <mutex>
 #include <sodium.h>
 #include <sstream>
+#include <argparse/argparse.hpp>
 
 #include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
-#include <argparse/argparse.hpp>
 
 struct ClientConfig {
     std::ifstream seed_data;
