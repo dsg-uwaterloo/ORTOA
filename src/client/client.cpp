@@ -118,20 +118,33 @@ class ClientHandler {
 
     float getAveLatency() {
         assert(latencies.size() > 0);
+
         auto average_latency =
             std::accumulate(latencies.begin(), latencies.end(), 0.0) /
             latencies.size();
+
         std::cout << "[Client]: Data access complete, average latency: "
                   << average_latency << " microseconds" << std::endl;
+
+        return average_latency;
     }
 
     void writeOutput() {
+        std::cout << "[output]" << std::endl;
+        if (!experiment_result_file)
+            return;
+
+        std::cout << "[output found file]" << std::endl;
+
         for (auto l : latencies) {
             experiment_result_file << l << ",";
         }
         experiment_result_file << std::endl;
 
         experiment_result_file << getAveLatency() << std::endl;
+
+        experiment_result_file.flush();
+        experiment_result_file.close();
     }
 };
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, ClassVar
+from typing import Any, List, ClassVar
 
 import redis
 import subprocess
@@ -10,9 +10,10 @@ from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMet
 
 class ClientFlags(BaseModel):
     initdb: bool = True
+    nthreads: int = 1
     seed: Path = Field(required=True)
     operations: Path = Field(required=True)
-    nthreads: int = 1
+    output: Path = Field(required=True)
 
     @property
     def initdb_flags(self) -> str:
@@ -20,7 +21,10 @@ class ClientFlags(BaseModel):
 
     @property
     def operation_flags(self) -> str:
-        return f"--seed {self.operations} --nthreads {self.nthreads}"
+        return f"--seed {self.operations} --nthreads {self.nthreads} --output {self.output}"
+
+    def model_post_init(self, __context: Any) -> None:
+        return super().model_post_init(__context)
 
 
 class HostFlags(BaseModel):
@@ -104,7 +108,9 @@ def make_jobs(
 
     for experiment in experiments:
         e_client_flags = ClientFlags(
-            seed=experiment.seed_data, operations=experiment.operations
+            seed=experiment.seed_data,
+            operations=experiment.operations,
+            output=experiment.output_directory / "results.txt",
         )
 
         for flag in experiment.client_flags:
