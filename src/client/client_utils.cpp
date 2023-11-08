@@ -86,6 +86,8 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
 
     program.add_argument("--seed").default_value(std::string{""});
 
+    program.add_argument("-o", "--output").default_value(std::string{""});
+
     program.add_argument("--nthreads").default_value(16).scan<'d', int>();
 
     program.add_argument("--noperations").default_value(1000).scan<'d', int>();
@@ -103,10 +105,20 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
     if (program.is_used("--seed")) {
         auto seed_path = program.get<std::string>("--seed");
         config.seed_data.open(seed_path);
+
         if (!config.seed_data.is_open()) {
             throw std::runtime_error("Invalid path to seed data");
         }
     }
+
+    if (program.is_used("--output")) {
+        auto output_path = program.get<std::string>("--output");
+        config.experiment_result_file.open(output_path);
+
+        if (!config.experiment_result_file.is_open()) {
+            throw std::runtime_error("Invalid path to experiment result file");
+        }
+    } 
 
     config.num_clients = program.get<int>("--nthreads");
     config.num_operations = program.get<int>("--noperations");

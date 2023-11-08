@@ -11,6 +11,8 @@
 
 struct ClientConfig {
     std::ifstream seed_data;
+    std::ofstream experiment_result_file;
+
     int num_clients = 16;
     int num_operations = 1000;
     double p_get = 0.5;
