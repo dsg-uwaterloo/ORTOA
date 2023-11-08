@@ -10,7 +10,8 @@
 #include "../host/redis.h"
 
 void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
-               int &num_clients, float &p_get);
+               int &num_clients, float &p_get,
+               std::ofstream &experiment_result_file);
 
 Operation genRandOperation(int p_get);
 

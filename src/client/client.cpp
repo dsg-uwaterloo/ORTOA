@@ -22,6 +22,7 @@ using namespace apache::thrift::transport;
 class ClientHandler {
   private:
     std::ifstream seed_data;
+    std::ofstream experiment_result_file;
     bool init_db = false;
     int num_clients = 16;
     float p_get = 0.5;
@@ -30,7 +31,8 @@ class ClientHandler {
 
   public:
     ClientHandler(int argc, char *argv[]) {
-        parseArgs(argc, argv, seed_data, init_db, num_clients, p_get);
+        parseArgs(argc, argv, seed_data, init_db, num_clients, p_get,
+                  experiment_result_file);
     }
 
     void start() {
@@ -75,6 +77,7 @@ class ClientHandler {
             thread.join();
 
         getAveLatency();
+        writeOutput();
     }
 
     void run() {
@@ -113,11 +116,22 @@ class ClientHandler {
         transport->close();
     }
 
-    void getAveLatency() {
+    float getAveLatency() {
+        assert(latencies.size() > 0);
+        auto average_latency =
+            std::accumulate(latencies.begin(), latencies.end(), 0.0) /
+            latencies.size();
         std::cout << "[Client]: Data access complete, average latency: "
-                  << std::accumulate(latencies.begin(), latencies.end(), 0.0) /
-                         latencies.size()
-                  << " microseconds" << std::endl;
+                  << average_latency << " microseconds" << std::endl;
+    }
+
+    void writeOutput() {
+        for (auto l : latencies) {
+            experiment_result_file << l << ",";
+        }
+        experiment_result_file << std::endl;
+
+        experiment_result_file << getAveLatency() << std::endl;
     }
 };
 
