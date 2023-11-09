@@ -1,22 +1,16 @@
 from pathlib import Path
 from typing import (
     Any,
-    Callable,
-    Dict,
     Generic,
     List,
     Optional,
     Protocol,
     Sequence,
     TypeVar,
-    Union,
     runtime_checkable,
 )
 
-from pydantic import BaseModel, Field
-from typing_extensions import Self
-
-from icecream import ic
+from pydantic import BaseModel
 
 
 @runtime_checkable
@@ -82,7 +76,11 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         raise NotImplementedError
 
     def run_sequential(self) -> List[Result[JobT]]:
+        results: List[Result[JobT]] = []
         for job in self.jobs:
             job()
+            results.append(
+                Result(job=job, result_path=job.client_flags.output, exception=None)
+            )
 
-        return []
+        return results

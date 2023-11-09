@@ -3,7 +3,8 @@
 std::mutex fileMutex;
 
 void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
-               int &num_clients, float &p_get) {
+               int &num_clients, float &p_get,
+               std::ofstream &experiment_result_file) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
 
@@ -33,6 +34,18 @@ void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
         // Check if client is to initialize database
         else if (arg == "--initdb") {
             init_db = true;
+        }
+
+        // Check if client is to write output to a file
+        else if (arg == "--output" && i + 1 < argc) {
+            std::string provided_ofile = argv[i + 1];
+            experiment_result_file.open(provided_ofile);
+
+            if (!experiment_result_file.is_open()) {
+                throw std::invalid_argument("Invalid path to output file");
+            }
+
+            i++;
         }
     }
 }

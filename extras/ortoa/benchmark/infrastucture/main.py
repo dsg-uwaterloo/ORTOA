@@ -129,8 +129,6 @@ def main():
 
     stats.save_to(args.working_dir)
 
-    # TODO: create the HTML
-
 
 if __name__ == "__main__":
     main()
