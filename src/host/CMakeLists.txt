@@ -31,15 +31,31 @@ target_include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
+# <------------ add hiredis dependency --------------->
+find_path(HIREDIS_HEADER hiredis)
+target_include_directories(ortoa-host PUBLIC ${HIREDIS_HEADER})
+
+find_library(HIREDIS_LIB hiredis)
+target_link_libraries(ortoa-host ${HIREDIS_LIB})
+
+# <------------ add redis-plus-plus dependency -------------->
+# NOTE: this should be *sw* NOT *redis++*
+find_path(REDIS_PLUS_PLUS_HEADER sw)
+target_include_directories(ortoa-host PUBLIC ${REDIS_PLUS_PLUS_HEADER})
+
+find_library(REDIS_PLUS_PLUS_LIB redis++)
+target_link_libraries(ortoa-host ${REDIS_PLUS_PLUS_LIB})
+
+
 target_link_libraries(ortoa-host 
-    openenclave::oehost 
-    /usr/local/lib/libredis++.a
-    /usr/local/lib/libhiredis.a
-    rt
-    spdlog::spdlog
-    boost_filesystem
-    boost_serialization
-    thrift
-    sodium
-    pthread
+  openenclave::oehost 
+  rt
+  spdlog::spdlog
+  boost_filesystem
+  boost_serialization
+  thrift
+  sodium
+  pthread
+  hiredis
+  redis++
 )

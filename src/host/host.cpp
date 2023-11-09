@@ -6,7 +6,6 @@
 #include <openenclave/host.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TThreadedServer.h>
-#include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TServerSocket.h>
 
@@ -97,5 +96,6 @@ int main(int argc, char *argv[]) {
         server->serve();
     } catch (OECreationFailed err) {
         spdlog::error("Host | {0}", err.what());
+        return 1;
     }
 }

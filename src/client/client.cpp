@@ -30,7 +30,7 @@ class ClientHandler {
     void start() { (config.init_db) ? initDB() : runThreaded(); }
 
     void initDB() {
-        // Number of operations to perform corresponds to maximum key (if seed data is not used)
+        // # of operations corresponds to max_key (if seed data is not used)
         config.num_operations = config.max_key;
 
         redisCli rd;
@@ -53,8 +53,6 @@ class ClientHandler {
         for (std::thread &thread : threads) {
             thread.join();
         }
-
-        getAveLatency();
     }
 
     void run() {
@@ -79,10 +77,36 @@ class ClientHandler {
         transport->close();
     }
 
-    void getAveLatency() {
-        double aveLatency = std::accumulate(latencies.begin(), latencies.end(), 0.0) /
-                         latencies.size();
-        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", aveLatency);
+    float getAveLatency() {
+        assert(latencies.size() > 0);
+
+        auto average_latency =
+            std::accumulate(latencies.begin(), latencies.end(), 0.0) /
+            latencies.size();
+
+        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", average_latency);
+        
+        return average_latency;
+    }
+
+    void writeOutput(float total_duration) {
+        if (config.init_db) {
+            return;
+        }
+
+        if (!config.experiment_result_file.is_open()) {
+            getAveLatency();
+            return;
+        }
+
+        for (auto l : latencies) {
+            config.experiment_result_file << l << ",";
+        }
+
+        config.experiment_result_file << std::endl;
+        config.experiment_result_file << getAveLatency() << std::endl;
+        config.experiment_result_file << total_duration << std::endl;
+        config.experiment_result_file.flush();
     }
 };
 
@@ -94,7 +118,10 @@ int main(int argc, char *argv[]) {
         client.start();
         auto end = high_resolution_clock::now();
 
-        spdlog::info("[main]: Entire program finished in {0} microseconds", duration_cast<microseconds>(end - start).count());
+        auto total_duration = duration_cast<microseconds>(end - start).count();
+        client.writeOutput(total_duration);
+
+        spdlog::info("[main]: Entire program finished in {0} microseconds", total_duration);
     } catch (std::runtime_error err) {
         spdlog::error("Client | {0}", err.what());
     } catch (TException &err) {
