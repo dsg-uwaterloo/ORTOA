@@ -52,7 +52,7 @@ _EOF_
 ############################################
 
 ortoa-client-run() {
-        local HELP="""\
+    local HELP="""\
 Run the ORTOA client
 Syntax: ortoa-client-run [-h]
 ----------------------------------------------
