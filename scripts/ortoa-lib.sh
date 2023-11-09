@@ -52,6 +52,13 @@ _EOF_
 ############################################
 
 ortoa-client-run() {
+        local HELP="""\
+Run the ORTOA client
+Syntax: ortoa-client-run [-h]
+----------------------------------------------
+    -h                  Print this help message
+"""
+
     ${BUILD_DIR}/src/client/client "${@}"
 }
 export -f ortoa-client-run
