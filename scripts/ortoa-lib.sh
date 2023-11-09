@@ -54,6 +54,7 @@ _EOF_
 ortoa-client-run() {
     local HELP="""\
 Run the ORTOA client
+
 Syntax: ortoa-client-run [-h]
 ----------------------------------------------
     -h                  Print this help message
