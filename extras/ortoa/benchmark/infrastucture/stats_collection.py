@@ -19,9 +19,17 @@ class Stats(BaseModel):
     raw_df: pd.DataFrame  # Entry from every experiment
     # summary_df: pd.DataFrame = Field(init_var=False, required=False)
 
+    def _graph_threads_vs_latency(self, dir: Path) -> None:
+        ax = self.raw_df.plot.bar(x="nthreads", y="average_latency")
+        fig = ax.get_figure()
+        fig.savefig(dir / "threads_vs_latency.pdf")
+
+    def _save_graphs(self, dir: Path) -> None:
+        self._graph_threads_vs_latency(dir)
+
     def save_to(self, dir: Path) -> None:
         self.raw_df.to_csv(dir / "complete.csv")
-        # self.summary_df.to_csv(dir / "summary.csv")
+        self._save_graphs(dir=dir)
 
     @classmethod
     def _parse_result(self, job: ClientJob, results_file: Path) -> pd.DataFrame:
@@ -43,8 +51,6 @@ class Stats(BaseModel):
                 "latency std": [latency_stdev],
             }
         )
-
-        print(result_summary)
 
         return result_summary
 
