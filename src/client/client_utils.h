@@ -24,11 +24,15 @@ struct ClientConfig {
 
 bool moreOperationsExist(ClientConfig &config);
 
+Operation getInitKV(ClientConfig &config);
+
 Operation getOperation(ClientConfig &config);
 
-Operation genRandOperation(ClientConfig &config);
-
 Operation getSeedOperation(ClientConfig &config);
+
+Operation genRandInitValue(ClientConfig &config);
+
+Operation genRandOperation(ClientConfig &config);
 
 std::istream &readFile(std::ifstream &seed_data, std::string &line);
 

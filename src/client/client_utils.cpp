@@ -4,7 +4,15 @@ std::mutex fileMutex;
 
 bool moreOperationsExist(ClientConfig &config) {
     return (config.seed_data.is_open() && config.seed_data.peek() != EOF) ||
-           config.num_operations > 0;
+           (!config.seed_data.is_open() && config.num_operations > 0);
+}
+
+Operation getInitKV(ClientConfig &config) {
+    if (config.seed_data.is_open()) {
+        return getSeedOperation(config);
+    } else {
+        return genRandInitValue(config);
+    }
 }
 
 Operation getOperation(ClientConfig &config) {
@@ -13,6 +21,41 @@ Operation getOperation(ClientConfig &config) {
     } else {
         return genRandOperation(config);
     }
+}
+
+Operation getSeedOperation(ClientConfig &config) {
+    std::string line;
+    readFile(config.seed_data, line);
+
+    std::istringstream ss(line);
+    std::string operation, key, value;
+    ss >> operation >> key >> value;
+
+    Operation op;
+    op.__set_op((operation == "GET") ? OpType::GET : OpType::PUT);
+    op.__set_key(key);
+
+    // If operation is GET, then update value to random bytes
+    if (op.op == OpType::GET) {
+        char rand_val[VALUE_SIZE];
+        randombytes_buf(rand_val, VALUE_SIZE);
+        value = std::string(rand_val);
+    }
+
+    op.__set_value(clientEncrypt(value));
+    return op;
+}
+
+Operation genRandInitValue(ClientConfig &config) {
+    Operation op;
+
+    std::string value = std::to_string(rand() % config.max_value);
+    op.__set_key(std::to_string(config.max_key - config.num_operations));
+    op.__set_value(clientEncrypt(value));
+
+    // Decrement config.num_operations
+    --config.num_operations;
+    return op;
 }
 
 Operation genRandOperation(ClientConfig &config) {
@@ -39,30 +82,6 @@ Operation genRandOperation(ClientConfig &config) {
 
     // Decrement config.num_operations
     --config.num_operations;
-    return op;
-}
-
-Operation getSeedOperation(ClientConfig &config) {
-    std::string line;
-    readFile(config.seed_data, line);
-
-    std::istringstream ss(line);
-    std::string operation, key, value;
-    ss >> operation >> key >> value;
-
-    Operation op;
-    op.__set_op((operation == "GET") ? OpType::GET : OpType::PUT);
-    op.__set_key(key);
-
-    // If operation is GET, then update value to random bytes
-    if (op.op == OpType::GET) {
-        char rand_val[VALUE_SIZE];
-        randombytes_buf(rand_val, VALUE_SIZE);
-        value = std::string(rand_val);
-    }
-
-    op.__set_value(clientEncrypt(value));
-
     return op;
 }
 

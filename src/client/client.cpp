@@ -30,25 +30,16 @@ class ClientHandler {
     void start() { (config.init_db) ? initDB() : runThreaded(); }
 
     void initDB() {
+        // Number of operations to perform corresponds to maximum key (if seed data is not used)
+        config.num_operations = config.max_key;
+
         redisCli rd;
         auto pipeline = rd.pipe();
 
-        // If seed data exists, initialize the db with seed data
-        if (config.seed_data.is_open()) {
-            std::string line;
-            while (std::getline(config.seed_data, line)) {
-                Operation op = getSeedOperation(config);
-                pipeline.set(op.key, op.value);
-            }
+        while (moreOperationsExist(config)) {
+            Operation op = getInitKV(config);
+            pipeline.set(op.key, op.value);
         }
-        // If seed data does not exist, initialize db with key from 0 to config.max_key
-        else {
-            for (int i = 0; i < config.max_key; ++i) {
-                std::string value = std::to_string(rand() % config.max_value);
-                pipeline.set(std::to_string(i), clientEncrypt(value));
-            }
-        }
-
         pipeline.exec();
     }
 
@@ -59,8 +50,9 @@ class ClientHandler {
         }
 
         // Wait for all threads to finish
-        for (std::thread &thread : threads)
+        for (std::thread &thread : threads) {
             thread.join();
+        }
 
         getAveLatency();
     }
