@@ -20,9 +20,11 @@ using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 
 class ClientHandler {
+  public:
+    std::ofstream experiment_result_file;
+
   private:
     std::ifstream seed_data;
-    std::ofstream experiment_result_file;
     bool init_db = false;
     int num_clients = 16;
     float p_get = 0.5;
@@ -130,11 +132,8 @@ class ClientHandler {
     }
 
     void writeOutput() {
-        std::cout << "[output]" << std::endl;
         if (!experiment_result_file)
             return;
-
-        std::cout << "[output found file]" << std::endl;
 
         for (auto l : latencies) {
             experiment_result_file << l << ",";
@@ -144,7 +143,6 @@ class ClientHandler {
         experiment_result_file << getAveLatency() << std::endl;
 
         experiment_result_file.flush();
-        experiment_result_file.close();
     }
 };
 
@@ -156,8 +154,11 @@ int main(int argc, char *argv[]) {
         client.start();
         auto end = high_resolution_clock::now();
 
-        std::cout << "[main]: Entire program finished in "
-                  << duration_cast<microseconds>(end - start).count()
+        auto total_duration = duration_cast<microseconds>(end - start).count();
+        client.experiment_result_file << total_duration << std::endl;
+        client.experiment_result_file.flush();
+
+        std::cout << "[main]: Entire program finished in " << total_duration
                   << " microseconds" << std::endl;
     } catch (std::invalid_argument &err) {
         std::cerr << "ERROR: " << err.what() << std::endl;
