@@ -2,86 +2,36 @@
 
 std::mutex fileMutex;
 
-void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
-               int &num_clients, float &p_get,
-               std::ofstream &experiment_result_file) {
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-
-        // Check if current argument is path to the seed data for init DB
-        if (arg == "--seed" && i + 1 < argc) {
-            std::string seed_name = argv[i + 1];
-            seed.open(seed_name);
-
-            if (!seed.is_open()) {
-                throw std::invalid_argument("Invalid path to seed data");
-            }
-            i++; // Skip the next argument
-        }
-
-        // Check if current argument is number of clients for multithreading
-        else if (arg == "--nthreads" && i + 1 < argc) {
-            num_clients = std::stoi(argv[i + 1]);
-            i++;
-        }
-
-        // Check if current argument is probability of GET operation
-        else if (arg == "--pget" && i + 1 < argc) {
-            p_get = std::stoi(argv[i + 1]);
-            i++;
-        }
-
-        // Check if client is to initialize database
-        else if (arg == "--initdb") {
-            init_db = true;
-        }
-
-        // Check if client is to write output to a file
-        else if (arg == "--output" && i + 1 < argc) {
-            std::string provided_ofile = argv[i + 1];
-            experiment_result_file.open(provided_ofile);
-
-            if (!experiment_result_file.is_open()) {
-                throw std::invalid_argument("Invalid path to output file");
-            }
-
-            i++;
-        }
-    }
+bool moreOperationsExist(ClientConfig &config) {
+    return (config.seed_data.is_open() && config.seed_data.peek() != EOF) ||
+           (!config.seed_data.is_open() && config.num_operations > 0);
 }
 
-Operation genRandOperation(int p_get) {
-    float r = (float)rand() / RAND_MAX;
-    int key = rand() % KEY_MAX;
-
-    Operation op;
-    op.__set_op(r <= p_get ? OpType::GET : OpType::PUT);
-    op.__set_key(std::to_string(key));
-
-    std::string value;
-
-    // If operation is GET, then set value to random bytes
-    // If operation is PUT, then set value to random int value
-    if (op.op == OpType::GET) {
-        char rand_val[VALUE_SIZE];
-        randombytes_buf(rand_val, VALUE_SIZE);
-        value = std::string(rand_val);
+Operation getInitKV(ClientConfig &config) {
+    if (config.seed_data.is_open()) {
+        return getSeedOperation(config);
     } else {
-        int put_val = rand() % VAL_MAX;
-        value = std::to_string(put_val);
+        return genRandInitValue(config);
     }
-    op.__set_value(clientEncrypt(value));
-
-    return op;
 }
 
-Operation getSeedOperation(std::string &line) {
+Operation getOperation(ClientConfig &config) {
+    if (config.seed_data.is_open()) {
+        return getSeedOperation(config);
+    } else {
+        return genRandOperation(config);
+    }
+}
+
+Operation getSeedOperation(ClientConfig &config) {
+    std::string line;
+    readFile(config.seed_data, line);
+
     std::istringstream ss(line);
     std::string operation, key, value;
     ss >> operation >> key >> value;
 
     Operation op;
-
     op.__set_op((operation == "GET") ? OpType::GET : OpType::PUT);
     op.__set_key(key);
 
@@ -93,7 +43,45 @@ Operation getSeedOperation(std::string &line) {
     }
 
     op.__set_value(clientEncrypt(value));
+    return op;
+}
 
+Operation genRandInitValue(ClientConfig &config) {
+    Operation op;
+
+    std::string value = std::to_string(rand() % config.max_value);
+    op.__set_key(std::to_string(config.max_key - config.num_operations));
+    op.__set_value(clientEncrypt(value));
+
+    // Decrement config.num_operations
+    --config.num_operations;
+    return op;
+}
+
+Operation genRandOperation(ClientConfig &config) {
+    double r = (double)rand() / RAND_MAX;
+    int key = rand() % config.max_key;
+
+    Operation op;
+    op.__set_op(r < config.p_get ? OpType::GET : OpType::PUT);
+    op.__set_key(std::to_string(key));
+
+    std::string value;
+
+    // If operation is GET, then set value to random bytes
+    // If operation is PUT, then set value to random int value
+    if (op.op == OpType::GET) {
+        char rand_val[VALUE_SIZE];
+        randombytes_buf(rand_val, VALUE_SIZE);
+        value = std::string(rand_val);
+    } else {
+        int put_val = rand() % config.max_value;
+        value = std::to_string(put_val);
+    }
+    op.__set_value(clientEncrypt(value));
+
+    // Decrement config.num_operations
+    --config.num_operations;
     return op;
 }
 
@@ -110,4 +98,51 @@ std::string clientEncrypt(const std::string &value) {
         (size_t)engine.encryptNonDeterministic(value, cipher_text.get());
     std::string updated_val((const char *)cipher_text.get(), out_len);
     return updated_val;
+}
+
+void parseArgs(int argc, char *argv[], ClientConfig &config) {
+    argparse::ArgumentParser program("ortoa-tee");
+
+    program.add_argument("--seed").default_value(std::string{""});
+
+    program.add_argument("-o", "--output").default_value(std::string{""});
+
+    program.add_argument("--nthreads").default_value(16).scan<'d', int>();
+
+    program.add_argument("--noperations").default_value(1000).scan<'d', int>();
+
+    program.add_argument("--initdb").default_value(false).implicit_value(true);
+
+    program.add_argument("--pget").default_value(0.5).scan<'g', double>();
+
+    program.add_argument("--max-key").default_value(100000).scan<'d', int>();
+
+    program.add_argument("--max-val").default_value(100000).scan<'d', int>();
+
+    program.parse_args(argc, argv);
+
+    if (program.is_used("--seed")) {
+        auto seed_path = program.get<std::string>("--seed");
+        config.seed_data.open(seed_path);
+
+        if (!config.seed_data.is_open()) {
+            throw std::runtime_error("Invalid path to seed data");
+        }
+    }
+
+    if (program.is_used("--output")) {
+        auto output_path = program.get<std::string>("--output");
+        config.experiment_result_file.open(output_path);
+
+        if (!config.experiment_result_file.is_open()) {
+            throw std::runtime_error("Invalid path to experiment result file");
+        }
+    } 
+
+    config.num_clients = program.get<int>("--nthreads");
+    config.num_operations = program.get<int>("--noperations");
+    config.init_db = program.get<bool>("--initdb");
+    config.p_get = program.get<double>("--pget");
+    config.max_key = program.get<int>("--max-key");
+    config.max_value = program.get<int>("--max-val");
 }

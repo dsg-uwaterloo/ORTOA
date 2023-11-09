@@ -12,6 +12,16 @@ add_executable(client
     ../gen-cpp/Operation_types.cpp
 )
 
+# fetch latest argparse
+include(FetchContent)
+set(ARGPARSE_BUILD_TESTS OFF CACHE INTERNAL "Turn off building argparse tests")
+set(ARGPARSE_BUILD_SAMPLES OFF CACHE INTERNAL "Turn off building argparse samples")
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+)
+FetchContent_MakeAvailable(argparse)
+
 add_dependencies(client generate-thrift)
 
 include_directories(
@@ -29,4 +39,5 @@ target_link_libraries(client PRIVATE
     thrift
     sodium
     pthread
+    argparse
 )
