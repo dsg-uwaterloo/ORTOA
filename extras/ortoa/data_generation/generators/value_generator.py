@@ -18,3 +18,19 @@ class RandomIntegerGenerator(ValueFactory[int]):
 
     def generate_value(self):
         return random.randint(self.min_val, self.max_val)
+
+
+class ByteSizeGenerator(ValueFactory[str]):
+    def __init(self, num_bytes: int):
+        assert num_bytes > 10
+        self.num_bytes = num_bytes
+
+    def generate_value(self):
+        generated = str(self.num_bytes)
+        generated = generated + "".join(
+            [
+                chr(random.randint(0, 25) + ord("a"))
+                for _ in range(self.num_bytes - len(generated))
+            ]
+        )
+        return generated
