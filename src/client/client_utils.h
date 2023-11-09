@@ -1,22 +1,41 @@
 #include <fstream>
-#include <iostream>
 #include <mutex>
 #include <sodium.h>
 #include <sstream>
+#include <argparse/argparse.hpp>
 
 #include "../constants/constants.h"
 #include "../crypto/encryption_engine.h"
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
 
-void parseArgs(int argc, char *argv[], std::ifstream &seed, bool &init_db,
-               int &num_clients, float &p_get,
-               std::ofstream &experiment_result_file);
+struct ClientConfig {
+    std::ifstream seed_data;
+    std::ofstream experiment_result_file;
 
-Operation genRandOperation(int p_get);
+    int num_clients = 16;
+    int num_operations = 1000;
+    double p_get = 0.5;
+    bool init_db = false;
 
-Operation getSeedOperation(std::string &line);
+    int max_key = 100000;
+    int max_value = 100000;
+};
+
+bool moreOperationsExist(ClientConfig &config);
+
+Operation getInitKV(ClientConfig &config);
+
+Operation getOperation(ClientConfig &config);
+
+Operation getSeedOperation(ClientConfig &config);
+
+Operation genRandInitValue(ClientConfig &config);
+
+Operation genRandOperation(ClientConfig &config);
 
 std::istream &readFile(std::ifstream &seed_data, std::string &line);
 
 std::string clientEncrypt(const std::string &value);
+
+void parseArgs(int argc, char *argv[], ClientConfig &config);

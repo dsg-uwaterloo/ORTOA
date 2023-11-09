@@ -1,6 +1,5 @@
 #include <chrono>
 #include <fstream>
-#include <iostream>
 #include <numeric>
 #include <sodium.h>
 #include <sstream>
@@ -13,6 +12,7 @@
 #include "../gen-cpp/RPC.h"
 #include "../host/redis.h"
 #include "client_utils.h"
+#include "spdlog/spdlog.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
@@ -20,66 +20,39 @@ using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 
 class ClientHandler {
-  public:
-    std::ofstream experiment_result_file;
-
   private:
-    std::ifstream seed_data;
-    bool init_db = false;
-    int num_clients = 16;
-    float p_get = 0.5;
-
-    std::vector<float> latencies;
+    ClientConfig config;
+    std::vector<double> latencies;
 
   public:
-    ClientHandler(int argc, char *argv[]) {
-        parseArgs(argc, argv, seed_data, init_db, num_clients, p_get,
-                  experiment_result_file);
-    }
+    ClientHandler(int argc, char *argv[]) { parseArgs(argc, argv, config); }
 
-    void start() {
-        if (init_db) {
-            initDB();
-        } else {
-            runThreaded();
-        }
-    }
+    void start() { (config.init_db) ? initDB() : runThreaded(); }
 
     void initDB() {
+        // # of operations corresponds to max_key (if seed data is not used)
+        config.num_operations = config.max_key;
+
         redisCli rd;
         auto pipeline = rd.pipe();
 
-        // If seed data exists, initialize the db with seed data
-        if (seed_data.is_open()) {
-            std::string line;
-            while (std::getline(seed_data, line)) {
-                Operation op = getSeedOperation(line);
-                pipeline.set(op.key, op.value);
-            }
+        while (moreOperationsExist(config)) {
+            Operation op = getInitKV(config);
+            pipeline.set(op.key, op.value);
         }
-        // If seed data does not exist, initialize db with key from 0 to KEY_MAX
-        else {
-            for (int i = 0; i < KEY_MAX; ++i) {
-                std::string value = std::to_string(rand() % VAL_MAX);
-                pipeline.set(std::to_string(i), clientEncrypt(value));
-            }
-        }
-
         pipeline.exec();
     }
 
     void runThreaded() {
         std::vector<std::thread> threads;
-        for (int i = 0; i < num_clients; i++) {
+        for (int i = 0; i < config.num_clients; i++) {
             threads.push_back(std::thread(&ClientHandler::run, this));
         }
 
         // Wait for all threads to finish
-        for (std::thread &thread : threads)
+        for (std::thread &thread : threads) {
             thread.join();
-
-        getAveLatency();
-        writeOutput();
+        }
     }
 
     void run() {
@@ -92,27 +65,13 @@ class ClientHandler {
 
         std::string val;
         // If seed data exists, run the client with data
-        if (seed_data.is_open()) {
-            std::string line;
-            while (readFile(seed_data, line)) {
-                Operation op = getSeedOperation(line);
-                auto start = high_resolution_clock::now();
-                client.access(val, op);
-                auto end = high_resolution_clock::now();
-                latencies.push_back(
-                    duration_cast<microseconds>(end - start).count());
-            }
-        }
-        // If seed data does not exist, run client on random values
-        else {
-            for (int i = 0; i < 1000; ++i) {
-                Operation op = genRandOperation(p_get);
-                auto start = high_resolution_clock::now();
-                client.access(val, op);
-                auto end = high_resolution_clock::now();
-                latencies.push_back(
-                    duration_cast<microseconds>(end - start).count());
-            }
+        while (moreOperationsExist(config)) {
+            Operation op = getOperation(config);
+            auto start = high_resolution_clock::now();
+            client.access(val, op);
+            auto end = high_resolution_clock::now();
+            latencies.push_back(
+                duration_cast<microseconds>(end - start).count());
         }
 
         transport->close();
@@ -125,24 +84,29 @@ class ClientHandler {
             std::accumulate(latencies.begin(), latencies.end(), 0.0) /
             latencies.size();
 
-        std::cout << "[Client]: Data access complete, average latency: "
-                  << average_latency << " microseconds" << std::endl;
-
+        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", average_latency);
+        
         return average_latency;
     }
 
-    void writeOutput() {
-        if (!experiment_result_file)
+    void writeOutput(float total_duration) {
+        if (config.init_db) {
             return;
+        }
+
+        if (!config.experiment_result_file.is_open()) {
+            getAveLatency();
+            return;
+        }
 
         for (auto l : latencies) {
-            experiment_result_file << l << ",";
+            config.experiment_result_file << l << ",";
         }
-        experiment_result_file << std::endl;
 
-        experiment_result_file << getAveLatency() << std::endl;
-
-        experiment_result_file.flush();
+        config.experiment_result_file << std::endl;
+        config.experiment_result_file << getAveLatency() << std::endl;
+        config.experiment_result_file << total_duration << std::endl;
+        config.experiment_result_file.flush();
     }
 };
 
@@ -155,14 +119,12 @@ int main(int argc, char *argv[]) {
         auto end = high_resolution_clock::now();
 
         auto total_duration = duration_cast<microseconds>(end - start).count();
-        client.experiment_result_file << total_duration << std::endl;
-        client.experiment_result_file.flush();
+        client.writeOutput(total_duration);
 
-        std::cout << "[main]: Entire program finished in " << total_duration
-                  << " microseconds" << std::endl;
-    } catch (std::invalid_argument &err) {
-        std::cerr << "ERROR: " << err.what() << std::endl;
+        spdlog::info("[main]: Entire program finished in {0} microseconds", total_duration);
+    } catch (std::runtime_error err) {
+        spdlog::error("Client | {0}", err.what());
     } catch (TException &err) {
-        std::cerr << "ERROR: " << err.what() << std::endl;
+        spdlog::error("Client | {0}", err.what());
     }
 }

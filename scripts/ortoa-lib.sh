@@ -65,13 +65,6 @@ Syntax: ortoa-client-run [-h]
 ----------------------------------------------
     -h                  Print this help message
 """
-    OPTIND=1
-    while getopts ":h" option; do
-        case "${option}" in
-            h) echo "${HELP}"; return 0 ;;
-        esac
-    done
-
 
     ${BUILD_DIR}/src/client/client "${@}"
 }

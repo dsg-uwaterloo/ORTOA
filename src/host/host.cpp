@@ -52,7 +52,10 @@ class RPCHandler : virtual public RPCIf {
 
         oe_enclave_path = argv[1];
         if (check_simulate(argc, argv)) {
-            std::cout << "Running in simulation mode" << std::endl;
+            #ifdef DEBUG
+            spdlog::debug("Running in simulation mode");
+            #endif
+
             RPCHandler::simulate_flag = OE_ENCLAVE_FLAG_SIMULATE;
         }
     }
@@ -68,8 +71,11 @@ class RPCHandler : virtual public RPCIf {
                         operation.value.length(), out.get(), &out_len);
         if (result == OE_OK) {
             std::string updated_val((const char *)out.get(), out_len);
-            std::cout << "[Host]: Output of access_data " << updated_val
-                      << " with len " << out_len << std::endl;
+
+            #ifdef DEBUG
+            spdlog::debug("Host | Output of access_data , {0} with len {1}", updated_val, out_len);
+            #endif
+
             rd.put(operation.key, updated_val);
         }
     }
@@ -86,11 +92,10 @@ int main(int argc, char *argv[]) {
         auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
 
         std::shared_ptr<apache::thrift::server::TServer> server;
-        server.reset(new TThreadedServer(processor, serverTransport,
-                                         transportFactory, protocolFactory));
+        server.reset(new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory));
         server->serve();
     } catch (OECreationFailed err) {
-        std::cerr << "ERROR: " << err.what() << std::endl;
+        spdlog::error("Host | {0}", err.what());
         return 1;
     }
 }
