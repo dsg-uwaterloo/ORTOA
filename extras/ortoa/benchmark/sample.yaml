@@ -11,10 +11,10 @@ client_config:
       type: IntegerGenerator
     generator:
       type: ByteSizeGenerator
-      bytes: 160
+      nbytes: 160
     generator:
       type: ByteSizeGenerator
-      bytes:
+      nbytes:
         minimum: 100
         maximum: 500
         step: 20
