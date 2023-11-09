@@ -21,8 +21,7 @@ class RandomIntegerGenerator(ValueFactory[int]):
 
 
 class ByteSizeGenerator(ValueFactory[str]):
-    def __init(self, num_bytes: int):
-        assert num_bytes > 10
+    def __init__(self, num_bytes: int):
         self.num_bytes = num_bytes
 
     def generate_value(self):

@@ -39,7 +39,7 @@ class ByteSizeGenerationConfig(DataGenerationConfigBase):
 
     def _generate_seed(self, output_file: Path) -> Path:
         key_generator = SequentialIntKeyGenerator()
-        value_generator = ByteSizeGenerator(self.n_bytes)
+        value_generator = ByteSizeGenerator(num_bytes=self.n_bytes)
         generate_data(
             key_generator=key_generator,
             value_generator=value_generator,
@@ -50,7 +50,7 @@ class ByteSizeGenerationConfig(DataGenerationConfigBase):
         return output_file
 
     def _generate_operations(self, seed_file: Path, output_file: Path) -> Path:
-        value_generator = ByteSizeGenerator(self.n_bytes)
+        value_generator = ByteSizeGenerator(num_bytes=self.n_bytes)
         generate_operations(
             num_operations=self.num_operations,
             input_file=seed_file,

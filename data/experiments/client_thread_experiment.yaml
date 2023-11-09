@@ -18,7 +18,7 @@ client_config:
       value:
         type: int
         minimum: 2
-        maximum: 16
+        maximum: 4
         step: 2
 
 host_config:

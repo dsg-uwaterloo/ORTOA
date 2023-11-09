@@ -11,6 +11,9 @@ from typing import (
 )
 
 from pydantic import BaseModel
+import time
+
+from icecream import ic
 
 
 @runtime_checkable
@@ -78,9 +81,12 @@ class JobOrchestration(BaseModel, Generic[JobT]):
     def run_sequential(self) -> List[Result[JobT]]:
         results: List[Result[JobT]] = []
         for job in self.jobs:
+            ic("Job start")
             job()
             results.append(
                 Result(job=job, result_path=job.client_flags.output, exception=None)
             )
+            ic("Job end")
+            # time.sleep(10)
 
         return results
