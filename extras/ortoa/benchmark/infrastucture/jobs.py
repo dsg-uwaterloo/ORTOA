@@ -1,18 +1,22 @@
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, ClassVar
+from typing import Any, List, ClassVar
 
 import redis
 import subprocess
+
+import yaml
+import json
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
 
 class ClientFlags(BaseModel):
     initdb: bool = True
+    nthreads: int = 1
     seed: Path = Field(required=True)
     operations: Path = Field(required=True)
-    nthreads: int = 1
+    output: Path = Field(required=True)
 
     @property
     def initdb_flags(self) -> str:
@@ -20,7 +24,10 @@ class ClientFlags(BaseModel):
 
     @property
     def operation_flags(self) -> str:
-        return f"--seed {self.operations} --nthreads {self.nthreads}"
+        return f"--seed {self.operations} --nthreads {self.nthreads} --output {self.output}"
+
+    def model_post_init(self, __context: Any) -> None:
+        return super().model_post_init(__context)
 
 
 class HostFlags(BaseModel):
@@ -49,14 +56,14 @@ class ClientJob(BaseModel):
     client_flags: ClientFlags
     host_flags: HostFlags
 
-    rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
+    _rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
 
     def __str__(self) -> str:
         return self.name
 
     def _flush_db(self) -> None:
         """Flush (empty) the database"""
-        self.rd.flushdb(asynchronous=False)
+        self._rd.flushdb(asynchronous=False)
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
@@ -74,7 +81,11 @@ class ClientJob(BaseModel):
 
     def _save_results(self) -> None:
         """Save the results of this job"""
-        raise NotImplementedError
+        config_dump_path = self.directory / "config.yaml"
+        data = json.loads(self.model_dump_json())
+
+        with config_dump_path.open("w") as f:
+            yaml.safe_dump(data, f)
 
     def __call__(self) -> None:
         """
@@ -104,7 +115,9 @@ def make_jobs(
 
     for experiment in experiments:
         e_client_flags = ClientFlags(
-            seed=experiment.seed_data, operations=experiment.operations
+            seed=experiment.seed_data,
+            operations=experiment.operations,
+            output=experiment.output_directory / "results.txt",
         )
 
         for flag in experiment.client_flags:

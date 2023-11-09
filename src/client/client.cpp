@@ -20,6 +20,9 @@ using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
 
 class ClientHandler {
+  public:
+    std::ofstream experiment_result_file;
+
   private:
     std::ifstream seed_data;
     bool init_db = false;
@@ -30,7 +33,8 @@ class ClientHandler {
 
   public:
     ClientHandler(int argc, char *argv[]) {
-        parseArgs(argc, argv, seed_data, init_db, num_clients, p_get);
+        parseArgs(argc, argv, seed_data, init_db, num_clients, p_get,
+                  experiment_result_file);
     }
 
     void start() {
@@ -75,6 +79,7 @@ class ClientHandler {
             thread.join();
 
         getAveLatency();
+        writeOutput();
     }
 
     void run() {
@@ -113,11 +118,31 @@ class ClientHandler {
         transport->close();
     }
 
-    void getAveLatency() {
+    float getAveLatency() {
+        assert(latencies.size() > 0);
+
+        auto average_latency =
+            std::accumulate(latencies.begin(), latencies.end(), 0.0) /
+            latencies.size();
+
         std::cout << "[Client]: Data access complete, average latency: "
-                  << std::accumulate(latencies.begin(), latencies.end(), 0.0) /
-                         latencies.size()
-                  << " microseconds" << std::endl;
+                  << average_latency << " microseconds" << std::endl;
+
+        return average_latency;
+    }
+
+    void writeOutput() {
+        if (!experiment_result_file)
+            return;
+
+        for (auto l : latencies) {
+            experiment_result_file << l << ",";
+        }
+        experiment_result_file << std::endl;
+
+        experiment_result_file << getAveLatency() << std::endl;
+
+        experiment_result_file.flush();
     }
 };
 
@@ -129,8 +154,11 @@ int main(int argc, char *argv[]) {
         client.start();
         auto end = high_resolution_clock::now();
 
-        std::cout << "[main]: Entire program finished in "
-                  << duration_cast<microseconds>(end - start).count()
+        auto total_duration = duration_cast<microseconds>(end - start).count();
+        client.experiment_result_file << total_duration << std::endl;
+        client.experiment_result_file.flush();
+
+        std::cout << "[main]: Entire program finished in " << total_duration
                   << " microseconds" << std::endl;
     } catch (std::invalid_argument &err) {
         std::cerr << "ERROR: " << err.what() << std::endl;
