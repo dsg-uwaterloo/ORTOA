@@ -1,0 +1,7 @@
+,seed,operations,seed_size,num_operations,nthreads,average_latency,latency std,throughput
+0,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/seed.csv,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/operations.csv,100000,1000,1,203.198,57.20652756460578,4319.691746796949
+1,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/seed.csv,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/operations.csv,100000,1000,2,228.189,82.97307562697672,7599.303903762416
+2,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/seed.csv,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/operations.csv,100000,1000,3,353.108,103.23899619814212,7540.340823405218
+3,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/seed.csv,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/operations.csv,100000,1000,4,549.831,157.93260093786841,6620.981891614527
+4,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/seed.csv,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/operations.csv,100000,1000,5,734.522,225.09280200841607,6306.919952571962
+5,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/seed.csv,out/benchmark-2023-11-08-23-36-12/client_thread_experiment/generated_data/operations.csv,100000,1000,6,1036.26,361.575603268528,5452.057333834922

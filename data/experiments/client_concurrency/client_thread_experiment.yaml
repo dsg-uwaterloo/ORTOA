@@ -11,15 +11,15 @@ client_config:
     minimum: 10
     maximum: 100
     seed_size: 100000
-    num_operations: 1000
+    num_operations: 10000
 
   flags:
     - name: nthreads
       value:
         type: int
-        minimum: 2
-        maximum: 16
-        step: 2
+        minimum: 1
+        maximum: 64
+        multiplier: 2
 
 host_config:
   flags:

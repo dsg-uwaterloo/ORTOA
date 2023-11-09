@@ -1,0 +1,15 @@
+client_flags:
+  initdb: true
+  nthreads: 16
+  operations: out/benchmark-2023-11-09-01-00-46/client_thread_experiment/generated_data/operations.csv
+  output: out/benchmark-2023-11-09-01-00-46/client_thread_experiment/combination_4/results.txt
+  seed: out/benchmark-2023-11-09-01-00-46/client_thread_experiment/generated_data/seed.csv
+directory: out/benchmark-2023-11-09-01-00-46/client_thread_experiment/combination_4
+host_flags:
+  nthreads: 1
+  simulate: true
+metadata:
+  description: How does the number of client threads affect the performance of ORTOA?
+name: Client Threading Experiment
+operations: out/benchmark-2023-11-09-01-00-46/client_thread_experiment/generated_data/operations.csv
+seed_data: out/benchmark-2023-11-09-01-00-46/client_thread_experiment/generated_data/seed.csv
