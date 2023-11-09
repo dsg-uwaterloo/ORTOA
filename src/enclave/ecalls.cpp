@@ -22,9 +22,10 @@ void access_data(int op_const, const char *in_val, size_t in_size,
     std::string update_str((const char *)update_val, update_size);
     std::string u_val_decrypt = engine.decryptNonDeterministic(update_str);
 
-    std::cout << "[Enclave]: Decrypted value is: " << val_decrypt << std::endl;
-    std::cout << "[Enclave]: Decrypted update value is: " << u_val_decrypt
-              << std::endl;
+    // std::cout << "[Enclave]: Decrypted value is: " << val_decrypt <<
+    // std::endl; std::cout << "[Enclave]: Decrypted update value is: " <<
+    // u_val_decrypt
+    //           << std::endl;
 
     // If operation is GET then re-encrypt the value fetched from redis,
     // otherwise, encrypt the update value from client

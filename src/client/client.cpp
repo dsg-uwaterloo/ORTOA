@@ -100,7 +100,7 @@ class ClientHandler {
                 client.access(val, op);
                 auto end = high_resolution_clock::now();
                 latencies.push_back(
-                    duration_cast<microseconds>(end - start).count());
+                    duration_cast<milliseconds>(end - start).count());
             }
         }
         // If seed data does not exist, run client on random values
@@ -111,7 +111,7 @@ class ClientHandler {
                 client.access(val, op);
                 auto end = high_resolution_clock::now();
                 latencies.push_back(
-                    duration_cast<microseconds>(end - start).count());
+                    duration_cast<milliseconds>(end - start).count());
             }
         }
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
         client.start();
         auto end = high_resolution_clock::now();
 
-        auto total_duration = duration_cast<microseconds>(end - start).count();
+        auto total_duration = duration_cast<milliseconds>(end - start).count();
         client.experiment_result_file << total_duration << std::endl;
         client.experiment_result_file.flush();
 

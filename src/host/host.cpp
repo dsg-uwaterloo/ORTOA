@@ -9,6 +9,10 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TServerSocket.h>
 
+#include <thrift/concurrency/ThreadFactory.h>
+#include <thrift/concurrency/ThreadManager.h>
+#include <thrift/server/TThreadPoolServer.h>
+
 #include "../constants/constants.h"
 #include "../constants/shared.h"
 #include "../errors/errors.h"
@@ -18,6 +22,7 @@
 #include "spdlog/spdlog.h"
 
 using namespace ::apache::thrift;
+using namespace apache::thrift::concurrency;
 using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
@@ -52,7 +57,7 @@ class RPCHandler : virtual public RPCIf {
 
         oe_enclave_path = argv[1];
         if (check_simulate(argc, argv)) {
-            std::cout << "Running in simulation mode" << std::endl;
+            // std::cout << "Running in simulation mode" << std::endl;
             RPCHandler::simulate_flag = OE_ENCLAVE_FLAG_SIMULATE;
         }
     }
@@ -68,8 +73,8 @@ class RPCHandler : virtual public RPCIf {
                         operation.value.length(), out.get(), &out_len);
         if (result == OE_OK) {
             std::string updated_val((const char *)out.get(), out_len);
-            std::cout << "[Host]: Output of access_data " << updated_val
-                      << " with len " << out_len << std::endl;
+            // std::cout << "[Host]: Output of access_data " << updated_val
+            //           << " with len " << out_len << std::endl;
             rd.put(operation.key, updated_val);
         }
     }
@@ -79,6 +84,13 @@ int main(int argc, char *argv[]) {
     RPCHandler::setEnclaveArgs(argc, argv);
 
     try {
+        std::shared_ptr<ThreadFactory> threadFactory =
+            std::shared_ptr<ThreadFactory>(new ThreadFactory());
+        std::shared_ptr<ThreadManager> threadManager =
+            ThreadManager::newSimpleThreadManager(4);
+        threadManager->threadFactory(threadFactory);
+        threadManager->start();
+
         auto handler = std::make_shared<RPCHandler>();
         auto processor = std::make_shared<RPCProcessor>(handler);
         auto serverTransport = std::make_shared<TServerSocket>(HOST_PORT);
@@ -86,8 +98,9 @@ int main(int argc, char *argv[]) {
         auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
 
         std::shared_ptr<apache::thrift::server::TServer> server;
-        server.reset(new TThreadedServer(processor, serverTransport,
-                                         transportFactory, protocolFactory));
+        server.reset(new TThreadPoolServer(processor, serverTransport,
+                                           transportFactory, protocolFactory,
+                                           threadManager));
         server->serve();
     } catch (OECreationFailed err) {
         std::cerr << "ERROR: " << err.what() << std::endl;

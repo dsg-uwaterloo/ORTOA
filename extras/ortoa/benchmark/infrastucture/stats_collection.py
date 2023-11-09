@@ -30,7 +30,7 @@ class Stats(BaseModel):
         ax = self.raw_df.plot(
             x="nthreads",
             y=["average_latency", "throughput"],
-            secondary_y=["throughput"],
+            secondary_y=["average_latency"],
             kind="bar",
         )
         fig = ax.get_figure()
@@ -67,7 +67,7 @@ class Stats(BaseModel):
         with job.operations.open("r") as f:
             num_operations = len(f.readlines())
 
-        throughput = 1000000 * num_operations / total_time  # measured in ops/second
+        throughput = 1000 * num_operations / total_time  # measured in ops/second
 
         result_summary = pd.DataFrame(
             {
