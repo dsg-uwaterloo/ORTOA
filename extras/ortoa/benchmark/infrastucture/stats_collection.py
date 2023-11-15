@@ -36,9 +36,21 @@ class Stats(BaseModel):
         fig = ax.get_figure()
         fig.savefig(dir / "threading_effects.pdf")
 
+    def _graph_byte_size(self, dir: Path) -> None:
+        ax = self.raw_df.plot.bar(
+            x="bytes",
+            y=["average_latency", "throughput"],
+            secondary_y=["average_latency"],
+        )
+        fig = ax.get_figure()
+        fig.savefig(dir / "byte_size.pdf")
+
     def _save_graphs(self, dir: Path) -> None:
         self._graph_threads_vs_latency(dir)
         self._graph_threading_effects(dir)
+
+        if self.raw_df["bytes"][0] is not None:
+            self._graph_byte_size(dir)
 
     def save_to(self, dir: Path) -> None:
         self.raw_df.to_csv(dir / "complete.csv")
@@ -75,6 +87,7 @@ class Stats(BaseModel):
                 "operations": [job.client_flags.operations],
                 "seed_size": [seed_size],
                 "num_operations": [num_operations],
+                "bytes": [job.metadata.nbytes],
                 "nthreads": [job.client_flags.nthreads],
                 "average_latency": [average_latency],
                 "latency std": [latency_stdev],
