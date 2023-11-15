@@ -63,12 +63,10 @@ class ClientHandler {
 
         transport->open();
 
-        std::string val;
-        // If seed data exists, run the client with data
         while (moreOperationsExist(config)) {
             Operation op = getOperation(config);
             auto start = high_resolution_clock::now();
-            client.access(val, op);
+            client.access(op);
             auto end = high_resolution_clock::now();
             latencies.push_back(
                 duration_cast<microseconds>(end - start).count());
@@ -84,7 +82,8 @@ class ClientHandler {
             std::accumulate(latencies.begin(), latencies.end(), 0.0) /
             latencies.size();
 
-        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", average_latency);
+        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", 
+                     average_latency);
         
         return average_latency;
     }
@@ -121,7 +120,8 @@ int main(int argc, char *argv[]) {
         auto total_duration = duration_cast<microseconds>(end - start).count();
         client.writeOutput(total_duration);
 
-        spdlog::info("[main]: Entire program finished in {0} microseconds", total_duration);
+        spdlog::info("[main]: Entire program finished in {0} microseconds", 
+                     total_duration);
     } catch (std::runtime_error err) {
         spdlog::error("Client | {0}", err.what());
     } catch (TException &err) {

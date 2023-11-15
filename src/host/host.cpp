@@ -4,8 +4,10 @@
 #include <cassert>
 #include <iostream>
 #include <openenclave/host.h>
+#include <thrift/concurrency/ThreadFactory.h>
+#include <thrift/concurrency/ThreadManager.h>
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TThreadedServer.h>
+#include <thrift/server/TThreadPoolServer.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TServerSocket.h>
 
@@ -17,10 +19,11 @@
 #include "redis.h"
 #include "spdlog/spdlog.h"
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
+using namespace apache::thrift;
+using namespace apache::thrift::concurrency;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
+using namespace apache::thrift::server;
 
 bool check_simulate(int argc, char *argv[]) {
     for (int i = 2; i < argc; ++i) {
@@ -60,7 +63,7 @@ class RPCHandler : virtual public RPCIf {
         }
     }
 
-    void access(std::string &_return, const Operation &operation) {
+    void access(const Operation &operation) {
         std::string rd_value = rd.get(operation.key);
 
         std::unique_ptr<unsigned char> out(new unsigned char[4096]);
@@ -73,7 +76,8 @@ class RPCHandler : virtual public RPCIf {
             std::string updated_val((const char *)out.get(), out_len);
 
             #ifdef DEBUG
-            spdlog::debug("Host | Output of access_data , {0} with len {1}", updated_val, out_len);
+            spdlog::debug("Host | Output of access_data , {0} with len {1}", 
+                          updated_val, out_len);
             #endif
 
             rd.put(operation.key, updated_val);
@@ -91,8 +95,17 @@ int main(int argc, char *argv[]) {
         auto transportFactory = std::make_shared<TBufferedTransportFactory>();
         auto protocolFactory = std::make_shared<TBinaryProtocolFactory>();
 
+        std::shared_ptr<ThreadFactory> threadFactory = 
+            std::shared_ptr<ThreadFactory>(new ThreadFactory());
+        std::shared_ptr<ThreadManager> threadManager = 
+            ThreadManager::newSimpleThreadManager(8);
+        threadManager->threadFactory(threadFactory);
+        threadManager->start();
+
         std::shared_ptr<apache::thrift::server::TServer> server;
-        server.reset(new TThreadedServer(processor, serverTransport, transportFactory, protocolFactory));
+        server.reset(new TThreadPoolServer(processor, serverTransport, 
+                                           transportFactory, protocolFactory, 
+                                           threadManager));
         server->serve();
     } catch (OECreationFailed err) {
         spdlog::error("Host | {0}", err.what());
