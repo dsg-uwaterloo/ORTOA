@@ -56,6 +56,7 @@ class HostConfig(Config[AnnotatedHostFlag]):
 
 class ExperimentMetatadata(BaseModel):
     description: str = ""
+    nbytes: Optional[int] = None
 
 
 class Experiment(BaseModel):
