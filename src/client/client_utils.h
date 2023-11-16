@@ -16,7 +16,9 @@ struct ClientConfig {
     int num_clients = 16;
     int num_operations = 1000;
     double p_get = 0.5;
+
     bool init_db = false;
+    bool use_seed = false;
 
     int max_key = 100000;
     int max_value = 100000;
@@ -33,8 +35,6 @@ Operation getSeedOperation(ClientConfig &config);
 Operation genRandInitValue(ClientConfig &config);
 
 Operation genRandOperation(ClientConfig &config);
-
-std::istream &readFile(std::ifstream &seed_data, std::string &line);
 
 std::string clientEncrypt(const std::string &value);
 

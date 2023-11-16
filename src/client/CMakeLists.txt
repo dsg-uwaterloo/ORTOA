@@ -4,6 +4,7 @@ add_executable(client
     client.cpp
     client_utils.cpp
     client_utils.h
+    SharedQueue.h
     ../host/redis.cpp 
     ../crypto/encryption_engine.cpp
     ../gen-cpp/RPC.h
