@@ -7,9 +7,8 @@ metadata:
 
 client_config:
   data:
-    generator: RandomIntegerGenerator
-    minimum: 10
-    maximum: 100
+    generator: FixedStringGenerator
+    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz
     seed_size: 100000
     num_operations: 1000
 
