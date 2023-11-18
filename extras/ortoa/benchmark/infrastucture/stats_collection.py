@@ -9,10 +9,6 @@ from functools import reduce
 from ortoa.benchmark.infrastucture.runner import Result
 from ortoa.benchmark.infrastucture.jobs import ClientJob
 
-from icecream import ic
-
-import random
-
 
 class Stats(BaseModel):
     class Config:
@@ -44,6 +40,15 @@ class Stats(BaseModel):
         )
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
+    
+    def _graph_db_size(self, dir: Path) -> None:
+        ax = self.raw_df.plot.bar(
+            x="db_size",
+            y=["average_latency", "throughput"],
+            secondary_y=["average_latency"],
+        )
+        fig = ax.get_figure()
+        fig.savefig(dir / "db_size.pdf")
 
     def _save_graphs(self, dir: Path) -> None:
         self._graph_threads_vs_latency(dir)
@@ -51,6 +56,9 @@ class Stats(BaseModel):
 
         if self.raw_df["bytes"][0] is not None:
             self._graph_byte_size(dir)
+        
+        if self.raw_df["db_size"][0] is not None:
+            self._graph_db_size(dir)
 
     def save_to(self, dir: Path) -> None:
         self.raw_df.to_csv(dir / "complete.csv")
@@ -86,6 +94,7 @@ class Stats(BaseModel):
                 "seed": [job.client_flags.seed],
                 "operations": [job.client_flags.operations],
                 "seed_size": [seed_size],
+                "db_size": [job.metadata.db_size],
                 "num_operations": [num_operations],
                 "bytes": [job.metadata.nbytes],
                 "nthreads": [job.client_flags.nthreads],
