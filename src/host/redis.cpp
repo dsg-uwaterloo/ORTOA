@@ -10,8 +10,7 @@ void redisCli::reconnect() {
 }
 
 std::string redisCli::get(const std::string &key) {
-    auto reply = this->redisConn.get(key);
-    return *reply;
+    return this->redisConn.get(key).value_or("");
 }
 
 sw::redis::Pipeline redisCli::pipe() {
