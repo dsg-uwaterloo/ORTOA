@@ -1,6 +1,6 @@
 name: Byte Size Experiment - 200 Bytes
 
-output_directory: byte_size_experiment_200/
+output_directory: byte_size_test_200/
 
 metadata:
   description: How does the byte size of the values affect the latency and throughput of ORTOA?
