@@ -49,6 +49,15 @@ class Stats(BaseModel):
         )
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
+    
+    def _graph_percent_write(self, dir: Path) -> None:
+        ax = self.raw_df.plot.bar(
+            x="percent_write",
+            y=["average_latency", "throughput"],
+            secondary_y=["average_latency"],
+        )
+        fig = ax.get_figure()
+        fig.savefig(dir / "percent_write.pdf")
 
     def _save_graphs(self, dir: Path) -> None:
         self._graph_threads_vs_latency(dir)
@@ -59,6 +68,9 @@ class Stats(BaseModel):
         
         if self.raw_df["db_size"][0] is not None:
             self._graph_db_size(dir)
+        
+        if self.raw_df["percent_write"][0] is not None:
+            self._graph_percent_write(dir)
 
     def save_to(self, dir: Path) -> None:
         self.raw_df.to_csv(dir / "complete.csv")
@@ -95,6 +107,7 @@ class Stats(BaseModel):
                 "operations": [job.client_flags.operations],
                 "seed_size": [seed_size],
                 "db_size": [job.metadata.db_size],
+                "percent_write": [job.metadata.percent_write],
                 "num_operations": [num_operations],
                 "bytes": [job.metadata.nbytes],
                 "nthreads": [job.client_flags.nthreads],
