@@ -16,6 +16,7 @@ from ortoa.data_generation.generators.value_generator import RandomIntegerGenera
 from ortoa.data_generation.generators.value_generator import (
     RandomIntegerGenerator,
     ByteSizeGenerator,
+    FixedValueGenerator
 )
 
 
@@ -107,9 +108,43 @@ class RandomIntegerGenerationConfig(DataGenerationConfigBase):
         operations = self._generate_operations(seed, output_dir / "operations.csv")
 
         return seed, operations
+    
+class FixedStringGenerator(DataGenerationConfigBase):
+    generator: Literal["FixedStringGenerator"]
+    value: str
+
+    def _generate_seed(self, output_file: Path) -> Path:
+        key_generator = SequentialIntKeyGenerator()
+        value_generator = FixedValueGenerator(value=self.value)
+        generate_data(
+            key_generator=key_generator,
+            value_generator=value_generator,
+            num_data_points=self.seed_size,
+            output_file=output_file,
+        )
+
+        return output_file
+
+    def _generate_operations(self, seed_file: Path, output_file: Path) -> Path:
+        value_generator = FixedValueGenerator(value=self.value)
+        generate_operations(
+            num_operations=self.num_operations,
+            input_file=seed_file,
+            output_file=output_file,
+            p_get=0.5,
+            value_generator=value_generator,
+        )
+
+        return output_file
+
+    def generate_files(self, output_dir: Path) -> Tuple[Path, Path]:
+        seed = self._generate_seed(output_dir / "seed.csv")
+        operations = self._generate_operations(seed, output_dir / "operations.csv")
+
+        return seed, operations
 
 
 DataGenConfig = Annotated[
-    Union[ByteSizeGenerationConfig, RandomIntegerGenerationConfig],
+    Union[ByteSizeGenerationConfig, RandomIntegerGenerationConfig, FixedStringGenerator],
     Field(discriminator="generator"),
 ]
