@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Any
 from abc import ABC, abstractmethod
 import random
 
@@ -34,3 +34,10 @@ class ByteSizeGenerator(ValueFactory[str]):
             ]
         )
         return generated
+
+class FixedValueGenerator(ValueFactory[Any]):
+    def __init__(self, value: Any):
+        self.value = value
+    
+    def generate_value(self) -> Any:
+        return self.value
