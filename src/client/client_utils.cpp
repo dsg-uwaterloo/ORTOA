@@ -3,12 +3,12 @@
 std::mutex fileMutex;
 
 bool moreOperationsExist(ClientConfig &config) {
-    return (config.seed_data.is_open() && config.seed_data.peek() != EOF) ||
-           (!config.seed_data.is_open() && config.num_operations > 0);
+    return (config.use_seed && !config.seed_data.eof()) || 
+           (!config.use_seed && config.num_operations > 0);
 }
 
 Operation getInitKV(ClientConfig &config) {
-    if (config.seed_data.is_open()) {
+    if (config.use_seed) {
         return getSeedOperation(config);
     } else {
         return genRandInitValue(config);
@@ -16,7 +16,7 @@ Operation getInitKV(ClientConfig &config) {
 }
 
 Operation getOperation(ClientConfig &config) {
-    if (config.seed_data.is_open()) {
+    if (config.use_seed) {
         return getSeedOperation(config);
     } else {
         return genRandOperation(config);
@@ -24,11 +24,10 @@ Operation getOperation(ClientConfig &config) {
 }
 
 Operation getSeedOperation(ClientConfig &config) {
-    std::string line;
-    readFile(config.seed_data, line);
+    std::string line, operation, key, value;
 
+    std::getline(config.seed_data, line);
     std::istringstream ss(line);
-    std::string operation, key, value;
     ss >> operation >> key >> value;
 
     Operation op;
@@ -85,11 +84,6 @@ Operation genRandOperation(ClientConfig &config) {
     return op;
 }
 
-std::istream &readFile(std::ifstream &seed_data, std::string &line) {
-    std::lock_guard<std::mutex> lock(fileMutex);
-    return std::getline(seed_data, line);
-}
-
 std::string clientEncrypt(const std::string &value) {
     encryption_engine engine;
 
@@ -128,6 +122,8 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
         if (!config.seed_data.is_open()) {
             throw std::runtime_error("Invalid path to seed data");
         }
+
+        config.use_seed = true;
     }
 
     if (program.is_used("--output")) {
