@@ -1,15 +1,15 @@
-name: Byte Size Experiment - 8 Bytes
+name: Byte Size Experiment - 25 Bytes
 
-output_directory: byte_size_experiment_8/
+output_directory: byte_size_test_25/
 
 metadata:
   description: How does the byte size of the values affect the latency and throughput of ORTOA?
-  nbytes: 8
+  nbytes: 25
 
 client_config:
   data:
     generator: ByteSizeGenerator
-    n_bytes: 8
+    n_bytes: 25
     seed_size: 50000
     num_operations: 1000
 
