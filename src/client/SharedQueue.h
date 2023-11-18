@@ -21,9 +21,7 @@ using namespace apache::thrift::transport;
 class SharedQueue {
   private:
     std::mutex mutex;
-    std::condition_variable cv;
     std::queue<Operation> queue;
-    const int MaxQueueSize = 1000;
 
     ClientConfig &config;
   
@@ -33,36 +31,27 @@ class SharedQueue {
     int enqueue() {
         std::unique_lock<std::mutex> lock(mutex);
 
-        cv.wait(lock, [this] { return queue.size() < MaxQueueSize; });
-
         if (!moreOperationsExist(config)) {
-            Operation op;
-            op.__set_key("EOF");
-            queue.push(op);
-
-            lock.unlock();
-            cv.notify_one();
-
             return 1;
         }
 
         queue.push(getOperation(config));
 
-        lock.unlock();
-        cv.notify_one();
         return 0;
     }
 
     Operation dequeue() {
         std::unique_lock<std::mutex> lock(mutex);
 
-        cv.wait(lock, [this] { return !queue.empty(); });
-        
+        if (queue.empty()) {
+            Operation op;
+            op.__set_key("EOF");
+            return op;
+        }
+
         Operation data = queue.front();
         queue.pop();
 
-        lock.unlock();
-        cv.notify_one();
         return data;
     }
 };

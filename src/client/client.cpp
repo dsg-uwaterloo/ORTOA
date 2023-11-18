@@ -12,6 +12,7 @@ class ClientHandler {
   private:
     ClientConfig config;
     std::vector<double> latencies;
+    double total_duration;
 
   public:
     ClientHandler(int argc, char *argv[]) { parseArgs(argc, argv, config); }
@@ -37,36 +38,50 @@ class ClientHandler {
         std::vector<std::thread> data_handler_threads;
         std::vector<std::thread> runner_threads;
 
-        for (int i = 0; i < config.num_clients; i++) {
+        // Data streaming into a shared queue
+        for (int i = 0; i < config.num_clients; ++i) {
             data_handler_threads.push_back(std::thread(DataHandler(sharedQueue)));
+        }
+
+        for (auto& thread : data_handler_threads) thread.join();
+
+        // Client data access using shared queue
+        auto start = high_resolution_clock::now();
+        for (int i = 0; i < config.num_clients; ++i) {
             runner_threads.push_back(std::thread(ClientRunner(sharedQueue, latencies)));
         }
 
-         // Join data handler and runner threads
-        for (auto& thread : data_handler_threads) thread.join();
         for (auto& thread : runner_threads) thread.join();
+        auto end = high_resolution_clock::now();
+
+        total_duration = duration_cast<microseconds>(end - start).count();
     }
 
     float getAveLatency() {
         assert(latencies.size() > 0);
 
         auto average_latency =
-            std::accumulate(latencies.begin(), latencies.end(), 0.0) /
-            latencies.size();
+            std::accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
 
-        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", 
-                     average_latency);
-        
+        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", average_latency);
         return average_latency;
     }
 
-    void writeOutput(float total_duration) {
+    float getTotalDuration() {
+        assert(total_duration > 0);
+
+        spdlog::info("[main]: Entire program finished in {0} microseconds", total_duration);
+        return total_duration;
+    }
+
+    void writeOutput() {
         if (config.init_db) {
             return;
         }
 
         if (!config.experiment_result_file.is_open()) {
             getAveLatency();
+            getTotalDuration();
             return;
         }
 
@@ -76,7 +91,7 @@ class ClientHandler {
 
         config.experiment_result_file << std::endl;
         config.experiment_result_file << getAveLatency() << std::endl;
-        config.experiment_result_file << total_duration << std::endl;
+        config.experiment_result_file << getTotalDuration() << std::endl;
         config.experiment_result_file.flush();
     }
 };
@@ -85,15 +100,8 @@ int main(int argc, char *argv[]) {
     try {
         ClientHandler client(argc, argv);
 
-        auto start = high_resolution_clock::now();
         client.start();
-        auto end = high_resolution_clock::now();
-
-        auto total_duration = duration_cast<microseconds>(end - start).count();
-        client.writeOutput(total_duration);
-
-        spdlog::info("[main]: Entire program finished in {0} microseconds", 
-                     total_duration);
+        client.writeOutput();
     } catch (std::runtime_error err) {
         spdlog::error("Client | {0}", err.what());
     } catch (TException &err) {
