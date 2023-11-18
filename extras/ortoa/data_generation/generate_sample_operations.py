@@ -83,7 +83,7 @@ class Operation(str, Enum):
 def get_random_op(p_get: float) -> Operation:
     random_val = random.uniform(0, 1)  # generate random value in range [0, 1]
 
-    if 0 <= random_val <= p_get:
+    if 0 <= random_val < p_get:
         return Operation.GET
     else:
         return Operation.PUT
