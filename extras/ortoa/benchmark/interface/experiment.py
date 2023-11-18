@@ -58,6 +58,7 @@ class ExperimentMetatadata(BaseModel):
     description: str = ""
     nbytes: Optional[int] = None
     db_size: Optional[str] = None
+    percent_write: Optional[str] = None
 
 
 class Experiment(BaseModel):
