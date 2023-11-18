@@ -1,6 +1,6 @@
 name: Client Threading Experiment
 
-output_directory: client_thread_experiment/
+output_directory: client_thread_experiment_48/
 
 metadata:
   description: How does the number of client threads affect the performance of ORTOA?
