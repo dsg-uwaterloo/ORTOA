@@ -24,6 +24,7 @@ class DataGenerationConfigBase(BaseModel, ABC):
     seed_size: int
     num_operations: int
     key_access_distribution: Literal["uniform"] = Field(default="uniform")
+    p_get: float = Field(default=0.5, ge=0.0, le=1.0)
 
     @abstractmethod
     def generate_files(self, output_dir: Path) -> Tuple[Path, Path]:
@@ -57,7 +58,7 @@ class ByteSizeGenerationConfig(DataGenerationConfigBase):
             num_operations=self.num_operations,
             input_file=seed_file,
             output_file=output_file,
-            p_get=0.5,
+            p_get=self.p_get,
             value_generator=value_generator,
         )
 
@@ -97,7 +98,7 @@ class RandomIntegerGenerationConfig(DataGenerationConfigBase):
             num_operations=self.num_operations,
             input_file=seed_file,
             output_file=output_file,
-            p_get=0.5,
+            p_get=self.p_get,
             value_generator=value_generator,
         )
 
@@ -131,7 +132,7 @@ class FixedStringGenerator(DataGenerationConfigBase):
             num_operations=self.num_operations,
             input_file=seed_file,
             output_file=output_file,
-            p_get=0.5,
+            p_get=self.p_get,
             value_generator=value_generator,
         )
 
