@@ -1,4 +1,6 @@
 include(FetchContent)
+include(GNUInstallDirs)
+
 
 # Setting the cmake compiler when LVI mitigation is not enabled. If the CC
 # environment variable has been specified or the if CMAKE_C_COMPILER cmake
@@ -15,15 +17,23 @@ if (UNIX)
 endif ()
 
 
+
 # External Dependencies (FetchContent)
 FetchContent_Declare(
   spdlog
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.12.0  # Specify the version you want
 )
-
 FetchContent_MakeAvailable(spdlog)
 
+# fetch latest argparse
+set(ARGPARSE_BUILD_TESTS OFF CACHE INTERNAL "Turn off building argparse tests")
+set(ARGPARSE_BUILD_SAMPLES OFF CACHE INTERNAL "Turn off building argparse samples")
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+)
+FetchContent_MakeAvailable(argparse)
 
 
 # Currently the `OpenEnclave` package depends on `project()`.
@@ -40,6 +50,7 @@ set(OE_CRYPTO_LIB
 
 
 # Add subdirectories for the components
+add_subdirectory(libdb)
 add_subdirectory(enclave)
 add_subdirectory(host)
 add_subdirectory(client)

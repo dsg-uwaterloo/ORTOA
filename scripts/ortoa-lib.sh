@@ -11,9 +11,11 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# always top-level even in submodule (TODO: bug if more than one submodule deep)
+# always top-level even in submodule
 export REPO_ROOT=$(cd ${SCRIPT_DIR} && git rev-parse --show-superproject-working-tree --show-toplevel | head -1)
-export BUILD_DIR=${REPO_ROOT}/build
+
+export ORTOA_SHARED="${REPO_ROOT}"
+export BUILD_DIR="${ORTOA_SHARED}/build"
 
 ############################################
 # Help
@@ -38,6 +40,12 @@ ortoa-lib: a collection of bash functions to ease development
     Data Generation:
         ortoa-generate-seed: -------- Seed Data Generation script for ORTOA-tee
         ortoa-generate-operations: -- Operation Generation script for ORTOA-tee 
+
+    Building and Installing:
+        ortoa-configure: ------------ TODO: description
+        ortoa-install: -------------- TODO: description
+        ortoa-build: ---------------- TODO: description
+        ortoa-cbi: ------------------ TODO: description
 
     Formatters:
         ortoa-clang-format: --------- Check staged C++ files for formatting issues
@@ -86,7 +94,7 @@ Syntax: ortoa-simulate [-h]
         esac
     done
 
-    ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
+    ${ORTOA_SHARED}/install/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
 # export -f ortoa-simulate
 
@@ -234,3 +242,128 @@ optional arguments:
     python3 ${REPO_ROOT}/extras/data_generation/generate_sample_operations.py "${@}"
 
 }
+
+
+
+ortoa-configure() {
+    set -eu
+
+    local HELP="""\
+Run cmake configuration stage for C++ projects
+
+Syntax: ortoa-configure [-h] [cmake-parameters]
+-----------------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake configure invocation
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break
+        esac
+    done
+
+    shift $((OPTIND - 1))
+
+    mkdir -p "${BUILD_DIR}"
+    cmake -S "${REPO_ROOT}" \
+          -B "${BUILD_DIR}" \
+          -DCMAKE_INSTALL_PREFIX="${ORTOA_SHARED}/installs" \
+          "${@}"
+}
+
+ortoa-build() {
+    set -eu
+
+    local HELP="""\
+Build C++ projects (requires `ortoa-configure`)
+
+Syntax: ortoa-build [-h] [cmake-parameters]
+-------------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake invocation
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    cmake --build "${BUILD_DIR}" "${@}"
+}
+
+ortoa-install() {
+    set -eu
+
+    local HELP="""\
+Install C++ projects (requires `ortoa-build`)
+
+Syntax: ortoa-install [-h] [cmake-parameters]
+---------------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake invocation
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    cmake --install "${BUILD_DIR}" --prefix "${ORTOA_SHARED}/install" "${@}"
+}
+
+ortoa-clean() {
+    set -eu
+
+    local HELP="""\
+Clean build and install directories
+
+Syntax: ortoa-clean [-h]
+------------------------
+    h                   Prints this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    rm -rf \
+        "${BUILD_DIR}/"* \
+        "${ORTOA_SHARED}/install/"*
+}
+
+ortoa-cbi() {
+    set -eu
+
+    local HELP="""\
+Run cmake configure, build and install stages for C++ projects
+Must be run from the repo root
+
+Syntax: ortoa-cbi [-h] [cmake-parameters]
+-----------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake configure invocation
+""" 
+    # TODO: Assert running from repo root
+
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    ortoa-configure "${@}"
+    ortoa-build
+    ortoa-install
+}
+

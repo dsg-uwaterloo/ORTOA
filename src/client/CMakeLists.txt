@@ -5,7 +5,6 @@ add_executable(client
     client_utils.cpp
     client_utils.h
     SharedQueue.h
-    ../host/redis.cpp 
     ../crypto/encryption_engine.cpp
     ../gen-cpp/RPC.h
     ../gen-cpp/RPC.cpp
@@ -13,15 +12,7 @@ add_executable(client
     ../gen-cpp/Operation_types.cpp
 )
 
-# fetch latest argparse
-include(FetchContent)
-set(ARGPARSE_BUILD_TESTS OFF CACHE INTERNAL "Turn off building argparse tests")
-set(ARGPARSE_BUILD_SAMPLES OFF CACHE INTERNAL "Turn off building argparse samples")
-FetchContent_Declare(
-    argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-)
-FetchContent_MakeAvailable(argparse)
+
 
 add_dependencies(client generate-thrift)
 
@@ -31,9 +22,8 @@ include_directories(
 )
 
 # Link reuired libraries
-target_link_libraries(client PRIVATE
-    /usr/local/lib/libredis++.a
-    /usr/local/lib/libhiredis.a
+target_link_libraries(client 
+    ortoadb 
     crypto
     ssl
     spdlog::spdlog
@@ -41,4 +31,8 @@ target_link_libraries(client PRIVATE
     sodium
     pthread
     argparse
+)
+
+install(TARGETS client 
+    DESTINATION bin
 )

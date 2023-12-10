@@ -10,9 +10,6 @@ add_custom_command(
 
 add_executable(ortoa-host
                host.cpp 
-               redis.h
-               redis.cpp
-               ../constants/constants.h
                ${CMAKE_BINARY_DIR}/src/gen-cpp/RPC.h
                ${CMAKE_BINARY_DIR}/src/gen-cpp/RPC.cpp 
                ${CMAKE_BINARY_DIR}/src/gen-cpp/Operation_types.h
@@ -31,22 +28,6 @@ target_include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-# <------------ add hiredis dependency --------------->
-find_path(HIREDIS_HEADER hiredis)
-target_include_directories(ortoa-host PUBLIC ${HIREDIS_HEADER})
-
-find_library(HIREDIS_LIB hiredis)
-target_link_libraries(ortoa-host ${HIREDIS_LIB})
-
-# <------------ add redis-plus-plus dependency -------------->
-# NOTE: this should be *sw* NOT *redis++*
-find_path(REDIS_PLUS_PLUS_HEADER sw)
-target_include_directories(ortoa-host PUBLIC ${REDIS_PLUS_PLUS_HEADER})
-
-find_library(REDIS_PLUS_PLUS_LIB redis++)
-target_link_libraries(ortoa-host ${REDIS_PLUS_PLUS_LIB})
-
-
 target_link_libraries(ortoa-host 
   openenclave::oehost 
   rt
@@ -56,6 +37,9 @@ target_link_libraries(ortoa-host
   thrift
   sodium
   pthread
-  hiredis
-  redis++
+  ortoadb
+)
+
+install(TARGETS ortoa-host
+  DESTINATION bin
 )
