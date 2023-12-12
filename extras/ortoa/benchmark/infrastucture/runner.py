@@ -71,7 +71,7 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         return super().model_post_init(__context)
 
     def run(self) -> List[Result[JobT]]:
-        """Leaving this for when I'm ready to implement multithreading for the benchmarking"""
+        """Leaving this for when I'm ready to implement multiprocessing for the benchmarking"""
         assert self.max_processes >= 1
         raise NotImplementedError
 
