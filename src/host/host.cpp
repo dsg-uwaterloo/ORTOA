@@ -35,31 +35,27 @@ bool check_simulate(int argc, char *argv[]) {
 
 class RPCHandler : virtual public RPCIf {
   private:
-    inline static uint32_t simulate_flag = OE_ENCLAVE_FLAG_DEBUG;
-    inline static char *oe_enclave_path;
     inline static oe_enclave_t *enclave;
     redisCli rd;
 
   public:
-    RPCHandler() {
-        oe_result_t result =
-            oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX,
-                                    simulate_flag, NULL, 0, &enclave);
-        if (result != OE_OK) {
-            throw OECreationFailed(oe_enclave_path);
-        }
-    }
+    RPCHandler() {}
 
     static void setEnclaveArgs(int argc, char *argv[]) {
         assert(argc >= 2);
 
-        oe_enclave_path = argv[1];
+        char *oe_enclave_path = argv[1];
         if (check_simulate(argc, argv)) {
             #ifdef DEBUG
             spdlog::debug("Running in simulation mode");
             #endif
 
-            RPCHandler::simulate_flag = OE_ENCLAVE_FLAG_SIMULATE;
+            oe_result_t result =
+                oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX,
+                                        OE_ENCLAVE_FLAG_SIMULATE, NULL, 0, &enclave);
+            if (result != OE_OK) {
+                throw OECreationFailed(oe_enclave_path);
+            }
         }
     }
 
@@ -68,10 +64,12 @@ class RPCHandler : virtual public RPCIf {
 
         std::unique_ptr<unsigned char> out(new unsigned char[4096]);
         size_t out_len;
+
         oe_result_t result =
             access_data(enclave, operation.op, rd_value.c_str(),
                         rd_value.length(), operation.value.c_str(),
                         operation.value.length(), out.get(), &out_len);
+
         if (result == OE_OK) {
             std::string updated_val((const char *)out.get(), out_len);
 
@@ -98,7 +96,7 @@ int main(int argc, char *argv[]) {
         std::shared_ptr<ThreadFactory> threadFactory = 
             std::shared_ptr<ThreadFactory>(new ThreadFactory());
         std::shared_ptr<ThreadManager> threadManager = 
-            ThreadManager::newSimpleThreadManager(8);
+            ThreadManager::newSimpleThreadManager(4);
         threadManager->threadFactory(threadFactory);
         threadManager->start();
 

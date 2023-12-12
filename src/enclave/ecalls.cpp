@@ -14,16 +14,19 @@ void access_data(int op_const, const char *in_val, size_t in_size,
                  unsigned char *cipher_text, size_t *out_size) {
     encryption_engine engine;
 
-    // Decrypt value from redis
-    std::string in_str((const char *)in_val, in_size);
-    std::string val_decrypt = engine.decryptNonDeterministic(in_str);
+    // If operation is GET then re-encrypt the value fetched from redis
+    // Else operation is PUT then encrypt the update value from client
+    if (op_const == 0) {
+        // Decrypt value from redis
+        std::string in_str(in_val, in_size);
+        std::string val_decrypt = engine.decryptNonDeterministic(in_str);
 
-    // Decrypt update value from client
-    std::string update_str((const char *)update_val, update_size);
-    std::string u_val_decrypt = engine.decryptNonDeterministic(update_str);
+        *out_size = engine.encryptNonDeterministic(val_decrypt, cipher_text);
+    } else {
+        // Decrypt update value from client
+        std::string update_str(update_val, update_size);
+        std::string u_val_decrypt = engine.decryptNonDeterministic(update_str);
 
-    // If operation is GET then re-encrypt the value fetched from redis,
-    // otherwise, encrypt the update value from client
-    std::string value = (op_const == 0) ? val_decrypt : u_val_decrypt;
-    *out_size = engine.encryptNonDeterministic(value, cipher_text);
+        *out_size = engine.encryptNonDeterministic(u_val_decrypt, cipher_text);
+    }
 }
