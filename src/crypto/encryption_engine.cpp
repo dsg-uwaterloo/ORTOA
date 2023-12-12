@@ -517,11 +517,11 @@ std::string encryption_engine::hmac(const std::string &key) {
 };
 
 int encryption_engine::encryptNonDeterministic(const std::string &plain_text, unsigned char* cipher_text) {
-    return encrypt(plain_text + "#" + gen_random(rand()%10), cipher_text);
+    return encrypt(plain_text, cipher_text);
 };
 
 std::string encryption_engine::decryptNonDeterministic(const std::string &cipher_text){
-    return extractKey(decrypt(cipher_text));
+    return decrypt(cipher_text);
 };
 
 std::string encryption_engine::getencryption_string_(){
