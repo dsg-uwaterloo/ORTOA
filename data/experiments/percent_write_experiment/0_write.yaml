@@ -1,6 +1,6 @@
 name: Write Percentage Experiment - 0%
 
-output_directory: write_percentage_experiment_0/
+output_directory: write_percentage_experiment_00/
 
 metadata:
   description: How does varying the percentage of write requests affect ortoa-tee?
