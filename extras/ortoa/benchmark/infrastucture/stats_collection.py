@@ -20,6 +20,7 @@ class Stats(BaseModel):
     def _graph_threads_vs_latency(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=['nthreads'], ascending=True)
         ax = df.plot.bar(x="nthreads", y="average_latency")
+        ax.set_ylabel("Latency (unit)")
         fig = ax.get_figure()
         fig.savefig(dir / "threads_vs_latency.pdf")
 
@@ -31,6 +32,7 @@ class Stats(BaseModel):
             secondary_y=["average_latency"],
             kind="bar",
         )
+        ax.set_ylabel("Throughput (ops/s)")
         fig = ax.get_figure()
         fig.savefig(dir / "threading_effects.pdf")
 
@@ -41,6 +43,7 @@ class Stats(BaseModel):
             y=["average_latency", "throughput"],
             secondary_y=["average_latency"],
         )
+        ax.set_ylabel("Throughput (ops/s)")
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
     
@@ -51,16 +54,20 @@ class Stats(BaseModel):
             y=["average_latency", "throughput"],
             secondary_y=["average_latency"],
         )
+        ax.set_ylabel("Throughput (ops/s)")
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
     
     def _graph_percent_write(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['percent_write'], ascending=True)
+        df = self.raw_df
+        df["percent_write"] = df["percent_write"].apply(lambda x: int(x[:-1]))
+        df = df.sort_values(by=["percent_write"], ascending=True)
         ax = df.plot.bar(
             x="percent_write",
             y=["average_latency", "throughput"],
             secondary_y=["average_latency"],
         )
+        ax.set_ylabel("Throughput (ops/s)")
         fig = ax.get_figure()
         fig.savefig(dir / "percent_write.pdf")
 
