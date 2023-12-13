@@ -21,5 +21,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "icecream==2.1.3",
-  "pytest==7.4.3"
+  "pytest==7.4.3",
+  "isort==5.13.1"
 ]
