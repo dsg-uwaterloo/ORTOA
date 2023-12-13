@@ -8,9 +8,12 @@ import subprocess
 import os
 import yaml
 import json
+import time
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
+
+SLEEP_TIME = 1
 
 class ClientFlags(BaseModel):
     initdb: bool = True
@@ -125,10 +128,15 @@ class ClientJob(BaseModel):
 
         with subprocess.Popen(self.host_command) as host_proc:
             self._write_debug_scripts()
+            time.sleep(SLEEP_TIME)
             self._flush_db()
+            time.sleep(SLEEP_TIME)
             self._seed_db()
+            time.sleep(SLEEP_TIME)
             self._perform_operations()
+            time.sleep(SLEEP_TIME)
             self._flush_db()
+            time.sleep(SLEEP_TIME)
             host_proc.terminate()
 
         self._save_results()
