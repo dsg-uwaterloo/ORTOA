@@ -5,6 +5,7 @@ from typing import Any, List, ClassVar
 import redis
 import subprocess
 
+import os
 import yaml
 import json
 
@@ -56,6 +57,27 @@ class ClientJob(BaseModel):
     client_flags: ClientFlags
     host_flags: HostFlags
 
+    @property
+    def seed_command(self) -> List[str]:
+        return [
+            "./build/src/client/client"
+        ] + self.client_flags.initdb_flags.split()
+    
+    @property
+    def operations_command(self) -> List[str]:
+        return [
+            "./build/src/client/client"
+        ] + self.client_flags.operation_flags.split()
+
+
+    @property
+    def host_command(self) -> List[str]:
+        return [
+            "./build/src/host/ortoa-host",
+            "./build/src/enclave/ortoa-enc.signed",
+            "--simulate",
+        ] + str(self.host_flags).split()
+
     _rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
 
     def __str__(self) -> str:
@@ -64,20 +86,28 @@ class ClientJob(BaseModel):
     def _flush_db(self) -> None:
         """Flush (empty) the database"""
         self._rd.flushdb(asynchronous=False)
+    
+    def _write_debug_scripts(self) -> None:
+        """Write out shell scripts to rerun-client for easier debugging"""
+        seed_script_path: Path = self.directory / "seed.sh"
+        with seed_script_path.open("w") as seed_debug_script:
+            seed_debug_script.write("#!/bin/bash\n")
+            seed_debug_script.write(" ".join(self.seed_command) + "\n")
+        os.chmod(seed_script_path, 0o755)
+        
+        operations_script_path: Path = self.directory / "operations.sh"
+        with operations_script_path.open("w") as operations_debug_script:
+            operations_debug_script.write("#!/bin/bash\n")
+            operations_debug_script.write(" ".join(self.operations_command) + "\n")
+        os.chmod(operations_script_path, 0o755)
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
-        seed_command = [
-            "./build/src/client/client"
-        ] + self.client_flags.initdb_flags.split()
-        subprocess.run(seed_command)
+        subprocess.run(self.seed_command)
 
     def _perform_operations(self) -> None:
         """Perform operations based on file linked in experiment"""
-        operations_command = [
-            "./build/src/client/client"
-        ] + self.client_flags.operation_flags.split()
-        subprocess.run(operations_command)
+        subprocess.run(self.operations_command)
 
     def _save_results(self) -> None:
         """Save the results of this job"""
@@ -93,12 +123,8 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
 
-        host_command = [
-            "./build/src/host/ortoa-host",
-            "./build/src/enclave/ortoa-enc.signed",
-            "--simulate",
-        ] + str(self.host_flags).split()
-        with subprocess.Popen(host_command) as host_proc:
+        with subprocess.Popen(self.host_command) as host_proc:
+            self._write_debug_scripts()
             self._flush_db()
             self._seed_db()
             self._perform_operations()
