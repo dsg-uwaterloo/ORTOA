@@ -91,13 +91,13 @@ class ClientJob(BaseModel):
         """Write out shell scripts to rerun-client for easier debugging"""
         seed_script_path: Path = self.directory / "seed.sh"
         with seed_script_path.open("w") as seed_debug_script:
-            seed_debug_script.write("!/bin/bash\n")
+            seed_debug_script.write("#!/bin/bash\n")
             seed_debug_script.write(" ".join(self.seed_command) + "\n")
         os.chmod(seed_script_path, 0o755)
         
         operations_script_path: Path = self.directory / "operations.sh"
         with operations_script_path.open("w") as operations_debug_script:
-            operations_debug_script.write("!/bin/bash\n")
+            operations_debug_script.write("#!/bin/bash\n")
             operations_debug_script.write(" ".join(self.operations_command) + "\n")
         os.chmod(operations_script_path, 0o755)
 
