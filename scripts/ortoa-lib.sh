@@ -42,6 +42,7 @@ ortoa-lib: a collection of bash functions to ease development
     Formatters:
         ortoa-clang-format: --------- Check staged C++ files for formatting issues
         ortoa-clang-format-all: ----- Check all C++ projects for formatting issues
+        ortoa-format-python: -------- Format all the python files
         ortoa-sort-python: ---------- Sort the imports in python files
 
     Other:
@@ -194,6 +195,24 @@ Syntax: ortoa-clang-format [-h]
 }
 # export -f ortoa-clang-format-all
 
+
+ortoa-format-python() {
+    local HELP="""\
+Formats all python files in the extras/ directory
+
+Syntax: ortoa-sort-python [-h]
+------------------------------
+    -h               Print this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+        esac
+    done
+
+    black extras/
+}
 
 ortoa-sort-python() {
     local HELP="""\
