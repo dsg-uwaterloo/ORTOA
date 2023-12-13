@@ -1,27 +1,17 @@
+# C++ build and installation
 build/
+install/
 
-.DS_Store
-._.DS_Store
-**/.DS_Store
-**/._.DS_Store
-
-db/
-gen-cpp/
-
-server
-
-*.data
-*.rdb
-
-.vscode/
+# Python sdk
 .venv/
 
-*/__pycache__/
 **/__pycache__/
-
-.pytest_cache/
-*/pytest_cache/
-**/pytest_cache/
-
+**/.pytest_cache/
 *.egg-info/
+
+# e2e benchmarking flow
 out/
+
+# Miscellaneous
+.vscode/
+**/*.DS_Store
