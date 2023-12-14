@@ -1,7 +1,6 @@
 import argparse
-from argparse import ArgumentParser
-
 import csv
+from argparse import ArgumentParser
 from pathlib import Path
 
 from ortoa.data_generation.generators.key_generator import (
@@ -9,8 +8,8 @@ from ortoa.data_generation.generators.key_generator import (
     SequentialIntKeyGenerator,
 )
 from ortoa.data_generation.generators.value_generator import (
-    ValueFactory,
     RandomIntegerGenerator,
+    ValueFactory,
 )
 
 
