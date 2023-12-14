@@ -1,20 +1,20 @@
-import yaml
 from pathlib import Path
 from typing import Any, List, Union
-from typing_extensions import Annotated
+
 import pytest
+import yaml
+from pydantic import BaseModel, Field
+from typing_extensions import Annotated
 
 from ortoa.benchmark.interface.data import (
     ByteSizeGenerationConfig,
     RandomIntegerGenerationConfig,
 )
 from ortoa.benchmark.interface.parameter import (
-    IntegerParameter,
     IntegerIncrementRange,
     IntegerMultiplyRange,
+    IntegerParameter,
 )
-
-from pydantic import BaseModel, Field
 
 
 def get_path(filename: str) -> Path:

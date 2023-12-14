@@ -1,15 +1,13 @@
 import argparse
-from argparse import ArgumentParser
-
 import csv
 import random
-
+from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
 
 from ortoa.data_generation.generators.value_generator import (
-    ValueFactory,
     RandomIntegerGenerator,
+    ValueFactory,
 )
 
 

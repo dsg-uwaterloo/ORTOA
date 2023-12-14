@@ -1,16 +1,14 @@
-import yaml
 import itertools
-
 from pathlib import Path
-from typing import Any, Generic, List, Optional, TypeVar, Union, Literal
+from typing import Any, Generic, List, Literal, Optional, TypeVar, Union
+
+import yaml
+from pydantic import BaseModel, Field
 from typing_extensions import Self
 
-from pydantic import BaseModel, Field
-
-from ortoa.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
-from ortoa.benchmark.interface.data import DataGenerationConfigBase, DataGenConfig
 from ortoa.benchmark.infrastucture.experiment_collection import ExperimentPath
-
+from ortoa.benchmark.interface.data import DataGenConfig, DataGenerationConfigBase
+from ortoa.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
 
 FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
 

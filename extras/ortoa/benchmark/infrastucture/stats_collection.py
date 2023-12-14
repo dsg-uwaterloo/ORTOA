@@ -1,13 +1,14 @@
-from pydantic import BaseModel, Field
-from typing import List
-from typing_extensions import Self
-from pathlib import Path
-import pandas as pd
-import numpy as np
 from functools import reduce
+from pathlib import Path
+from typing import List
 
-from ortoa.benchmark.infrastucture.runner import Result
+import numpy as np
+import pandas as pd
+from pydantic import BaseModel
+from typing_extensions import Self
+
 from ortoa.benchmark.infrastucture.jobs import ClientJob
+from ortoa.benchmark.infrastucture.runner import Result
 
 
 class Stats(BaseModel):
@@ -15,7 +16,6 @@ class Stats(BaseModel):
         arbitrary_types_allowed = True
 
     raw_df: pd.DataFrame  # Entry from every experiment
-    # summary_df: pd.DataFrame = Field(init_var=False, required=False)
 
     def _graph_threads_vs_latency(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=['nthreads'], ascending=True)

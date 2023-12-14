@@ -1,14 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Literal, Union, List
-from typing_extensions import Annotated, Self
+from typing import List, Literal, Union
 
 from pydantic import BaseModel, Field
+from typing_extensions import Annotated, Self
 
 from ortoa.benchmark.interface.parameter import (
     IntegerIncrementRange,
     IntegerMultiplyRange,
-    FloatIncrementRange,
-    FloatMultiplyRange,
 )
 
 

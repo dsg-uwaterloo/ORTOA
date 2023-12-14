@@ -1,17 +1,15 @@
+import json
+import os
+import subprocess
+import time
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import Any, List, ClassVar
+from typing import Any, ClassVar, List
 
 import redis
-import subprocess
-
-import os
 import yaml
-import json
-import time
+from pydantic import BaseModel, Field
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
-
 
 SLEEP_TIME = 3
 

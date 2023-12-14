@@ -1,22 +1,22 @@
 import argparse
-from datetime import datetime
 from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from ortoa.benchmark.infrastucture.experiment_collection import (
-    collect_experiments,
     ExperimentPath,
+    collect_experiments,
 )
 from ortoa.benchmark.infrastucture.jobs import ClientJob, make_jobs
-from ortoa.benchmark.interface.experiment import (
-    Experiment,
-    load_experiments,
-    atomicize_experiments,
-    AtomicExperiment,
-)
 from ortoa.benchmark.infrastucture.runner import JobOrchestration
 from ortoa.benchmark.infrastucture.stats_collection import Stats
+from ortoa.benchmark.interface.experiment import (
+    AtomicExperiment,
+    Experiment,
+    atomicize_experiments,
+    load_experiments,
+)
 
 
 def parse_args() -> argparse.Namespace:
