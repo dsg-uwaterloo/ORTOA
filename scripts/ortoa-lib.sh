@@ -13,7 +13,9 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # always top-level even in submodule (TODO: bug if more than one submodule deep)
 export REPO_ROOT=$(cd ${SCRIPT_DIR} && git rev-parse --show-superproject-working-tree --show-toplevel | head -1)
-export BUILD_DIR=${REPO_ROOT}/build
+
+export ORTOA_SHARED="${REPO_ROOT}"
+export BUILD_DIR="${ORTOA_SHARED}/build"
 
 ############################################
 # Help
@@ -38,6 +40,12 @@ ortoa-lib: a collection of bash functions to ease development
     Data Generation:
         ortoa-generate-seed: -------- Seed Data Generation script for ORTOA-tee
         ortoa-generate-operations: -- Operation Generation script for ORTOA-tee 
+    
+    Building and Installing:
+        ortoa-configure: ------------ Configure C++ projects
+        ortoa-build: ---------------- Build C++ projects
+        ortoa-cbi: ------------------ Configure, build & install C++ projects
+        ortoa-clean: ---------------- Cleanup C++ build and install directories
 
     Formatters:
         ortoa-clang-format: --------- Check staged C++ files for formatting issues
@@ -116,6 +124,7 @@ Experiments:
   -d EXPERIMENT_DIRS [EXPERIMENT_DIRS ...], --experiment-dirs EXPERIMENT_DIRS [EXPERIMENT_DIRS ...]
                         List of local directories to use for experiment files
 """
+
     python3 "${REPO_ROOT}/extras/ortoa/benchmark/infrastucture/main.py" "${@}"
 }
 
@@ -249,6 +258,7 @@ optional arguments:
   -n N_DATA_POINTS, --n_data_points N_DATA_POINTS
                         Number of data points to generate.
 """
+
     python3 ${REPO_ROOT}/extras/data_generation/generate_seed_data.py "${@}"
 }
 
@@ -269,6 +279,106 @@ optional arguments:
   -p P_GET, --p_get P_GET
                         Probability of a GET request. 1-p_get = p_put (probability of a PUT request).
 """
-    python3 ${REPO_ROOT}/extras/data_generation/generate_sample_operations.py "${@}"
 
+    python3 ${REPO_ROOT}/extras/data_generation/generate_sample_operations.py "${@}"
+}
+
+############################################
+# Building and Installing
+############################################
+
+ortoa-configure() {
+    local HELP="""\
+Run cmake configuration stage for C++ projects
+
+Syntax: ortoa-configure [-h] [cmake-parameters]
+-----------------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake configure invocation
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break
+        esac
+    done
+
+    cd "${REPO_ROOT}"
+
+    shift $((OPTIND - 1))
+
+    mkdir -p "${BUILD_DIR}"
+    cmake -S "${REPO_ROOT}" \
+          -B "${BUILD_DIR}" \
+          -DCMAKE_INSTALL_PREFIX="${ORTOA_SHARED}/installs" \
+          "${@}"
+}
+
+ortoa-build() {
+    local HELP="""\
+Build C++ projects (requires ortoa-configure)
+
+Syntax: ortoa-build [-h] [cmake-parameters]
+-------------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake invocation
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    cd "${REPO_ROOT}"
+
+    cmake --build "${BUILD_DIR}" "${@}"
+}
+
+ortoa-cbi() {
+    local HELP="""\
+Run cmake configure, build and install stages for C++ projects
+Must be run from the repo root
+
+Syntax: ortoa-cbi [-h] [cmake-parameters]
+-----------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake configure invocation
+""" 
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    cd "${REPO_ROOT}"
+
+    ortoa-configure "${@}"
+    ortoa-build
+}
+
+ortoa-clean() {
+    local HELP="""\
+Clean build and install directories
+
+Syntax: ortoa-clean [-h]
+------------------------
+    h                   Prints this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    cd "${REPO_ROOT}"
+
+    rm -rf \
+        "${BUILD_DIR}/"*
 }
