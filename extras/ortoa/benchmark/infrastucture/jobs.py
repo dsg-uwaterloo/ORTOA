@@ -13,7 +13,7 @@ import time
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
 
-SLEEP_TIME = 1
+SLEEP_TIME = 3
 
 class ClientFlags(BaseModel):
     initdb: bool = True
