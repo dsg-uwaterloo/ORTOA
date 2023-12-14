@@ -55,6 +55,6 @@ private:
     EVP_PKEY * skey_, * vkey_;
     std::string prf_encrypt(const std::string& key, const std::string& plaintext);
 
-    int rng_max_len=10;
+    int rng_max_len = 10;
 };
 #endif //WAFFLE_BASIC_CRYPTO_H
