@@ -36,23 +36,30 @@ class ClientHandler {
     void runThreaded() {
         SharedQueue sharedQueue(config);
         std::vector<std::thread> data_handler_threads;
+        std::vector<std::thread> warmup_threads;
         std::vector<std::thread> runner_threads;
 
         // Data streaming into a shared queue
         for (int i = 0; i < config.num_clients; ++i) {
             data_handler_threads.push_back(std::thread(DataHandler(sharedQueue)));
         }
+        for (auto &thread : data_handler_threads) thread.join();
 
-        for (auto& thread : data_handler_threads) thread.join();
+        // Warm up client-host communication
+        WarmUpRunner::warmupOperations = config.num_warmup_operations;
+        for (int i = 0; i < config.num_clients; ++i) {
+            warmup_threads.push_back(std::thread(WarmUpRunner(sharedQueue)));
+        }
 
         // Client data access using shared queue
         auto start = high_resolution_clock::now();
         for (int i = 0; i < config.num_clients; ++i) {
             runner_threads.push_back(std::thread(ClientRunner(sharedQueue, latencies)));
         }
-
-        for (auto& thread : runner_threads) thread.join();
+        for (auto &thread : runner_threads) thread.join();
         auto end = high_resolution_clock::now();
+
+        for (auto &thread : warmup_threads) thread.join();
 
         total_duration = duration_cast<microseconds>(end - start).count();
     }
