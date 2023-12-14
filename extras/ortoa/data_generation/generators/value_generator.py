@@ -1,6 +1,6 @@
-from typing import Generic, TypeVar, Any
-from abc import ABC, abstractmethod
 import random
+from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 

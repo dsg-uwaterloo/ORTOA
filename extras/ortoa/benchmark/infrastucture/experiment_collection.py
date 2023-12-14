@@ -1,12 +1,9 @@
 import itertools
-
 from pathlib import Path
 from typing import Any, Iterable, List
 
 from pydantic import BaseModel
 from typing_extensions import Self
-
-from icecream import ic
 
 
 class ExperimentPath(BaseModel):
