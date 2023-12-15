@@ -111,7 +111,7 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
 
     program.add_argument("--max-key").default_value(100000).scan<'d', int>();
 
-    program.add_argument("--max-val").default_value(100000).scan<'d', int>();
+    program.add_argument("--max-val").default_value(10000).scan<'d', int>();
 
     program.parse_args(argc, argv);
 
