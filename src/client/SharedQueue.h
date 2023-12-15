@@ -74,25 +74,25 @@ class DataHandler {
 class WarmUpRunner {
   private:
     SharedQueue &sharedQueue;
-	inline static std::mutex mutex;
+    inline static std::mutex mutex;
 
   public: 
     inline static int warmupOperations; 
 
-	WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
+    WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
 
-	void operator()() {
-		while (true) {
-			std::unique_lock<std::mutex> lock(mutex);
+    void operator()() {
+	    while (true) {
+	        std::unique_lock<std::mutex> lock(mutex);
 
-			if (warmupOperations == 0) return;
-			--warmupOperations;
+	        if (warmupOperations == 0) return;
+	        --warmupOperations;
 
-			lock.unlock();
+            lock.unlock();
 
-			Operation data = sharedQueue.dequeue();
+            Operation data = sharedQueue.dequeue();
             if (data.key == "EOF") return;
-
+            
             auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
             auto transport = std::make_shared<TBufferedTransport>(socket);
             auto protocol = std::make_shared<TBinaryProtocol>(transport);
@@ -101,8 +101,8 @@ class WarmUpRunner {
             transport->open();
             client.access(data);
             transport->close();
-		}
-	}
+        }
+    }
 };
 
 class ClientRunner {
