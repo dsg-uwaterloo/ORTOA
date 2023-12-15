@@ -21,7 +21,7 @@ struct ClientConfig {
     bool use_seed = false;
 
     int max_key = 100000;
-    int max_value = 100000;
+    int max_value = 10000;
 };
 
 bool moreOperationsExist(ClientConfig &config);

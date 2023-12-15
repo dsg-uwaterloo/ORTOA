@@ -101,17 +101,17 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
 
     program.add_argument("-o", "--output").default_value(std::string{""});
 
-    program.add_argument("--nthreads").default_value(16).scan<'d', int>();
+    program.add_argument("--nthreads").default_value(config.num_clients).scan<'d', int>();
 
-    program.add_argument("--noperations").default_value(1000).scan<'d', int>();
+    program.add_argument("--noperations").default_value(config.num_operations).scan<'d', int>();
 
-    program.add_argument("--initdb").default_value(false).implicit_value(true);
+    program.add_argument("--initdb").default_value(config.init_db).implicit_value(true);
 
-    program.add_argument("--pget").default_value(0.5).scan<'g', double>();
+    program.add_argument("--pget").default_value(config.p_get).scan<'g', double>();
 
-    program.add_argument("--max-key").default_value(100000).scan<'d', int>();
+    program.add_argument("--max-key").default_value(config.max_key).scan<'d', int>();
 
-    program.add_argument("--max-val").default_value(100000).scan<'d', int>();
+    program.add_argument("--max-val").default_value(config.max_value).scan<'d', int>();
 
     program.parse_args(argc, argv);
 
