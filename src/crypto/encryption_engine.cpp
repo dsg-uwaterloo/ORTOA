@@ -2,25 +2,28 @@
 #include <iostream>
 
 std::string encryption_engine::extractKey(const std::string& encryptedKey) {
-    for(int i=encryptedKey.size()-1; i>=0; --i) {
+    for(int i = encryptedKey.size() - 1; i >= 0; --i) {
         if(encryptedKey[i] == '#') {
             return encryptedKey.substr(0, i);
         }
     }
-    return "";
+    return encryptedKey;
 }
 
-std::string encryption_engine::gen_random(const int len) {
-    int time_ = (int)time(0);
-    std::string tmp_s;
-    tmp_s.reserve(len);
+uint32_t encryption_engine::rand_uint32(const uint32_t &min, const uint32_t &max) {
+    static thread_local std::mt19937 generator;
+    std::uniform_int_distribution<uint32_t> distribution(min, max);
+    return distribution(generator);
+};
 
+std::string encryption_engine::rand_str(const int len) {
+    static const char alphanum[] = "0123456789";
+    std::string ret;
     for (int i = 0; i < len; ++i) {
-        tmp_s += std::to_string(time_ % 10);
-        time_ = time_ % 10;
+        ret += alphanum[rand_uint32(0, 500) % (sizeof(alphanum) - 1)];
     }
-    return tmp_s;//"123"; //TODO: change this back to tmp_s
-}
+    return ret;
+};
 
 encryption_engine::encryption_engine() {
     OpenSSL_add_all_algorithms();
@@ -517,11 +520,11 @@ std::string encryption_engine::hmac(const std::string &key) {
 };
 
 int encryption_engine::encryptNonDeterministic(const std::string &plain_text, unsigned char* cipher_text) {
-    return encrypt(plain_text, cipher_text);
+    return encrypt(plain_text + "#" + rand_str(rng_max_len), cipher_text);
 };
 
 std::string encryption_engine::decryptNonDeterministic(const std::string &cipher_text){
-    return decrypt(cipher_text);
+    return extractKey(decrypt(cipher_text));
 };
 
 std::string encryption_engine::getencryption_string_(){
@@ -541,20 +544,4 @@ std::string encryption_engine::prf_encrypt(const std::string& key, const std::st
 
 std::string encryption_engine::prf(const std::string& plain_text) {
     return prf_encrypt(encryption_string_, plain_text);
-};
-
-uint32_t encryption_engine::rand_uint32(const uint32_t &min, const uint32_t &max) {
-    static thread_local std::mt19937 generator;
-    std::uniform_int_distribution<uint32_t> distribution(min, max);
-    return distribution(generator);
-};
-
-std::string encryption_engine::rand_str(const int len) {
-    static const char alphanum[] = "0123456789";
-    std::string ret;
-    ret.resize(len);
-    for (int i = 0; i < len; ++i) {
-        ret[i] = alphanum[rand_uint32(0, 500) % (sizeof(alphanum) - 1)];
-    }
-    return ret;
 };
