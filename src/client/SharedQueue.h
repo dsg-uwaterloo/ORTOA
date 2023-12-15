@@ -82,11 +82,11 @@ class WarmUpRunner {
     WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
 
     void operator()() {
-	    while (true) {
-	        std::unique_lock<std::mutex> lock(mutex);
+        while (true) {
+            std::unique_lock<std::mutex> lock(mutex);
 
-	        if (warmupOperations == 0) return;
-	        --warmupOperations;
+            if (warmupOperations == 0) return;
+            --warmupOperations;
 
             lock.unlock();
 
