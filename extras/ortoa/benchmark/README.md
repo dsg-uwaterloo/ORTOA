@@ -1,8 +1,15 @@
 # Benchmarking
 
-## Todo List
+## Running the benchmarking suite
 
-- An experiment should obviously record its results
-- Each experiment should create an artifact
-- We should be able to aggregate the results of all the experiments into a dataframe and then produce some artifacts with that
-- Write the experiments
+After defining a benchmark in yaml format, you can run:
+
+```bash
+ORTOA/ $ . scripts/ortoa-lib.sh
+
+# To run a single benchmark config
+ORTOA/ $ ortoa-benchmark -e <PATH TO CONFIG>
+
+# To run a directory of benchmarks
+ORTOA/ $ ortoa-benchmark -d <PATH TO DIRECTORY>
+```
