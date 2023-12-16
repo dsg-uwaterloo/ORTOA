@@ -1,4 +1,5 @@
 include(FetchContent)
+include(GNUInstallDirs)
 
 # Setting the cmake compiler when LVI mitigation is not enabled. If the CC
 # environment variable has been specified or the if CMAKE_C_COMPILER cmake

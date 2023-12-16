@@ -42,3 +42,7 @@ target_link_libraries(client PRIVATE
     pthread
     argparse
 )
+
+install(TARGETS client
+    DESTINATION bin
+)
