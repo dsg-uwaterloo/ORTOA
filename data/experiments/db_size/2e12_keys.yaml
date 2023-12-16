@@ -1,0 +1,22 @@
+name: Database Size Experiment - 4096 keys
+output_directory: db_size_experiment_2e12/
+
+metadata:
+  description: How does the database size affect the performance of ORTOA?
+  db_size: 2^12
+
+client_config:
+  data:
+    generator: FixedStringGenerator
+    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz
+    seed_size: 4096
+    num_operations: 1000
+
+  flags:
+    - name: nthreads
+      value: 1
+
+host_config:
+  flags:
+    - name: nthreads
+      value: 1

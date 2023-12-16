@@ -1,0 +1,22 @@
+name: Client Threading Experiment
+
+output_directory: client_thread_experiment_1/
+
+metadata:
+  description: How does the number of client threads affect the performance of ORTOA?
+
+client_config:
+  data:
+    generator: FixedStringGenerator
+    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz
+    seed_size: 100000
+    num_operations: 1000
+
+  flags:
+    - name: nthreads
+      value: 1
+
+host_config:
+  flags:
+    - name: nthreads
+      value: 1
