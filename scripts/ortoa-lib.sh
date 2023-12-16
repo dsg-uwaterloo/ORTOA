@@ -16,6 +16,7 @@ export REPO_ROOT=$(cd ${SCRIPT_DIR} && git rev-parse --show-superproject-working
 
 export ORTOA_SHARED="${REPO_ROOT}"
 export BUILD_DIR="${ORTOA_SHARED}/build"
+export INSTALL_DIR="${ORTOA_SHARED}/install"
 
 ############################################
 # Help
@@ -44,6 +45,7 @@ ortoa-lib: a collection of bash functions to ease development
     Building and Installing:
         ortoa-configure: ------------ Configure C++ projects
         ortoa-build: ---------------- Build C++ projects
+        ortoa-install: -------------- Install C++ projects
         ortoa-cbi: ------------------ Configure, build & install C++ projects
         ortoa-clean: ---------------- Cleanup C++ build and install directories
 
@@ -76,7 +78,7 @@ Syntax: ortoa-client-run [-h]
     -h                  Print this help message
 """
 
-    ${BUILD_DIR}/src/client/client "${@}"
+    "${INSTALL_DIR}"/bin/client "${@}"
 }
 # export -f ortoa-client-run
 
@@ -96,7 +98,7 @@ Syntax: ortoa-simulate [-h]
         esac
     done
 
-    ${BUILD_DIR}/src/host/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
+    "${INSTALL_DIR}"/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
 # export -f ortoa-simulate
 
@@ -311,7 +313,7 @@ Syntax: ortoa-configure [-h] [cmake-parameters]
     mkdir -p "${BUILD_DIR}"
     cmake -S "${REPO_ROOT}" \
           -B "${BUILD_DIR}" \
-          -DCMAKE_INSTALL_PREFIX="${ORTOA_SHARED}/installs" \
+          -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
           "${@}"
 }
 
@@ -337,6 +339,27 @@ Syntax: ortoa-build [-h] [cmake-parameters]
     cmake --build "${BUILD_DIR}" "${@}"
 }
 
+ortoa-install() {
+    local HELP="""\
+Install C++ projects (requires ortoa-build)
+Syntax: ortoa-install [-h] [cmake-parameters]
+---------------------------------------------
+    h                   Prints this help message
+    cmake-parameters    Parameters passed to CMake invocation
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+            *) break ;;
+        esac
+    done
+
+    cd "${REPO_ROOT}"
+
+    cmake --install "${BUILD_DIR}" --prefix "${INSTALL_DIR}" "${@}"
+}
+
 ortoa-cbi() {
     local HELP="""\
 Run cmake configure, build and install stages for C++ projects
@@ -359,6 +382,7 @@ Syntax: ortoa-cbi [-h] [cmake-parameters]
 
     ortoa-configure "${@}"
     ortoa-build
+    ortoa-install
 }
 
 ortoa-clean() {
@@ -380,5 +404,6 @@ Syntax: ortoa-clean [-h]
     cd "${REPO_ROOT}"
 
     rm -rf \
-        "${BUILD_DIR}/"*
+        "${BUILD_DIR}/"* \
+        "${INSTALL_DIR}/"*
 }
