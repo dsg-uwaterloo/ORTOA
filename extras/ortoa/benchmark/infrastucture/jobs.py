@@ -61,20 +61,20 @@ class ClientJob(BaseModel):
     @property
     def seed_command(self) -> List[str]:
         return [
-            "./build/src/client/client"
+            "./install/bin/client"
         ] + self.client_flags.initdb_flags.split()
     
     @property
     def operations_command(self) -> List[str]:
         return [
-            "./build/src/client/client"
+            "./install/bin/client"
         ] + self.client_flags.operation_flags.split()
 
 
     @property
     def host_command(self) -> List[str]:
         return [
-            "./build/src/host/ortoa-host",
+            "./install/bin/ortoa-host",
             "./build/src/enclave/ortoa-enc.signed",
             "--simulate",
         ] + str(self.host_flags).split()

@@ -59,3 +59,7 @@ target_link_libraries(ortoa-host
   hiredis
   redis++
 )
+
+install(TARGETS ortoa-host
+  DESTINATION bin
+)
