@@ -2,7 +2,7 @@
 
 ORTOA- a One Round Trip Oblivious Access protocol that reads or writes data stored on remote storage *in one round without revealing the type of access*.
 
-The ORTOA-tee project implements this access protocol leveraging the cryptographic guarantees of trusted execution environments (hardware enclaves).
+The ORTOA-tee project implements this access protocol leveraging the cryptographic guarantees of trusted execution environments (hardware enclaves) and benchmarks the performance.
 
 ## Project Dependencies
 
