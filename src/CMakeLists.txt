@@ -15,6 +15,10 @@ if (UNIX)
   endif ()
 endif ()
 
+# Set the install prefix
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
+endif()
 
 # External Dependencies (FetchContent)
 FetchContent_Declare(
@@ -24,7 +28,6 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(spdlog)
-
 
 
 # Currently the `OpenEnclave` package depends on `project()`.
@@ -40,10 +43,6 @@ set(OE_CRYPTO_LIB
 )
 
 
-# Add subdirectories for the components
-add_subdirectory(enclave)
-add_subdirectory(host)
-add_subdirectory(client)
 
 # Generate key
 add_custom_command(
@@ -60,6 +59,8 @@ add_custom_command(
           ${CMAKE_SOURCE_DIR}/src/enclave/ortoa.conf -k private.pem
 ) 
 
+add_custom_target(sign ALL DEPENDS enclave/ortoa-enc.signed)
+
 
 # Thrift
 add_custom_command(
@@ -71,10 +72,14 @@ add_custom_command(
   COMMAND thrift -r --gen cpp ${CMAKE_SOURCE_DIR}/src/thrift/Operation.thrift
 )
 
-set_source_files_properties(${CMAKE_BINARY_DIR}/gen-cpp/RPC.h PROPERTIES GENERATED TRUE)
-set_source_files_properties(${CMAKE_BINARY_DIR}/gen-cpp/RPC.cpp PROPERTIES GENERATED TRUE)
-set_source_files_properties(${CMAKE_BINARY_DIR}/gen-cpp/Operation_types.h PROPERTIES GENERATED TRUE)
-set_source_files_properties(${CMAKE_BINARY_DIR}/gen-cpp/Operation_types.cpp PROPERTIES GENERATED TRUE)
+set_source_files_properties(
+  ${CMAKE_BINARY_DIR}/gen-cpp/RPC.h
+  ${CMAKE_BINARY_DIR}/gen-cpp/RPC.cpp  
+  ${CMAKE_BINARY_DIR}/gen-cpp/Operation_types.h 
+  ${CMAKE_BINARY_DIR}/gen-cpp/Operation_types.cpp 
+  
+  PROPERTIES GENERATED TRUE
+)
 
 add_custom_target(generate-thrift
   DEPENDS
@@ -83,5 +88,16 @@ add_custom_target(generate-thrift
     gen-cpp/RPC.cpp
     gen-cpp/RPC.h
 )
-    
-add_custom_target(sign ALL DEPENDS enclave/ortoa-enc.signed)
+
+
+# Client
+add_subdirectory(client)
+
+# Host
+add_subdirectory(host)
+
+# Enclave
+add_subdirectory(enclave)
+
+# Storage library
+add_subdirectory(libstorage)
