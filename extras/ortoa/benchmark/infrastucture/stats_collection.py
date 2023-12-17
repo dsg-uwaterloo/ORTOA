@@ -20,7 +20,7 @@ class Stats(BaseModel):
     def _graph_threads_vs_latency(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=['nthreads'], ascending=True)
         ax = df.plot.bar(x="nthreads", y="average_latency")
-        ax.set_ylabel("Latency (unit)")
+        ax.set_ylabel("Latency (μs)")
         fig = ax.get_figure()
         fig.savefig(dir / "threads_vs_latency.pdf")
 
@@ -33,6 +33,7 @@ class Stats(BaseModel):
             kind="bar",
         )
         ax.set_ylabel("Throughput (ops/s)")
+        ax.right_ax.set_ylabel("Latency (μs)")
         fig = ax.get_figure()
         fig.savefig(dir / "threading_effects.pdf")
 
@@ -44,6 +45,7 @@ class Stats(BaseModel):
             secondary_y=["average_latency"],
         )
         ax.set_ylabel("Throughput (ops/s)")
+        ax.right_ax.set_ylabel("Latency (μs)")
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
     
@@ -55,6 +57,7 @@ class Stats(BaseModel):
             secondary_y=["average_latency"],
         )
         ax.set_ylabel("Throughput (ops/s)")
+        ax.right_ax.set_ylabel("Latency (μs)")
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
     
@@ -68,6 +71,7 @@ class Stats(BaseModel):
             secondary_y=["average_latency"],
         )
         ax.set_ylabel("Throughput (ops/s)")
+        ax.right_ax.set_ylabel("Latency (μs)")
         fig = ax.get_figure()
         fig.savefig(dir / "percent_write.pdf")
 
