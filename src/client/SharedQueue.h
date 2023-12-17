@@ -1,3 +1,4 @@
+#include <atomic>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -45,7 +46,7 @@ class SharedQueue {
 
         if (queue.empty()) {
             Operation op;
-            op.__set_key("EOF");
+            op.__set_op(OpType::EOD);
             return op;
         }
 
@@ -66,8 +67,34 @@ class DataHandler {
     void operator()() {
         while (true) {
             int enqueue_result = sharedQueue.enqueue();
-
             if (enqueue_result == 1) return;
+        }
+    }
+};
+
+class WarmUpRunner {
+  private:
+    SharedQueue &sharedQueue;
+    inline static std::mutex mutex;
+
+  public: 
+    inline static std::atomic<int> warmupOperations; 
+
+    WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
+
+    void operator()() {
+        while (warmupOperations--) {
+            Operation data = sharedQueue.dequeue();
+            if (data.op == OpType::EOD) return;
+            
+            auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
+            auto transport = std::make_shared<TBufferedTransport>(socket);
+            auto protocol = std::make_shared<TBinaryProtocol>(transport);
+            RPCClient client(protocol);
+
+            transport->open();
+            client.access(data);
+            transport->close();
         }
     }
 };
@@ -84,8 +111,7 @@ class ClientRunner {
     void operator()() {
         while (true) {
             Operation data = sharedQueue.dequeue();
-
-            if (data.key == "EOF") return;
+            if (data.op == OpType::EOD) return;
 
             auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
             auto transport = std::make_shared<TBufferedTransport>(socket);
