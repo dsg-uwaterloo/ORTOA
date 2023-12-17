@@ -146,3 +146,19 @@ ORTOA/ $ ortoa-simulate -h
 ```bash
 ORTOA/ $ ortoa-client-run -h
 ```
+
+## Linking Failures
+
+Linking failure example:
+
+```txt
+error while loading shared libraries: liblibstorage.so: cannot open shared object file: No such file or directory
+```
+
+Cause: linked cannot find the shared libraries
+
+Solution:
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<REPO_ROOT>/install/lib
+```

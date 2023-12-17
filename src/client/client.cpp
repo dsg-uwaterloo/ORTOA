@@ -2,7 +2,7 @@
 #include <numeric>
 #include <sstream>
 
-#include "../host/redis.h"
+#include "redis.h"
 #include "SharedQueue.h"
 #include "spdlog/spdlog.h"
 
