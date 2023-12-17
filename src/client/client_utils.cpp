@@ -103,6 +103,8 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
 
     program.add_argument("--nthreads").default_value(config.num_clients).scan<'d', int>();
 
+    program.add_argument("--warmup").default_value(config.num_warmup_operations).scan<'d', int>();
+
     program.add_argument("--noperations").default_value(config.num_operations).scan<'d', int>();
 
     program.add_argument("--initdb").default_value(config.init_db).implicit_value(true);
@@ -136,6 +138,7 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
     } 
 
     config.num_clients = program.get<int>("--nthreads");
+    config.num_warmup_operations = program.get<int>("--warmup");
     config.num_operations = program.get<int>("--noperations");
     config.init_db = program.get<bool>("--initdb");
     config.p_get = program.get<double>("--pget");

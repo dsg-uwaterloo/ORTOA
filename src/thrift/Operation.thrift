@@ -1,6 +1,7 @@
 enum OpType {
   GET, 
-  PUT
+  PUT, 
+  EOD
 }
 
 struct Operation {
