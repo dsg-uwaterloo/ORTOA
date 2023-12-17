@@ -1,3 +1,4 @@
+#include <atomic>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -45,7 +46,7 @@ class SharedQueue {
 
         if (queue.empty()) {
             Operation op;
-            op.__set_key("EOF");
+            op.__set_op(OpType::EOD);
             return op;
         }
 
@@ -77,21 +78,14 @@ class WarmUpRunner {
     inline static std::mutex mutex;
 
   public: 
-    inline static int warmupOperations; 
+    inline static std::atomic<int> warmupOperations; 
 
     WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
 
     void operator()() {
-        while (true) {
-            std::unique_lock<std::mutex> lock(mutex);
-
-            if (warmupOperations == 0) return;
-            --warmupOperations;
-
-            lock.unlock();
-
+        while (warmupOperations--) {
             Operation data = sharedQueue.dequeue();
-            if (data.key == "EOF") return;
+            if (data.op == OpType::EOD) return;
             
             auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
             auto transport = std::make_shared<TBufferedTransport>(socket);
@@ -117,7 +111,7 @@ class ClientRunner {
     void operator()() {
         while (true) {
             Operation data = sharedQueue.dequeue();
-            if (data.key == "EOF") return;
+            if (data.op == OpType::EOD) return;
 
             auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
             auto transport = std::make_shared<TBufferedTransport>(socket);
