@@ -2,8 +2,9 @@ import json
 import os
 import subprocess
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, ClassVar, List
+from typing import Any, ClassVar, List, Tuple
 
 import redis
 import yaml
@@ -12,6 +13,13 @@ from pydantic import BaseModel, Field
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
 SLEEP_TIME = 3
+
+@dataclass
+class LogFiles:
+    client_stdout: Path
+    client_stderr: Path
+    host_stdout: Path
+    host_stderr: Path
 
 class ClientFlags(BaseModel):
     initdb: bool = True
@@ -104,11 +112,36 @@ class ClientJob(BaseModel):
 
     def _seed_db(self) -> None:
         """Seed the database based on seed file linked in experiment"""
-        subprocess.run(self.seed_command)
+        log_file_paths = self._get_log_file_paths()
+
+        # stdout & stderr will be redirected to these files
+        client_stdout = log_file_paths.client_stdout.open("w")
+        client_stderr = log_file_paths.client_stderr.open("w")
+
+        subprocess.run(self.seed_command, stdout=client_stdout, stderr=client_stderr)
+        
+        time.sleep(2)
+        
+        # close the files where logs were written
+        client_stdout.close()
+        client_stderr.close()
 
     def _perform_operations(self) -> None:
         """Perform operations based on file linked in experiment"""
-        subprocess.run(self.operations_command)
+        log_file_paths = self._get_log_file_paths()
+
+        # stdout & stderr will be redirected to these files
+        client_stdout = log_file_paths.client_stdout.open("a")
+        client_stderr = log_file_paths.client_stderr.open("a")
+
+        subprocess.run(self.operations_command, stdout=client_stdout, stderr=client_stderr)
+
+        time.sleep(2)
+
+        # close the files where logs were written
+        client_stdout.close()
+        client_stderr.close()
+        
 
     def _save_results(self) -> None:
         """Save the results of this job"""
@@ -117,14 +150,40 @@ class ClientJob(BaseModel):
 
         with config_dump_path.open("w") as f:
             yaml.safe_dump(data, f)
+    
+    def _cleanup(self) -> None:
+        """Get rid of empty log files in the benchmarking output"""
+
+        def file_is_empty(file: Path) -> bool:
+            return os.stat(file).st_size == 0
+
+        fs = self._get_log_file_paths()
+
+        for file in fs.client_stdout, fs.client_stderr, fs.host_stdout, fs.host_stderr:
+            if file_is_empty(file):
+                file.unlink() # delete the file
+
+    def _get_log_file_paths(self) -> LogFiles:
+        return LogFiles(
+            client_stdout = self.directory / "client_stdout.log",
+            client_stderr = self.directory / "client_stderr.log",
+            host_stdout = self.directory / "host_stdout.log",
+            host_stderr = self.directory / "host_stderr.log"
+        )
 
     def __call__(self) -> None:
         """
         Setup the environment (flush & seed the database), then run the client operations in self.directory
         """
         self.directory.mkdir(parents=True, exist_ok=False)
+        
+        log_file_paths = self._get_log_file_paths()
 
-        with subprocess.Popen(self.host_command) as host_proc:
+        # stdout & stderr will be redirected to these files
+        host_stdout = log_file_paths.host_stdout.open("w")
+        host_stderr = log_file_paths.host_stderr.open("w")
+    
+        with subprocess.Popen(self.host_command, stdout=host_stdout, stderr=host_stderr) as host_proc:
             self._write_debug_scripts()
             time.sleep(SLEEP_TIME)
             self._flush_db()
@@ -137,7 +196,13 @@ class ClientJob(BaseModel):
             time.sleep(SLEEP_TIME)
             host_proc.terminate()
 
+        # close the files where logs were written
+        host_stdout.close()
+        host_stderr.close()
+
         self._save_results()
+
+        self._cleanup()
 
 
 def make_jobs(

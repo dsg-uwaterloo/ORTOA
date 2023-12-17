@@ -10,6 +10,7 @@ from typing import (
     runtime_checkable,
 )
 
+from alive_progress import alive_bar, alive_it
 from pydantic import BaseModel
 
 
@@ -77,10 +78,24 @@ class JobOrchestration(BaseModel, Generic[JobT]):
 
     def run_sequential(self) -> List[Result[JobT]]:
         results: List[Result[JobT]] = []
-        for job in self.jobs:
-            job()
-            results.append(
-                Result(job=job, result_path=job.client_flags.output, exception=None)
-            )
+
+        with alive_bar(len(self.jobs)) as bar:
+            bar.text("Starting the benchmark!")
+
+            for job in self.jobs:
+                bar.text(f"Running Job: {str(job)}") # update progress bar
+
+                job() # run the job
+
+                # save the results
+                results.append(
+                    Result(job=job, result_path=job.client_flags.output, exception=None)
+                )
+
+                bar() # increment the progress bar status
+            
+            bar.text("Benchmark complete!")
+            
+
 
         return results
