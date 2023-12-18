@@ -50,9 +50,18 @@ class RPCHandler : virtual public RPCIf {
             spdlog::debug("Running in simulation mode");
             #endif
 
+            oe_enclave_setting_context_switchless_t switchless_setting = {
+                0,  // number of host worker threads, not required since no ocalls
+                1}; // number of enclave worker threads
+            oe_enclave_setting_t settings[] = {{
+                OE_ENCLAVE_SETTING_CONTEXT_SWITCHLESS,
+                &switchless_setting,
+            }};
+
             oe_result_t result =
                 oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX,
-                                        OE_ENCLAVE_FLAG_SIMULATE, NULL, 0, &enclave);
+                                        OE_ENCLAVE_FLAG_SIMULATE, settings,
+                                        OE_COUNTOF(settings), &enclave);
             if (result != OE_OK) {
                 throw OECreationFailed(oe_enclave_path);
             }

@@ -14,7 +14,7 @@ enclave {
                                 [in, count=update_size] const char* update_val,
                                 size_t update_size,
                                 [out, count=in_size] unsigned char* out_val,
-                                size_t* out_size);
+                                size_t* out_size) transition_using_threads;
     };
 };
 
