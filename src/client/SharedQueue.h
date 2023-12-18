@@ -83,19 +83,21 @@ class WarmUpRunner {
     WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
 
     void operator()() {
+        auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
+        auto transport = std::make_shared<TBufferedTransport>(socket);
+        auto protocol = std::make_shared<TBinaryProtocol>(transport);
+        RPCClient client(protocol);
+        
+        transport->open();
+
         while (warmupOperations--) {
             Operation data = sharedQueue.dequeue();
             if (data.op == OpType::EOD) return;
-            
-            auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
-            auto transport = std::make_shared<TBufferedTransport>(socket);
-            auto protocol = std::make_shared<TBinaryProtocol>(transport);
-            RPCClient client(protocol);
 
-            transport->open();
             client.access(data);
-            transport->close();
         }
+        
+        transport->close();
     }
 };
 
@@ -109,24 +111,24 @@ class ClientRunner {
         sharedQueue(sharedQueue), latencies(latencies) {}
 
     void operator()() {
+        auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
+        auto transport = std::make_shared<TBufferedTransport>(socket);
+        auto protocol = std::make_shared<TBinaryProtocol>(transport);
+        RPCClient client(protocol);
+
+        transport->open();
+
         while (true) {
             Operation data = sharedQueue.dequeue();
             if (data.op == OpType::EOD) return;
-
-            auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
-            auto transport = std::make_shared<TBufferedTransport>(socket);
-            auto protocol = std::make_shared<TBinaryProtocol>(transport);
-            RPCClient client(protocol);
-
-            transport->open();
 
             auto start = high_resolution_clock::now();
             client.access(data);
             auto end = high_resolution_clock::now();
             latencies.push_back(
                 duration_cast<microseconds>(end - start).count());
-            
-            transport->close();
         }
+
+        transport->close();
     }
 };
