@@ -12,9 +12,6 @@ target_include_directories(${LIBRARY_NAME}
 )
 
 target_link_libraries(${LIBRARY_NAME}
-    # openenclave::oeenclave 
-    # openenclave::oecrypto${OE_CRYPTO_LIB}
-    # openenclave::oelibcxx
     crypto
     ssl
 )
