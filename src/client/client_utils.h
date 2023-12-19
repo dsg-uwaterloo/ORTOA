@@ -4,8 +4,8 @@
 #include <sstream>
 #include <argparse/argparse.hpp>
 
-#include "../constants/constants.h"
-#include "../crypto/encryption_engine.h"
+#include "constants.h"
+#include "encryption_engine.h"
 #include "../gen-cpp/RPC.h"
 #include "redis.h"
 

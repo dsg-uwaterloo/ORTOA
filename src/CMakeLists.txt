@@ -101,3 +101,6 @@ add_subdirectory(enclave)
 
 # Storage library
 add_subdirectory(libstorage)
+
+# Common library (encryption + constands + shared)
+add_subdirectory(libcommon)

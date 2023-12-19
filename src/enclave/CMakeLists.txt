@@ -15,7 +15,7 @@ endif ()
 
 add_executable(ortoa-enc 
     ecalls.cpp
-    ../crypto/encryption_engine.cpp
+    ${CMAKE_SOURCE_DIR}/src/libcommon/src/encryption_engine.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/ortoa_t.c
 )
 
@@ -23,9 +23,10 @@ target_compile_definitions(ortoa-enc PUBLIC OE_API_VERSION=2)
 
 target_include_directories(
   ortoa-enc
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # Needed for #include "../shared.h"
-          ${CMAKE_CURRENT_BINARY_DIR} 
-          ${CMAKE_SOURCE_DIR}/src
+  PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR} 
+    ${CMAKE_SOURCE_DIR}/src/libcommon/include
 )
 
 target_link_libraries(ortoa-enc 
