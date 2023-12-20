@@ -82,9 +82,7 @@ class ClientHandler {
     }
 
     void writeOutput() {
-        if (config.init_db) {
-            return;
-        }
+        if (config.init_db) return;
 
         if (!config.experiment_result_file.is_open()) {
             getAveLatency();

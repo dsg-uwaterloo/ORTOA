@@ -9,7 +9,7 @@
 
 #include "constants.h"
 #include "encryption_engine.h"
-#include "../gen-cpp/RPC.h"
+#include "RPC.h"
 #include "redis.h"
 
 struct ClientConfig {

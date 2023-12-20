@@ -14,7 +14,7 @@
 #include "constants.h"
 #include "shared.h"
 #include "errors.h"
-#include "../gen-cpp/RPC.h"
+#include "RPC.h"
 #include "ortoa_u.h"
 #include "redis.h"
 #include "spdlog/spdlog.h"
