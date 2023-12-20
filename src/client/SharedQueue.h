@@ -1,3 +1,6 @@
+#ifndef SHARED_QUEUE_H
+#define SHARED_QUEUE_H
+
 #include <atomic>
 #include <iostream>
 #include <thread>
@@ -11,7 +14,7 @@
 #include <thrift/transport/TTransportUtils.h>
 
 #include "constants.h"
-#include "../gen-cpp/RPC.h"
+#include "RPC.h"
 #include "client_utils.h"
 
 using namespace std::chrono;
@@ -130,3 +133,5 @@ class ClientRunner {
         }
     }
 };
+
+#endif

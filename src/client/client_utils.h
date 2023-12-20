@@ -1,3 +1,6 @@
+#ifndef CLIENT_UTILS_H
+#define CLIENT_UTILS_H
+
 #include <fstream>
 #include <mutex>
 #include <sodium.h>
@@ -6,7 +9,7 @@
 
 #include "constants.h"
 #include "encryption_engine.h"
-#include "../gen-cpp/RPC.h"
+#include "RPC.h"
 #include "redis.h"
 
 struct ClientConfig {
@@ -40,3 +43,5 @@ Operation genRandOperation(ClientConfig &config);
 std::string clientEncrypt(const std::string &value);
 
 void parseArgs(int argc, char *argv[], ClientConfig &config);
+
+#endif

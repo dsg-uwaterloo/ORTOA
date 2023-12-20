@@ -26,8 +26,17 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG v1.12.0  # Specify the version you want
 )
-
 FetchContent_MakeAvailable(spdlog)
+
+# fetch latest argparse
+include(FetchContent)
+set(ARGPARSE_BUILD_TESTS OFF CACHE INTERNAL "Turn off building argparse tests")
+set(ARGPARSE_BUILD_SAMPLES OFF CACHE INTERNAL "Turn off building argparse samples")
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+)
+FetchContent_MakeAvailable(argparse)
 
 
 # Currently the `OpenEnclave` package depends on `project()`.
