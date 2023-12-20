@@ -14,7 +14,7 @@
 #include <thrift/transport/TTransportUtils.h>
 
 #include "constants.h"
-#include "../gen-cpp/RPC.h"
+#include "RPC.h"
 #include "client_utils.h"
 
 using namespace std::chrono;
