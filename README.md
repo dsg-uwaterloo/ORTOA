@@ -32,7 +32,12 @@ sudo apt install libthrift-dev
 
 ### 3. Redis C/C++ Client
 
-First, install [`hiredis`](https://github.com/redis/hiredis). _(Note: do not install multiple versions of `hiredis`. Otherwise, there might be some bizarre conflicts.)_
+First, install [`Redis`](https://redis.io/docs/install/install-redis/install-redis-on-linux).
+```bash
+ORTOA/ $ sudo apt-get install redis
+```
+
+Next, install [`hiredis`](https://github.com/redis/hiredis). _(Note: do not install multiple versions of `hiredis`. Otherwise, there might be some bizarre conflicts.)_
 
 ```bash
 # Clone hiredis
