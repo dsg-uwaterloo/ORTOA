@@ -11,12 +11,14 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# always top-level even in submodule (TODO: bug if more than one submodule deep)
+# always top-level even in submodule
 export REPO_ROOT=$(cd ${SCRIPT_DIR} && git rev-parse --show-superproject-working-tree --show-toplevel | head -1)
 
 export ORTOA_SHARED="${REPO_ROOT}"
 export BUILD_DIR="${ORTOA_SHARED}/build"
 export INSTALL_DIR="${ORTOA_SHARED}/install"
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:${REPO_ROOT}/install/lib
 
 ############################################
 # Help
@@ -80,7 +82,6 @@ Syntax: ortoa-client-run [-h]
 
     "${INSTALL_DIR}"/bin/client "${@}"
 }
-# export -f ortoa-client-run
 
 
 ortoa-simulate() {
@@ -100,7 +101,6 @@ Syntax: ortoa-simulate [-h]
 
     "${INSTALL_DIR}"/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
-# export -f ortoa-simulate
 
 
 ############################################
@@ -152,7 +152,6 @@ Syntax: ortoa-test-python [-h]
     source "${REPO_ROOT}/scripts/test/run_benchmark_tests.sh"
     run_unit_tests
 }
-# export -f ortoa-test-python
 
 
 ############################################
@@ -183,7 +182,6 @@ Syntax: ortoa-clang-format [-h] [DIRECTORY]...
         git clang-format ${REPO_ROOT}
     fi
 }
-# export -f ortoa-clang-format
 
 
 ortoa-clang-format-all() {
@@ -204,7 +202,6 @@ Syntax: ortoa-clang-format [-h]
 
     source ${REPO_ROOT}/scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
 }
-# export -f ortoa-clang-format-all
 
 
 ortoa-format-python() {
