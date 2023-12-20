@@ -11,9 +11,9 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TServerSocket.h>
 
-#include "../constants/constants.h"
-#include "../constants/shared.h"
-#include "../errors/errors.h"
+#include "constants.h"
+#include "shared.h"
+#include "errors.h"
 #include "../gen-cpp/RPC.h"
 #include "ortoa_u.h"
 #include "redis.h"

@@ -5,7 +5,6 @@ add_executable(client
     client_utils.cpp
     client_utils.h
     SharedQueue.h
-    ../crypto/encryption_engine.cpp
     ../gen-cpp/RPC.h
     ../gen-cpp/RPC.cpp
     ../gen-cpp/Operation_types.h
@@ -39,6 +38,7 @@ target_link_libraries(client PRIVATE
     pthread
     argparse
     libstorage
+    libcommon
 )
 
 install(TARGETS client

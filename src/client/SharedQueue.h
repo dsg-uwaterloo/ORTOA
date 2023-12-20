@@ -10,7 +10,7 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include "../constants/constants.h"
+#include "constants.h"
 #include "../gen-cpp/RPC.h"
 #include "client_utils.h"
 

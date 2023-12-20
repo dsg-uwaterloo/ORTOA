@@ -10,7 +10,6 @@ add_custom_command(
 
 add_executable(ortoa-host
                host.cpp 
-               ../constants/constants.h
                ${CMAKE_BINARY_DIR}/src/gen-cpp/RPC.h
                ${CMAKE_BINARY_DIR}/src/gen-cpp/RPC.cpp 
                ${CMAKE_BINARY_DIR}/src/gen-cpp/Operation_types.h
@@ -40,6 +39,7 @@ target_link_libraries(ortoa-host
   sodium
   pthread
   libstorage
+  libcommon
 )
 
 install(TARGETS ortoa-host
