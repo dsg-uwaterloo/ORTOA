@@ -5,8 +5,8 @@
 #include <openenclave/enclave.h>
 #include <string>
 
-#include "constants/shared.h"
-#include "crypto/encryption_engine.h"
+#include "shared.h"
+#include "encryption_engine.h"
 #include "ortoa_t.h"
 
 void access_data(int op_const, const char *in_val, size_t in_size,
