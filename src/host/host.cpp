@@ -50,6 +50,14 @@ class RPCHandler : virtual public RPCIf {
             spdlog::debug("Running in simulation mode");
             #endif
 
+            /* It might be more performance advantageous to make the calls context-switchless: 
+               the caller delegates the function call to a worker thread in the other environment, 
+               which does the real job of calling the function and post the result to the caller. 
+               Both the calling thread and the worker thread never leave their respective execution 
+               contexts during the perceived function call.
+
+               To determine the number of worker threads, use the following expression:
+               min(simultaneously active caller threads, cores available to worker threads) */
             oe_enclave_setting_context_switchless_t switchless_setting = {
                 0,  // number of host worker threads, not required since no ocalls
                 1}; // number of enclave worker threads
