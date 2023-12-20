@@ -57,4 +57,5 @@ private:
 
     int rng_max_len = 10;
 };
-#endif //WAFFLE_BASIC_CRYPTO_H
+
+#endif // WAFFLE_BASIC_CRYPTO_H
