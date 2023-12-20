@@ -18,7 +18,7 @@ export ORTOA_SHARED="${REPO_ROOT}"
 export BUILD_DIR="${ORTOA_SHARED}/build"
 export INSTALL_DIR="${ORTOA_SHARED}/install"
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:${REPO_ROOT}/install/lib
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib:${REPO_ROOT}/install/lib"
 
 ############################################
 # Help
