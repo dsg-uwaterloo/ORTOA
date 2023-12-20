@@ -1,3 +1,6 @@
+#ifndef SHARED_QUEUE_H
+#define SHARED_QUEUE_H
+
 #include <atomic>
 #include <iostream>
 #include <thread>
@@ -130,3 +133,5 @@ class ClientRunner {
         }
     }
 };
+
+#endif
