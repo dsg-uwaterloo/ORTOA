@@ -61,7 +61,7 @@ class ClientHandler {
 
         for (auto &thread : warmup_threads) thread.join();
 
-        total_duration = duration_cast<microseconds>(end - start).count();
+        total_duration = duration_cast<milliseconds>(end - start).count();
     }
 
     float getAveLatency() {
@@ -70,14 +70,14 @@ class ClientHandler {
         auto average_latency =
             std::accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
 
-        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", average_latency);
+        spdlog::info("[Client]: Data access complete, average latency: {0} milliseconds", average_latency);
         return average_latency;
     }
 
     float getTotalDuration() {
         assert(total_duration > 0);
 
-        spdlog::info("[main]: Entire program finished in {0} microseconds", total_duration);
+        spdlog::info("[main]: Entire program finished in {0} milliseconds", total_duration);
         return total_duration;
     }
 
