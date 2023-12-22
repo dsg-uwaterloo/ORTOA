@@ -59,7 +59,7 @@ class RPCHandler : virtual public RPCIf {
         }
     }
 
-    void access(const Operation &operation) {
+    void access(std::string &_return, const Operation &operation) {
         std::string rd_value = rd.get(operation.key);
 
         std::unique_ptr<unsigned char> out(new unsigned char[4096]);
@@ -79,7 +79,8 @@ class RPCHandler : virtual public RPCIf {
             #endif
 
             rd.put(operation.key, updated_val);
-        }
+            _return = updated_val;
+        } 
     }
 };
 
