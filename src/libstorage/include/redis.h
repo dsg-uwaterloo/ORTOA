@@ -14,7 +14,7 @@ class redisCli
         void reconnect();
 
     private:
-        sw::redis::Redis redisConn = sw::redis::Redis("tcp://127.0.0.1:6379");
+        sw::redis::Redis redisConn = sw::redis::Redis("tcp://192.168.152.221:6379");
 };
 
 #endif //REDIS_H
