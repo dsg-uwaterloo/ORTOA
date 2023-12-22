@@ -89,14 +89,15 @@ class WarmUpRunner {
         while (warmupOperations--) {
             Operation data = sharedQueue.dequeue();
             if (data.op == OpType::EOD) return;
-            
+
             auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
             auto transport = std::make_shared<TBufferedTransport>(socket);
             auto protocol = std::make_shared<TBinaryProtocol>(transport);
             RPCClient client(protocol);
-
+            
             transport->open();
-            client.access(data);
+            std::string out;
+            client.access(out, data);
             transport->close();
         }
     }
@@ -124,11 +125,12 @@ class ClientRunner {
             transport->open();
 
             auto start = high_resolution_clock::now();
-            client.access(data);
+            std::string out;
+            client.access(out, data);
             auto end = high_resolution_clock::now();
             latencies.push_back(
-                duration_cast<microseconds>(end - start).count());
-            
+                duration_cast<milliseconds>(end - start).count());
+        
             transport->close();
         }
     }
