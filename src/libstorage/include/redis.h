@@ -10,8 +10,8 @@ class redisCli : public StorageInterface
 {
     public:
         redisCli();
-        std::string get(const std::string &key);
-        void put(const std::string &key, const std::string &value);
+        std::string get(const std::string &key) override;
+        void put(const std::string &key, const std::string &value) override;
         sw::redis::Pipeline pipe();
         void reconnect();
 
