@@ -3,6 +3,7 @@ from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
+
 class KeyFactory(Generic[T], ABC):
     @abstractmethod
     def generate_key(self) -> T:
@@ -17,4 +18,3 @@ class SequentialIntKeyGenerator(KeyFactory[int]):
         generated_key = self.key
         self.key += 1
         return generated_key
-        

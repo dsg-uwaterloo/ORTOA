@@ -18,14 +18,14 @@ class Stats(BaseModel):
     raw_df: pd.DataFrame  # Entry from every experiment
 
     def _graph_threads_vs_latency(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['nthreads'], ascending=True)
+        df = self.raw_df.sort_values(by=["nthreads"], ascending=True)
         ax = df.plot.bar(x="nthreads", y="average_latency")
         ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "threads_vs_latency.pdf")
 
     def _graph_threading_effects(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['nthreads'])
+        df = self.raw_df.sort_values(by=["nthreads"])
         ax = df.plot(
             x="nthreads",
             y=["average_latency", "throughput"],
@@ -38,7 +38,7 @@ class Stats(BaseModel):
         fig.savefig(dir / "threading_effects.pdf")
 
     def _graph_byte_size(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['bytes'], ascending=True)
+        df = self.raw_df.sort_values(by=["bytes"], ascending=True)
         ax = df.plot.bar(
             x="bytes",
             y=["average_latency", "throughput"],
@@ -48,9 +48,9 @@ class Stats(BaseModel):
         ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
-    
+
     def _graph_db_size(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['db_size'], ascending=True)
+        df = self.raw_df.sort_values(by=["db_size"], ascending=True)
         ax = df.plot.bar(
             x="db_size",
             y=["average_latency", "throughput"],
@@ -60,7 +60,7 @@ class Stats(BaseModel):
         ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
-    
+
     def _graph_percent_write(self, dir: Path) -> None:
         df = self.raw_df
         df["percent_write"] = df["percent_write"].apply(lambda x: int(x[:-1]))
@@ -81,10 +81,10 @@ class Stats(BaseModel):
 
         if self.raw_df["bytes"][0] is not None:
             self._graph_byte_size(dir)
-        
+
         if self.raw_df["db_size"][0] is not None:
             self._graph_db_size(dir)
-        
+
         if self.raw_df["percent_write"][0] is not None:
             self._graph_percent_write(dir)
 

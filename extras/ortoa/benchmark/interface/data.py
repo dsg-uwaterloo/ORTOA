@@ -104,7 +104,8 @@ class RandomIntegerGenerationConfig(DataGenerationConfigBase):
         operations = self._generate_operations(seed, output_dir / "operations.csv")
 
         return seed, operations
-    
+
+
 class FixedStringGenerator(DataGenerationConfigBase):
     generator: Literal["FixedStringGenerator"]
     value: str
@@ -141,6 +142,8 @@ class FixedStringGenerator(DataGenerationConfigBase):
 
 
 DataGenConfig = Annotated[
-    Union[ByteSizeGenerationConfig, RandomIntegerGenerationConfig, FixedStringGenerator],
+    Union[
+        ByteSizeGenerationConfig, RandomIntegerGenerationConfig, FixedStringGenerator
+    ],
     Field(discriminator="generator"),
 ]
