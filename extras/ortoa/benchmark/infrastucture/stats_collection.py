@@ -51,7 +51,7 @@ class Stats(BaseModel):
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
         df.to_csv(dir / "byte_size.csv")
-    
+
     def _graph_db_size(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=["db_size"], ascending=True)
         ax = df.plot.bar(
@@ -64,7 +64,7 @@ class Stats(BaseModel):
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
         df.to_csv(dir / "db_size.csv")
-    
+
     def _graph_percent_write(self, dir: Path) -> None:
         df = self.raw_df
         df["percent_write"] = df["percent_write"].apply(lambda x: int(x[:-1]))
