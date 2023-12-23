@@ -29,8 +29,9 @@ target_include_directories(
     ${CMAKE_SOURCE_DIR}/src/libcommon/include
 )
 
-target_link_libraries(ortoa-enc 
-    openenclave::oeenclave 
+target_link_libraries(ortoa-enc
+    openenclave::oeenclave
+    openenclave::oesnmalloc
     openenclave::oecrypto${OE_CRYPTO_LIB}
     openenclave::oelibcxx
 )
