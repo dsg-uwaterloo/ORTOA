@@ -1,13 +1,13 @@
-# ORTOA-tee CMake
+# ORTOA-TEE CMake
 
-The ORTOA-tee project builds 4 executables and a handful of shared libraries (`.so` files). In particular, the executables built are:
+The ORTOA-TEE project builds 4 executables and a handful of shared libraries (`.so` files). In particular, the executables built are:
 
 - `client`
 - `ortoa-host`
 - `ortoa-enc`
 - `ortoa-enc.signed`
 
-These executables are then used to run the ORTOA-tee program.
+These executables are then used to run the ORTOA-TEE program.
 
 ## Building & installing the project
 
@@ -43,7 +43,7 @@ Once `configure` has done its job, we can invoke `ortoa-build` or `make` to buil
 
 Now that the software is built and ready to run, the files can be copied to their final destinations. The `ortoa-install` or `make install` commands will copy the built program and its libraries to the correct locations.
 
-The ORTOA-tee project installs the software in the `${REPO_ROOT}/install/` directory rather than copying it to a directory on the `PATH`. As a result, developers may have to export the following variable when running the project. This can be added to a `bashrc` or similar file, or can be run in the shell before running the project.
+The ORTOA-TEE project installs the software in the `${REPO_ROOT}/install/` directory rather than copying it to a directory on the `PATH`. As a result, developers may have to export the following variable when running the project. This can be added to a `bashrc` or similar file, or can be run in the shell before running the project.
 
 ```sh
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<REPO_ROOT>/install/lib
