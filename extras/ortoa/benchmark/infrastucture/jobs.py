@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from ortoa.benchmark.interface.experiment import AtomicExperiment, ExperimentMetatadata
 
-SLEEP_TIME = 3
+SLEEP_TIME = 5
 
 @dataclass
 class LogFiles:
