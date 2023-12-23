@@ -6,7 +6,7 @@ redisCli::redisCli() {
 }
 
 void redisCli::reconnect() {
-    this->redisConn = sw::redis::Redis("tcp://127.0.0.1:6379");
+    this->redisConn = sw::redis::Redis("tcp://20.85.122.103:6379");
 }
 
 std::string redisCli::get(const std::string &key) {

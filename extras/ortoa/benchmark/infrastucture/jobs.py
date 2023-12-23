@@ -87,7 +87,7 @@ class ClientJob(BaseModel):
             "--simulate",
         ] + str(self.host_flags).split()
 
-    _rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
+    _rd: ClassVar[redis.Redis] = redis.Redis(host="20.85.122.103", port=6379)
 
     def __str__(self) -> str:
         return self.name
@@ -153,15 +153,15 @@ class ClientJob(BaseModel):
     
     def _cleanup(self) -> None:
         """Get rid of empty log files in the benchmarking output"""
-
+        return
         def file_is_empty(file: Path) -> bool:
             return os.stat(file).st_size == 0
 
         fs = self._get_log_file_paths()
 
-        for file in fs.client_stdout, fs.client_stderr, fs.host_stdout, fs.host_stderr:
-            if file_is_empty(file):
-                file.unlink() # delete the file
+        # for file in fs.client_stdout, fs.client_stderr, fs.host_stdout, fs.host_stderr:
+        #     if file_is_empty(file):
+        #         file.unlink() # delete the file
 
     def _get_log_file_paths(self) -> LogFiles:
         return LogFiles(
@@ -177,28 +177,28 @@ class ClientJob(BaseModel):
         """
         self.directory.mkdir(parents=True, exist_ok=False)
         
-        log_file_paths = self._get_log_file_paths()
+        # log_file_paths = self._get_log_file_paths()
 
         # stdout & stderr will be redirected to these files
-        host_stdout = log_file_paths.host_stdout.open("w")
-        host_stderr = log_file_paths.host_stderr.open("w")
+        # host_stdout = log_file_paths.host_stdout.open("w")
+        # host_stderr = log_file_paths.host_stderr.open("w")
     
-        with subprocess.Popen(self.host_command, stdout=host_stdout, stderr=host_stderr) as host_proc:
-            self._write_debug_scripts()
-            time.sleep(SLEEP_TIME)
-            self._flush_db()
-            time.sleep(SLEEP_TIME)
-            self._seed_db()
-            time.sleep(SLEEP_TIME)
-            self._perform_operations()
-            time.sleep(SLEEP_TIME)
-            self._flush_db()
-            time.sleep(SLEEP_TIME)
-            host_proc.terminate()
+        # with subprocess.Popen(self.host_command, stdout=host_stdout, stderr=host_stderr) as host_proc:
+        self._write_debug_scripts()
+        time.sleep(SLEEP_TIME)
+        self._flush_db()
+        time.sleep(SLEEP_TIME)
+        self._seed_db()
+        time.sleep(SLEEP_TIME)
+        self._perform_operations()
+        time.sleep(SLEEP_TIME)
+        self._flush_db()
+        time.sleep(SLEEP_TIME)
+            # host_proc.terminate()
 
         # close the files where logs were written
-        host_stdout.close()
-        host_stderr.close()
+        # host_stdout.close()
+        # host_stderr.close()
 
         self._save_results()
 
