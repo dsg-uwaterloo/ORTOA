@@ -33,6 +33,7 @@ ortoa-lib: a collection of bash functions to ease development
     Running ORTOA:
         ortoa-client-run: ----------- Run the ORTOA client
         ortoa-simulate: ------------- Run ORTOA in simulation mode
+        ortoa-host: ----------------- 
     
     Benchmarking ORTOA:
         ortoa-benchmark: ------------ Benchmark ORTOA with configured experiments
@@ -100,6 +101,24 @@ Syntax: ortoa-simulate [-h]
     done
 
     "${INSTALL_DIR}"/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
+}
+
+ortoa-host() {
+        local HELP="""\
+Run the ORTOA host
+
+Syntax: ortoa-simulate [-h]
+----------------------------------------------
+    -h                  Print this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+        esac
+    done
+
+    "${INSTALL_DIR}"/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed
 }
 
 
