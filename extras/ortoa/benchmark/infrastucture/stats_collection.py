@@ -23,6 +23,7 @@ class Stats(BaseModel):
         ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "threads_vs_latency.pdf")
+        df.to_csv(dir / "threads_vs_latency.csv")
 
     def _graph_threading_effects(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=["nthreads"])
@@ -36,6 +37,7 @@ class Stats(BaseModel):
         ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "threading_effects.pdf")
+        df.to_csv(dir / "threading_effects.csv")
 
     def _graph_byte_size(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=["bytes"], ascending=True)
@@ -48,7 +50,8 @@ class Stats(BaseModel):
         ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
-
+        df.to_csv(dir / "byte_size.csv")
+    
     def _graph_db_size(self, dir: Path) -> None:
         df = self.raw_df.sort_values(by=["db_size"], ascending=True)
         ax = df.plot.bar(
@@ -60,7 +63,8 @@ class Stats(BaseModel):
         ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
-
+        df.to_csv(dir / "db_size.csv")
+    
     def _graph_percent_write(self, dir: Path) -> None:
         df = self.raw_df
         df["percent_write"] = df["percent_write"].apply(lambda x: int(x[:-1]))
@@ -74,6 +78,7 @@ class Stats(BaseModel):
         ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "percent_write.pdf")
+        df.to_csv(dir / "percent_write.csv")
 
     def _save_graphs(self, dir: Path) -> None:
         self._graph_threads_vs_latency(dir)
