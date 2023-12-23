@@ -45,19 +45,19 @@ class RPCHandler : virtual public RPCIf {
         assert(argc >= 2);
 
         char *oe_enclave_path = argv[1];
-        uint32_t simulate_flag = OE_ENCLAVE_FLAG_DEBUG;
+        uint32_t oe_flag = OE_ENCLAVE_FLAG_DEBUG;
         
         if (check_simulate(argc, argv)) {
             #ifdef DEBUG
             spdlog::debug("Running in simulation mode");
             #endif
 
-            simulate_flag = OE_ENCLAVE_FLAG_SIMULATE;
+            oe_flag |= OE_ENCLAVE_FLAG_SIMULATE;
         }
 
         oe_result_t result =
             oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX,
-                                    simulate_flag, NULL, 0, &enclave);
+                                    oe_flag, NULL, 0, &enclave);
         if (result != OE_OK) {
             throw OECreationFailed(oe_enclave_path);
         }
