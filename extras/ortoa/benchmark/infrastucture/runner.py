@@ -83,19 +83,17 @@ class JobOrchestration(BaseModel, Generic[JobT]):
             bar.text("Starting the benchmark!")
 
             for job in self.jobs:
-                bar.text(f"Running Job: {str(job)}") # update progress bar
+                bar.text(f"Running Job: {str(job)}")  # update progress bar
 
-                job() # run the job
+                job()  # run the job
 
                 # save the results
                 results.append(
                     Result(job=job, result_path=job.client_flags.output, exception=None)
                 )
 
-                bar() # increment the progress bar status
-            
-            bar.text("Benchmark complete!")
-            
+                bar()  # increment the progress bar status
 
+            bar.text("Benchmark complete!")
 
         return results
