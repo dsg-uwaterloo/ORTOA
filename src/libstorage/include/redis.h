@@ -4,7 +4,9 @@
 #include <iostream>
 #include <sw/redis++/redis++.h>
 
-class redisCli
+#include "StorageInterface.h"
+
+class redisCli : public StorageInterface
 {
     public:
         redisCli();
