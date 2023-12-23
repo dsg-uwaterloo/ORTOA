@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
         std::shared_ptr<ThreadFactory> threadFactory = 
             std::shared_ptr<ThreadFactory>(new ThreadFactory());
         std::shared_ptr<ThreadManager> threadManager = 
-            ThreadManager::newSimpleThreadManager(64);
+            ThreadManager::newSimpleThreadManager(16);
         threadManager->threadFactory(threadFactory);
         threadManager->start();
 
