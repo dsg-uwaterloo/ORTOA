@@ -107,4 +107,3 @@ class IntegerParameter(StaticParameter[int], IntType):
 
 class FloatParameter(StaticParameter[float], FloatType):
     pass
-
