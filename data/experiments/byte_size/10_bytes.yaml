@@ -8,9 +8,10 @@ metadata:
 
 client_config:
   data:
-    data_type: seed
-    seed: <PATH>
-    operations: <PATH>
+    generator: ByteSizeGenerator
+    n_bytes: 10
+    seed_size: 1000000
+    num_operations: 1000
 
   flags:
     - name: nthreads
