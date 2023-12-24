@@ -42,14 +42,6 @@ class ClientFlags(BaseModel):
         return super().model_post_init(__context)
 
 
-class HostFlags(BaseModel):
-    nthreads: int = 1
-    simulate: bool = True
-
-    def __str__(self) -> str:
-        return f"--nthreads {self.nthreads}"
-
-
 class ClientJob(BaseModel):
     """
     Job for testing and benchmarking the client. Satisfies runner.JobProtocol
@@ -66,7 +58,6 @@ class ClientJob(BaseModel):
     operations: Path
 
     client_flags: ClientFlags
-    host_flags: HostFlags
 
     @property
     def seed_command(self) -> List[str]:
@@ -82,7 +73,7 @@ class ClientJob(BaseModel):
             "./install/bin/ortoa-host",
             "./build/src/enclave/ortoa-enc.signed",
             "--simulate",
-        ] + str(self.host_flags).split()
+        ]
 
     _rd: ClassVar[redis.Redis] = redis.Redis(host="localhost", port=6379)
 
@@ -158,7 +149,7 @@ class ClientJob(BaseModel):
         fs = self._get_log_file_paths()
 
         for file in fs.client_stdout, fs.client_stderr, fs.host_stdout, fs.host_stderr:
-            if file_is_empty(file):
+            if file.exists() and file_is_empty(file):
                 file.unlink()  # delete the file
 
     def _get_log_file_paths(self) -> LogFiles:
@@ -196,7 +187,7 @@ class ClientJob(BaseModel):
             time.sleep(SLEEP_TIME)
             host_proc.terminate()
 
-        # close the files where logs were written
+        # close the files where host logs were written
         host_stdout.close()
         host_stderr.close()
 
@@ -225,15 +216,6 @@ def make_jobs(
             else:
                 raise ValueError("Client flag not recognized")
 
-        e_host_flags = HostFlags()
-        for flag in experiment.host_flags:
-            if flag.name == "nthreads":
-                e_host_flags.nthreads = flag.value
-            elif flag.name == "host_logging_enabled":
-                pass
-            else:
-                raise ValueError("Host flag not recognized")
-
         jobs.append(
             ClientJob(
                 name=experiment.name,
@@ -242,7 +224,6 @@ def make_jobs(
                 seed_data=experiment.seed_data,
                 operations=experiment.operations,
                 client_flags=e_client_flags,
-                host_flags=e_host_flags,
             )
         )
 

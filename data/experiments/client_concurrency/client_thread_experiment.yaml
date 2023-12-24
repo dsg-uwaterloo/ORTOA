@@ -19,8 +19,3 @@ client_config:
         minimum: 2
         maximum: 64
         multiplier: 2
-
-host_config:
-  flags:
-    - name: nthreads
-      value: 1
