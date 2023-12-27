@@ -2,15 +2,10 @@
 #define CLIENT_UTILS_H
 
 #include <fstream>
-#include <mutex>
+#include <string>
 #include <sodium.h>
-#include <sstream>
-#include <argparse/argparse.hpp>
 
-#include "constants.h"
-#include "encryption_engine.h"
 #include "RPC.h"
-#include "redis.h"
 
 struct ClientConfig {
     std::ifstream seed_data;

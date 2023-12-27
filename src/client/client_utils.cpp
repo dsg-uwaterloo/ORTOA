@@ -1,5 +1,12 @@
 #include "client_utils.h"
 
+#include "constants.h"
+#include "encryption_engine.h"
+
+#include <sstream>
+#include <argparse/argparse.hpp>
+#include <mutex>
+
 std::mutex fileMutex;
 
 bool moreOperationsExist(ClientConfig &config) {

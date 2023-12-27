@@ -1,7 +1,6 @@
 #ifndef REDIS_H
 #define REDIS_H
 
-#include <iostream>
 #include <sw/redis++/redis++.h>
 
 #include "StorageInterface.h"

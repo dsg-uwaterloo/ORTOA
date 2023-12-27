@@ -1,5 +1,4 @@
 #include "encryption_engine.h"
-#include <iostream>
 
 std::string encryption_engine::extractKey(const std::string& encryptedKey) {
     for(int i = encryptedKey.size() - 1; i >= 0; --i) {
