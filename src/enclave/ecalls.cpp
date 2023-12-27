@@ -1,7 +1,6 @@
 // Copyright (c) Open Enclave SDK contributors.
 // Licensed under the MIT License.
 
-#include <iostream>
 #include <openenclave/enclave.h>
 #include <string>
 
