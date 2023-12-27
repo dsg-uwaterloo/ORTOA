@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <cassert>
-#include <iostream>
 #include <openenclave/host.h>
 #include <thrift/concurrency/ThreadFactory.h>
 #include <thrift/concurrency/ThreadManager.h>
