@@ -1,44 +1,28 @@
+set(CLIENT_EXECUTABLE client)
 
-# Create the executable target
-add_executable(client 
+add_executable(${CLIENT_EXECUTABLE} 
     client.cpp
     client_utils.cpp
-    client_utils.h
-    SharedQueue.h
-    ../crypto/encryption_engine.cpp
-    ../gen-cpp/RPC.h
-    ../gen-cpp/RPC.cpp
-    ../gen-cpp/Operation_types.h
-    ../gen-cpp/Operation_types.cpp
+    ${CMAKE_BINARY_DIR}/src/gen-cpp/RPC.cpp
+    ${CMAKE_BINARY_DIR}/src/gen-cpp/Operation_types.cpp
 )
 
-# fetch latest argparse
-include(FetchContent)
-set(ARGPARSE_BUILD_TESTS OFF CACHE INTERNAL "Turn off building argparse tests")
-set(ARGPARSE_BUILD_SAMPLES OFF CACHE INTERNAL "Turn off building argparse samples")
-FetchContent_Declare(
-    argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-)
-FetchContent_MakeAvailable(argparse)
-
-add_dependencies(client generate-thrift)
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/src/constants
-    ${CMAKE_BINARY_DIR}/src/gen-cpp
+target_include_directories(${CLIENT_EXECUTABLE}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}/src/gen-cpp
 )
 
-# Link reuired libraries
-target_link_libraries(client PRIVATE
-    crypto
-    ssl
+add_dependencies(${CLIENT_EXECUTABLE} generate-thrift)
+
+target_link_libraries(${CLIENT_EXECUTABLE} 
     spdlog::spdlog
     thrift
     sodium
     pthread
     argparse
     libstorage
+    libcommon
 )
 
 install(TARGETS client

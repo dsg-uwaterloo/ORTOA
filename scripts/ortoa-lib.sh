@@ -11,12 +11,14 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# always top-level even in submodule (TODO: bug if more than one submodule deep)
+# always top-level even in submodule
 export REPO_ROOT=$(cd ${SCRIPT_DIR} && git rev-parse --show-superproject-working-tree --show-toplevel | head -1)
 
 export ORTOA_SHARED="${REPO_ROOT}"
 export BUILD_DIR="${ORTOA_SHARED}/build"
 export INSTALL_DIR="${ORTOA_SHARED}/install"
+
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib:${REPO_ROOT}/install/lib"
 
 ############################################
 # Help
@@ -30,7 +32,8 @@ ortoa-lib: a collection of bash functions to ease development
 
     Running ORTOA:
         ortoa-client-run: ----------- Run the ORTOA client
-        ortoa-simulate: ------------- Run ORTOA in simulation mode
+        ortoa-host: ----------------- Run the ORTOA host
+        ortoa-simulate: ------------- Run the ORTOA host in simulation mode
     
     Benchmarking ORTOA:
         ortoa-benchmark: ------------ Benchmark ORTOA with configured experiments
@@ -80,12 +83,10 @@ Syntax: ortoa-client-run [-h]
 
     "${INSTALL_DIR}"/bin/client "${@}"
 }
-# export -f ortoa-client-run
-
 
 ortoa-simulate() {
     local HELP="""\
-Run ORTOA in sumulate mode
+Run the ORTOA host in simulate mode
 
 Syntax: ortoa-simulate [-h]
 ----------------------------------------------
@@ -100,8 +101,24 @@ Syntax: ortoa-simulate [-h]
 
     "${INSTALL_DIR}"/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed --simulate
 }
-# export -f ortoa-simulate
 
+ortoa-host() {
+        local HELP="""\
+Run the ORTOA host
+
+Syntax: ortoa-simulate [-h]
+----------------------------------------------
+    -h                  Print this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+        esac
+    done
+
+    "${INSTALL_DIR}"/bin/ortoa-host ${BUILD_DIR}/src/enclave/ortoa-enc.signed
+}
 
 ############################################
 # Benchmarking
@@ -152,7 +169,6 @@ Syntax: ortoa-test-python [-h]
     source "${REPO_ROOT}/scripts/test/run_benchmark_tests.sh"
     run_unit_tests
 }
-# export -f ortoa-test-python
 
 
 ############################################
@@ -183,7 +199,6 @@ Syntax: ortoa-clang-format [-h] [DIRECTORY]...
         git clang-format ${REPO_ROOT}
     fi
 }
-# export -f ortoa-clang-format
 
 
 ortoa-clang-format-all() {
@@ -204,7 +219,6 @@ Syntax: ortoa-clang-format [-h]
 
     source ${REPO_ROOT}/scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
 }
-# export -f ortoa-clang-format-all
 
 
 ortoa-format-python() {

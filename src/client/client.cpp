@@ -23,14 +23,14 @@ class ClientHandler {
         // # of operations corresponds to max_key (if seed data is not used)
         config.num_operations = config.max_key;
 
-        redisCli rd;
-        auto pipeline = rd.pipe();
+        std::unique_ptr<StorageInterface> storage_server = std::make_unique<redisCli>(HOST_IP);
 
+        std::vector<std::pair<std::string, std::string>> seed_operations;
         while (moreOperationsExist(config)) {
             Operation op = getInitKV(config);
-            pipeline.set(op.key, op.value);
+            seed_operations.push_back({op.key, op.value});
         }
-        pipeline.exec();
+        storage_server->put_batch(seed_operations);
     }
 
     void runThreaded() {
@@ -61,7 +61,7 @@ class ClientHandler {
 
         for (auto &thread : warmup_threads) thread.join();
 
-        total_duration = duration_cast<microseconds>(end - start).count();
+        total_duration = duration_cast<milliseconds>(end - start).count();
     }
 
     float getAveLatency() {
@@ -70,21 +70,19 @@ class ClientHandler {
         auto average_latency =
             std::accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
 
-        spdlog::info("[Client]: Data access complete, average latency: {0} microseconds", average_latency);
+        spdlog::info("[Client]: Data access complete, average latency: {0} milliseconds", average_latency);
         return average_latency;
     }
 
     float getTotalDuration() {
         assert(total_duration > 0);
 
-        spdlog::info("[main]: Entire program finished in {0} microseconds", total_duration);
+        spdlog::info("[main]: Entire program finished in {0} milliseconds", total_duration);
         return total_duration;
     }
 
     void writeOutput() {
-        if (config.init_db) {
-            return;
-        }
+        if (config.init_db) return;
 
         if (!config.experiment_result_file.is_open()) {
             getAveLatency();

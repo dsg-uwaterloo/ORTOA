@@ -8,8 +8,8 @@ metadata:
 client_config:
   data:
     generator: FixedStringGenerator
-    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz
-    seed_size: 100000
+    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    seed_size: 1000000
     num_operations: 1000
 
   flags:
@@ -19,8 +19,3 @@ client_config:
         minimum: 2
         maximum: 64
         multiplier: 2
-
-host_config:
-  flags:
-    - name: nthreads
-      value: 1

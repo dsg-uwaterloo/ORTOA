@@ -40,12 +40,6 @@ class StaticParameter(Parameter, Generic[T]):
         return [str(self.value)]
 
 
-# class ArrayParameter(Parameter, Generic[T]):
-#     value: List[T]
-
-#     def generate_values(self) -> List[str]:
-#         return [str(v) for v in self.value]
-
 ##########################
 # Parameter Types
 ##########################
@@ -113,11 +107,3 @@ class IntegerParameter(StaticParameter[int], IntType):
 
 class FloatParameter(StaticParameter[float], FloatType):
     pass
-
-
-# class IntegerArray(ArrayParameter[int], IntType):
-#     pass
-
-
-# class FloatArray(ArrayParameter[float], FloatType):
-#     pass

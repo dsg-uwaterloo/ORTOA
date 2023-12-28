@@ -11,5 +11,5 @@ struct Operation {
 }
 
 service RPC {
-  void access(1:Operation operation),
+  binary access(1:Operation operation),
 }

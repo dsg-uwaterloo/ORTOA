@@ -12,7 +12,7 @@
 
 ## `experiments`
 
-We define experiments in `.yaml` format used to microbenchmark the ORTOA-tee program. These are consumed by the benchmarking tool to test how certain variables affect the latency and throughput of ORTOA.
+We define experiments in `.yaml` format used to microbenchmark the ORTOA-TEE program. These are consumed by the benchmarking tool to test how certain variables affect the latency and throughput of ORTOA.
 
 ```txt
 .
@@ -31,7 +31,7 @@ Sample seed and operations `.csv` files that are consumed by the `ortoa-client` 
 
 ## `tests`
 
-Tests defined in the same `.yaml` format as `experiments`. Consumed by the benchmarking tool while developing ORTOA-tee to test the success/failure of the program.
+Tests defined in the same `.yaml` format as `experiments`. Consumed by the benchmarking tool while developing ORTOA-TEE to test the success/failure of the program.
 
 ```txt
 .

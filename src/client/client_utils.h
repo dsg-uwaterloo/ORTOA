@@ -1,13 +1,11 @@
-#include <fstream>
-#include <mutex>
-#include <sodium.h>
-#include <sstream>
-#include <argparse/argparse.hpp>
+#ifndef CLIENT_UTILS_H
+#define CLIENT_UTILS_H
 
-#include "../constants/constants.h"
-#include "../crypto/encryption_engine.h"
-#include "../gen-cpp/RPC.h"
-#include "redis.h"
+#include <fstream>
+#include <string>
+#include <sodium.h>
+
+#include "RPC.h"
 
 struct ClientConfig {
     std::ifstream seed_data;
@@ -40,3 +38,5 @@ Operation genRandOperation(ClientConfig &config);
 std::string clientEncrypt(const std::string &value);
 
 void parseArgs(int argc, char *argv[], ClientConfig &config);
+
+#endif

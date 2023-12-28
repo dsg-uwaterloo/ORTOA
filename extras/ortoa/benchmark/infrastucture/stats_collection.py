@@ -18,14 +18,15 @@ class Stats(BaseModel):
     raw_df: pd.DataFrame  # Entry from every experiment
 
     def _graph_threads_vs_latency(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['nthreads'], ascending=True)
+        df = self.raw_df.sort_values(by=["nthreads"], ascending=True)
         ax = df.plot.bar(x="nthreads", y="average_latency")
-        ax.set_ylabel("Latency (μs)")
+        ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "threads_vs_latency.pdf")
+        df.to_csv(dir / "threads_vs_latency.csv")
 
     def _graph_threading_effects(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['nthreads'])
+        df = self.raw_df.sort_values(by=["nthreads"])
         ax = df.plot(
             x="nthreads",
             y=["average_latency", "throughput"],
@@ -33,34 +34,37 @@ class Stats(BaseModel):
             kind="bar",
         )
         ax.set_ylabel("Throughput (ops/s)")
-        ax.right_ax.set_ylabel("Latency (μs)")
+        ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "threading_effects.pdf")
+        df.to_csv(dir / "threading_effects.csv")
 
     def _graph_byte_size(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['bytes'], ascending=True)
+        df = self.raw_df.sort_values(by=["bytes"], ascending=True)
         ax = df.plot.bar(
             x="bytes",
             y=["average_latency", "throughput"],
             secondary_y=["average_latency"],
         )
         ax.set_ylabel("Throughput (ops/s)")
-        ax.right_ax.set_ylabel("Latency (μs)")
+        ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "byte_size.pdf")
-    
+        df.to_csv(dir / "byte_size.csv")
+
     def _graph_db_size(self, dir: Path) -> None:
-        df = self.raw_df.sort_values(by=['db_size'], ascending=True)
+        df = self.raw_df.sort_values(by=["db_size"], ascending=True)
         ax = df.plot.bar(
             x="db_size",
             y=["average_latency", "throughput"],
             secondary_y=["average_latency"],
         )
         ax.set_ylabel("Throughput (ops/s)")
-        ax.right_ax.set_ylabel("Latency (μs)")
+        ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "db_size.pdf")
-    
+        df.to_csv(dir / "db_size.csv")
+
     def _graph_percent_write(self, dir: Path) -> None:
         df = self.raw_df
         df["percent_write"] = df["percent_write"].apply(lambda x: int(x[:-1]))
@@ -71,9 +75,10 @@ class Stats(BaseModel):
             secondary_y=["average_latency"],
         )
         ax.set_ylabel("Throughput (ops/s)")
-        ax.right_ax.set_ylabel("Latency (μs)")
+        ax.right_ax.set_ylabel("Latency (ms)")
         fig = ax.get_figure()
         fig.savefig(dir / "percent_write.pdf")
+        df.to_csv(dir / "percent_write.csv")
 
     def _save_graphs(self, dir: Path) -> None:
         self._graph_threads_vs_latency(dir)
@@ -81,10 +86,10 @@ class Stats(BaseModel):
 
         if self.raw_df["bytes"][0] is not None:
             self._graph_byte_size(dir)
-        
+
         if self.raw_df["db_size"][0] is not None:
             self._graph_db_size(dir)
-        
+
         if self.raw_df["percent_write"][0] is not None:
             self._graph_percent_write(dir)
 
@@ -115,7 +120,7 @@ class Stats(BaseModel):
         with job.operations.open("r") as f:
             num_operations = len(f.readlines())
 
-        throughput = 1000000 * num_operations / total_time  # measured in ops/second
+        throughput = 1000 * num_operations / total_time  # measured in ops/second
 
         result_summary = pd.DataFrame(
             {

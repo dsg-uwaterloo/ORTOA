@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <cassert>
-#include <iostream>
 #include <openenclave/host.h>
 #include <thrift/concurrency/ThreadFactory.h>
 #include <thrift/concurrency/ThreadManager.h>
@@ -11,10 +10,10 @@
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TServerSocket.h>
 
-#include "../constants/constants.h"
-#include "../constants/shared.h"
-#include "../errors/errors.h"
-#include "../gen-cpp/RPC.h"
+#include "constants.h"
+#include "shared.h"
+#include "errors.h"
+#include "RPC.h"
 #include "ortoa_u.h"
 #include "redis.h"
 #include "spdlog/spdlog.h"
@@ -36,31 +35,35 @@ bool check_simulate(int argc, char *argv[]) {
 class RPCHandler : virtual public RPCIf {
   private:
     inline static oe_enclave_t *enclave;
-    redisCli rd;
+    std::unique_ptr<StorageInterface> storage_server;
 
   public:
-    RPCHandler() {}
+    RPCHandler(): storage_server{std::make_unique<redisCli>(HOST_IP)} {}
 
     static void setEnclaveArgs(int argc, char *argv[]) {
         assert(argc >= 2);
 
         char *oe_enclave_path = argv[1];
+        uint32_t oe_flag = OE_ENCLAVE_FLAG_DEBUG;
+        
         if (check_simulate(argc, argv)) {
             #ifdef DEBUG
             spdlog::debug("Running in simulation mode");
             #endif
 
-            oe_result_t result =
-                oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX,
-                                        OE_ENCLAVE_FLAG_SIMULATE, NULL, 0, &enclave);
-            if (result != OE_OK) {
-                throw OECreationFailed(oe_enclave_path);
-            }
+            oe_flag |= OE_ENCLAVE_FLAG_SIMULATE;
+        }
+
+        oe_result_t result =
+            oe_create_ortoa_enclave(oe_enclave_path, OE_ENCLAVE_TYPE_SGX,
+                                    oe_flag, NULL, 0, &enclave);
+        if (result != OE_OK) {
+            throw OECreationFailed(oe_enclave_path);
         }
     }
 
-    void access(const Operation &operation) {
-        std::string rd_value = rd.get(operation.key);
+    void access(std::string &_return, const Operation &operation) {
+        std::string rd_value = storage_server->get(operation.key);
 
         std::unique_ptr<unsigned char> out(new unsigned char[4096]);
         size_t out_len;
@@ -78,8 +81,9 @@ class RPCHandler : virtual public RPCIf {
                           updated_val, out_len);
             #endif
 
-            rd.put(operation.key, updated_val);
-        }
+            storage_server->put(operation.key, updated_val);
+            _return = updated_val;
+        } 
     }
 };
 
@@ -96,7 +100,7 @@ int main(int argc, char *argv[]) {
         std::shared_ptr<ThreadFactory> threadFactory = 
             std::shared_ptr<ThreadFactory>(new ThreadFactory());
         std::shared_ptr<ThreadManager> threadManager = 
-            ThreadManager::newSimpleThreadManager(8);
+            ThreadManager::newSimpleThreadManager(16);
         threadManager->threadFactory(threadFactory);
         threadManager->start();
 

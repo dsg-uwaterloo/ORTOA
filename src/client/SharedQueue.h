@@ -1,3 +1,6 @@
+#ifndef SHARED_QUEUE_H
+#define SHARED_QUEUE_H
+
 #include <atomic>
 #include <iostream>
 #include <thread>
@@ -10,8 +13,8 @@
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include "../constants/constants.h"
-#include "../gen-cpp/RPC.h"
+#include "constants.h"
+#include "RPC.h"
 #include "client_utils.h"
 
 using namespace std::chrono;
@@ -94,7 +97,8 @@ class WarmUpRunner {
             Operation data = sharedQueue.dequeue();
             if (data.op == OpType::EOD) return;
 
-            client.access(data);
+            std::string out;
+            client.access(out, data);
         }
         
         transport->close();
@@ -123,12 +127,15 @@ class ClientRunner {
             if (data.op == OpType::EOD) return;
 
             auto start = high_resolution_clock::now();
-            client.access(data);
+            std::string out;
+            client.access(out, data);
             auto end = high_resolution_clock::now();
             latencies.push_back(
-                duration_cast<microseconds>(end - start).count());
+                duration_cast<milliseconds>(end - start).count());
         }
 
         transport->close();
     }
 };
+
+#endif

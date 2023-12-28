@@ -8,9 +8,9 @@ from typing_extensions import Self
 
 from ortoa.benchmark.infrastucture.experiment_collection import ExperimentPath
 from ortoa.benchmark.interface.data import DataGenConfig, DataGenerationConfigBase
-from ortoa.benchmark.interface.flags import AnnotatedClientFlag, AnnotatedHostFlag
+from ortoa.benchmark.interface.flags import AnnotatedClientFlag
 
-FlagT = TypeVar("FlagT", bound=Union[AnnotatedClientFlag, AnnotatedHostFlag])
+FlagT = TypeVar("FlagT", bound=AnnotatedClientFlag)
 
 
 class SeedData(BaseModel):
@@ -47,11 +47,6 @@ class ClientConfig(Config[AnnotatedClientFlag]):
         raise NotImplementedError
 
 
-class HostConfig(Config[AnnotatedHostFlag]):
-    def get_flag_combinations(self) -> List[str]:
-        raise NotImplementedError
-
-
 class ExperimentMetatadata(BaseModel):
     description: str = ""
     nbytes: Optional[int] = None
@@ -65,13 +60,9 @@ class Experiment(BaseModel):
     metadata: ExperimentMetatadata
 
     client_config: ClientConfig
-    host_config: HostConfig
 
     def get_client_flag_combinations(self) -> List[str]:
         return self.client_config.get_flag_combinations()
-
-    def get_host_flag_combinations(self) -> List[str]:
-        return self.host_config.get_flag_combinations()
 
     def generate_data(self) -> None:
         if isinstance(self.client_config.data, DataGenerationConfigBase):
@@ -108,7 +99,6 @@ class AtomicExperiment(BaseModel):
     operations: Path
 
     client_flags: List[AnnotatedClientFlag]
-    host_flags: List[AnnotatedHostFlag]
 
 
 def combine(lst):
@@ -140,17 +130,10 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
             flag.get_atomic_flags() for flag in experiment.client_config.flags
         ]
 
-        all_host_flags = [
-            flag.get_atomic_flags() for flag in experiment.host_config.flags
-        ]
-
         client_flag_combinations = combine(all_client_flags)
-        host_flag_combinations = combine(all_host_flags)
 
         _id = 0
-        for cflags, hflags in itertools.product(
-            client_flag_combinations, host_flag_combinations
-        ):
+        for cflags in client_flag_combinations:
             atomic_experiments.append(
                 AtomicExperiment(
                     name=experiment.name,
@@ -159,7 +142,6 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
                     seed_data=experiment.client_config.data.seed,
                     operations=experiment.client_config.data.operations,
                     client_flags=cflags,
-                    host_flags=hflags,
                 )
             )
             _id += 1
