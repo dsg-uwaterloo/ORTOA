@@ -8,9 +8,10 @@ metadata:
 
 client_config:
   data:
-    data_type: seed
-    seed: data/experiments/byte_size/300_bytes_seed.csv
-    operations: data/experiments/byte_size/300_bytes_operations.csv
+    generator: ByteSizeGenerator
+    n_bytes: 300
+    seed_size: 1000000
+    num_operations: 1000
 
   flags:
     - name: nthreads
