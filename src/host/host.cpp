@@ -35,10 +35,10 @@ bool check_simulate(int argc, char *argv[]) {
 class RPCHandler : virtual public RPCIf {
   private:
     inline static oe_enclave_t *enclave;
-    std::shared_ptr<StorageInterface> storage_server;
+    std::unique_ptr<StorageInterface> storage_server;
 
   public:
-    RPCHandler(): storage_server{std::make_shared<redisCli>(HOST_IP)} {}
+    RPCHandler(): storage_server{std::make_unique<redisCli>(HOST_IP)} {}
 
     static void setEnclaveArgs(int argc, char *argv[]) {
         assert(argc >= 2);

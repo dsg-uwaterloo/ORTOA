@@ -4,7 +4,7 @@ redisCli::redisCli(const std::string &redis_ip, int redis_port) {
     connection_options.host = redis_ip;
     connection_options.port = redis_port;
 
-    redisConn = std::make_shared<Redis>(connection_options);
+    redisConn = std::make_unique<Redis>(connection_options);
 }
 
 std::string redisCli::get(const std::string &key) {

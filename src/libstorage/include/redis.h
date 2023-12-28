@@ -10,7 +10,7 @@ using namespace sw::redis;
 class redisCli : public StorageInterface {
   private:
     ConnectionOptions connection_options;
-    std::shared_ptr<Redis> redisConn;
+    std::unique_ptr<Redis> redisConn;
 
   public:
     redisCli(const std::string &redis_ip, int redis_port = 6379);

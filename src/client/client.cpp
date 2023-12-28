@@ -23,7 +23,7 @@ class ClientHandler {
         // # of operations corresponds to max_key (if seed data is not used)
         config.num_operations = config.max_key;
 
-        std::shared_ptr<StorageInterface> storage_server = std::make_shared<redisCli>(HOST_IP);
+        std::unique_ptr<StorageInterface> storage_server = std::make_unique<redisCli>(HOST_IP);
 
         std::vector<std::pair<std::string, std::string>> seed_operations;
         while (moreOperationsExist(config)) {
