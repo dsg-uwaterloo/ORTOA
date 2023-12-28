@@ -74,6 +74,12 @@ class Experiment(BaseModel):
                 output_file,
             )
 
+            if self.client_config.data.seed and not self.client_config.data.seed.exists():
+                raise FileNotFoundError(f"Seed file {self.client_config.data.seed} was not found.")
+
+            if self.client_config.data.operations and not self.client_config.data.operations.exists():
+                raise FileNotFoundError(f"Operations file {self.client_config.data.operations} was not found.")
+
 
 def load_experiments(
     experiment_paths: List[ExperimentPath], base_dir: Path
