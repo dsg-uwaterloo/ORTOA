@@ -55,9 +55,9 @@ ortoa-lib: a collection of bash functions to ease development
 
     Formatters:
         ortoa-clang-format: --------- Check staged C++ files for formatting issues
-        ortoa-clang-format-all: ----- Check all C++ projects for formatting issues
         ortoa-format-python: -------- Format all the python files
         ortoa-sort-python: ---------- Sort the imports in python files
+        ortoa-typecheck-python: ----- Typecheck the python files
 
     Other:
         ortoa-help: ----------------- Prints this help message
@@ -193,32 +193,17 @@ Syntax: ortoa-clang-format [-h] [DIRECTORY]...
         esac
     done
 
-    if [[ ${#} -ge 1 ]]
-    then
-        git clang-format "${@}"
-    else
-        git clang-format ${REPO_ROOT}
-    fi
-}
-
-
-ortoa-clang-format-all() {
-    local HELP="""\
-Check all C++ projects for formatting issues.
-
-Syntax: ortoa-clang-format [-h]
--------------------------------
-    -h               Print this help message
-"""
-    
-    OPTIND=1
-    while getopts ":h" option; do
-        case "${option}" in
-            h) echo "${HELP}"; return 0 ;;
-        esac
-    done
-
-    source ${REPO_ROOT}/scripts/formatting-and-linting/clang-format-all.sh host/ enclave/ crypto/ client/
+    clang-format -i --style=file \
+        "${REPO_ROOT}"/src/client/*.h \
+        "${REPO_ROOT}"/src/client/*.cpp \
+        "${REPO_ROOT}"/src/enclave/*.h \
+        "${REPO_ROOT}"/src/enclave/*.cpp \
+        "${REPO_ROOT}"/src/host/*.h \
+        "${REPO_ROOT}"/src/host/*.cpp \
+        "${REPO_ROOT}"/src/libcommon/**/*.h \
+        "${REPO_ROOT}"/src/libcommon/**/*.cpp \
+        "${REPO_ROOT}"/src/libstorage/**/*.h \
+        "${REPO_ROOT}"/src/libstorage/**/*.cpp
 }
 
 
