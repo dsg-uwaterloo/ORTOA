@@ -10,7 +10,7 @@ client_config:
     generator: FixedStringGenerator
     value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
     seed_size: 4194304
-    num_operations: 1000
+    num_operations: 1100
 
   flags:
     - name: nthreads
