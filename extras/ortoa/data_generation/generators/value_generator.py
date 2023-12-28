@@ -29,7 +29,7 @@ class ByteSizeGenerator(ValueFactory[str]):
 
         remaining = self.num_bytes - len(generated)
         while remaining > 0:
-            random_char chr(random.randint(0, 25) + ord("a"))
+            random_char = chr(random.randint(0, 25) + ord("a"))
             generated += random_char * min(25, remaining)
             remaining -= 10
 
