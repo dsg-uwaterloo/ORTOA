@@ -4,12 +4,11 @@
 #include <openenclave/enclave.h>
 #include <string>
 
-#include "shared.h"
 #include "encryption_engine.h"
 #include "ortoa_t.h"
+#include "shared.h"
 
-void access_data(int op_const, const char *in_val, size_t in_size,
-                 const char *update_val, size_t update_size,
+void access_data(int op_const, const char *in_val, size_t in_size, const char *update_val, size_t update_size,
                  unsigned char *cipher_text, size_t *out_size) {
     encryption_engine engine;
 

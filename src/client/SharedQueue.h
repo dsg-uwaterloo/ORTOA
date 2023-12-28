@@ -2,20 +2,20 @@
 #define SHARED_QUEUE_H
 
 #include <atomic>
-#include <iostream>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
+#include <iostream>
+#include <mutex>
 #include <queue>
+#include <thread>
 
 #include <chrono>
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 
-#include "constants.h"
 #include "RPC.h"
 #include "clientUtils.h"
+#include "constants.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
@@ -28,10 +28,10 @@ class SharedQueue {
     std::queue<Operation> queue;
 
     ClientConfig &config;
-  
+
   public:
-    SharedQueue(ClientConfig &config): config(config) {};
-    
+    SharedQueue(ClientConfig &config) : config(config){};
+
     int enqueue() {
         std::unique_lock<std::mutex> lock(mutex);
 
@@ -65,12 +65,13 @@ class DataHandler {
     SharedQueue &sharedQueue;
 
   public:
-    DataHandler(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
+    DataHandler(SharedQueue &sharedQueue) : sharedQueue(sharedQueue) {}
 
     void operator()() {
         while (true) {
             int enqueue_result = sharedQueue.enqueue();
-            if (enqueue_result == 1) return;
+            if (enqueue_result == 1)
+                return;
         }
     }
 };
@@ -80,27 +81,28 @@ class WarmUpRunner {
     SharedQueue &sharedQueue;
     inline static std::mutex mutex;
 
-  public: 
-    inline static std::atomic<int> warmupOperations; 
+  public:
+    inline static std::atomic<int> warmupOperations;
 
-    WarmUpRunner(SharedQueue& sharedQueue): sharedQueue(sharedQueue) {}
+    WarmUpRunner(SharedQueue &sharedQueue) : sharedQueue(sharedQueue) {}
 
     void operator()() {
         auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
         auto transport = std::make_shared<TBufferedTransport>(socket);
         auto protocol = std::make_shared<TBinaryProtocol>(transport);
         RPCClient client(protocol);
-        
+
         transport->open();
 
         while (warmupOperations--) {
             Operation data = sharedQueue.dequeue();
-            if (data.op == OpType::EOD) return;
+            if (data.op == OpType::EOD)
+                return;
 
             std::string out;
             client.access(out, data);
         }
-        
+
         transport->close();
     }
 };
@@ -111,8 +113,8 @@ class ClientRunner {
     std::vector<double> &latencies;
 
   public:
-    ClientRunner(SharedQueue& sharedQueue, std::vector<double> &latencies): 
-        sharedQueue(sharedQueue), latencies(latencies) {}
+    ClientRunner(SharedQueue &sharedQueue, std::vector<double> &latencies)
+        : sharedQueue(sharedQueue), latencies(latencies) {}
 
     void operator()() {
         auto socket = std::make_shared<TSocket>(HOST_IP, HOST_PORT);
@@ -124,14 +126,14 @@ class ClientRunner {
 
         while (true) {
             Operation data = sharedQueue.dequeue();
-            if (data.op == OpType::EOD) return;
+            if (data.op == OpType::EOD)
+                return;
 
             auto start = high_resolution_clock::now();
             std::string out;
             client.access(out, data);
             auto end = high_resolution_clock::now();
-            latencies.push_back(
-                duration_cast<milliseconds>(end - start).count());
+            latencies.push_back(duration_cast<milliseconds>(end - start).count());
         }
 
         transport->close();
