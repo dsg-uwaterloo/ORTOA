@@ -73,7 +73,6 @@ class JobOrchestration(BaseModel, Generic[JobT]):
 
     def run(self) -> List[Result[JobT]]:
         """Leaving this for when I'm ready to implement multiprocessing for the benchmarking"""
-        assert self.max_processes >= 1
         raise NotImplementedError
 
     def run_sequential(self) -> List[Result[JobT]]:

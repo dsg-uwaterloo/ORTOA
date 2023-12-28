@@ -17,8 +17,9 @@ class ExperimentPath(BaseModel):
         assert self.experiment_path.is_file()
         return super().model_post_init(__context)
 
+
     @classmethod
-    def construct(cls, experiment: Path) -> List[Self]:
+    def construct_experiments(cls, experiment: Path) -> List[Self]:
         """
         Construct an list of ExperimentPath instances
         """
@@ -33,12 +34,12 @@ class ExperimentPath(BaseModel):
 
     @classmethod
     def from_path(cls, experiment: Path) -> List[Self]:
-        return [ExperimentPath(experiment_path=experiment)]
+        return [cls(experiment_path=experiment)]
 
     @classmethod
     def from_dir(cls, experiment_dir: Path) -> List[Self]:
         return [
-            ExperimentPath(experiment_path=e) for e in experiment_dir.glob("**/*.yaml")
+            cls(experiment_path=e) for e in experiment_dir.glob("**/*.yaml")
         ]
 
 
@@ -48,6 +49,6 @@ def collect_experiments(experiments: Iterable[Path]) -> List[ExperimentPath]:
     """
     return list(
         itertools.chain.from_iterable(
-            [ExperimentPath.construct(experiment) for experiment in experiments]
+            [ExperimentPath.construct_experiments(experiment) for experiment in experiments]
         )
     )

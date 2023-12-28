@@ -26,9 +26,9 @@ class LogFiles:
 class ClientFlags(BaseModel):
     initdb: bool = True
     nthreads: int = 1
-    seed: Path = Field(required=True)
-    operations: Path = Field(required=True)
-    output: Path = Field(required=True)
+    seed: Path = Field()
+    operations: Path = Field()
+    output: Path = Field()
 
     @property
     def initdb_flags(self) -> str:
@@ -210,6 +210,7 @@ def make_jobs(
 
         for flag in experiment.client_flags:
             if flag.name == "nthreads":
+                assert isinstance(flag.value, int)
                 e_client_flags.nthreads = flag.value
             elif flag.name == "client_logging_enabled":
                 pass
