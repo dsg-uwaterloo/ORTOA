@@ -98,7 +98,7 @@ class Stats(BaseModel):
         self._save_graphs(dir=dir)
 
     @classmethod
-    def _parse_result(self, job: ClientJob, results_file: Path) -> pd.DataFrame:
+    def _parse_result(cls, job: ClientJob, results_file: Path) -> pd.DataFrame:
         """Parse the results from C++ and add them to the dataframe"""
 
         with results_file.open("r") as f:
