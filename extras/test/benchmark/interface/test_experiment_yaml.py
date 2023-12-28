@@ -13,7 +13,6 @@ from ortoa.benchmark.interface.data import (
 from ortoa.benchmark.interface.parameter import (
     IntegerIncrementRange,
     IntegerMultiplyRange,
-    IntegerParameter,
 )
 
 

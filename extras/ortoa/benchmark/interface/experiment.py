@@ -23,7 +23,7 @@ class SeedData(BaseModel):
         cls, data: DataGenerationConfigBase, output_dir: Path
     ) -> Self:
         seed, operations = data.generate_files(output_dir)
-        return SeedData(seed=seed, operations=operations)
+        return cls(seed=seed, operations=operations)
 
 
 class Config(BaseModel, Generic[FlagT]):
@@ -131,7 +131,9 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
     atomic_experiments: List[AtomicExperiment] = []
     for experiment in experiments:
         assert isinstance(experiment.client_config.data, SeedData)
-
+        assert experiment.client_config.data.seed is not None
+        assert experiment.client_config.data.operations is not None
+        
         all_client_flags = [
             flag.get_atomic_flags() for flag in experiment.client_config.flags
         ]

@@ -17,6 +17,7 @@ export REPO_ROOT=$(cd ${SCRIPT_DIR} && git rev-parse --show-superproject-working
 export ORTOA_SHARED="${REPO_ROOT}"
 export BUILD_DIR="${ORTOA_SHARED}/build"
 export INSTALL_DIR="${ORTOA_SHARED}/install"
+export SDK_DIR="${ORTOA_SHARED}/extras"
 
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib:${REPO_ROOT}/install/lib"
 
@@ -255,6 +256,24 @@ Syntax: ortoa-sort-python [-h]
     done
 
     isort extras/
+}
+
+ortoa-typecheck-python() {
+    local HELP="""\
+Typechecks the extras/ directory
+
+Syntax: ortoa-typecheck-python [-h]
+------------------------------
+    -h               Print this help message
+"""
+    OPTIND=1
+    while getopts ":h" option; do
+        case "${option}" in
+            h) echo "${HELP}"; return 0 ;;
+        esac
+    done
+    
+    pyright -p "${SDK_DIR}" --warnings
 }
 
 ############################################
