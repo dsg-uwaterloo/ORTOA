@@ -23,14 +23,14 @@ class ClientHandler {
         // # of operations corresponds to max_key (if seed data is not used)
         config.num_operations = config.max_key;
 
-        redisCli rd;
-        auto pipeline = rd.pipe();
+        std::shared_ptr<StorageInterface> storage_server = std::make_shared<redisCli>(HOST_IP);
 
+        std::vector<std::pair<std::string, std::string>> seed_operations;
         while (moreOperationsExist(config)) {
             Operation op = getInitKV(config);
-            pipeline.set(op.key, op.value);
+            seed_operations.push_back({op.key, op.value});
         }
-        pipeline.exec();
+        storage_server->put_batch(seed_operations);
     }
 
     void runThreaded() {

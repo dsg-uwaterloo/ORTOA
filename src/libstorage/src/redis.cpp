@@ -1,22 +1,24 @@
 #include "redis.h"
 
-using namespace sw::redis;
+redisCli::redisCli(const std::string &redis_ip, int redis_port) {
+    connection_options.host = redis_ip;
+    connection_options.port = redis_port;
 
-redisCli::redisCli() {
-}
-
-void redisCli::reconnect() {
-    this->redisConn = sw::redis::Redis("tcp://127.0.0.1:6379");
+    redisConn = std::make_shared<Redis>(connection_options);
 }
 
 std::string redisCli::get(const std::string &key) {
-    return this->redisConn.get(key).value_or("");
-}
-
-sw::redis::Pipeline redisCli::pipe() {
-    return this->redisConn.pipeline();
+    return redisConn->get(key).value_or("");
 }
 
 void redisCli::put(const std::string &key, const std::string &value) {
-    this->redisConn.set(key, value);
+    redisConn->set(key, value);
+}
+
+void redisCli::put_batch(const std::vector<std::pair<std::string, std::string>> &operations) {
+    auto pipe = redisConn->pipeline();
+    for (auto &op : operations) {
+        pipe.set(op.first, op.second);
+    }
+    pipe.exec();
 }
