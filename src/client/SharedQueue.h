@@ -15,7 +15,7 @@
 
 #include "constants.h"
 #include "RPC.h"
-#include "client_utils.h"
+#include "clientUtils.h"
 
 using namespace std::chrono;
 using namespace apache::thrift;
