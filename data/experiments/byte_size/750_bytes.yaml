@@ -11,8 +11,8 @@ client_config:
     generator: ByteSizeGenerator
     n_bytes: 750
     seed_size: 1000000
-    num_operations: 1000
+    num_operations: 1100
 
   flags:
     - name: nthreads
-      value: 2
+      value: 32
