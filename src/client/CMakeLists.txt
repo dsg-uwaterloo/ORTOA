@@ -2,7 +2,7 @@ set(CLIENT_EXECUTABLE client)
 
 add_executable(${CLIENT_EXECUTABLE} 
     client.cpp
-    client_utils.cpp
+    clientUtils.cpp
     ${CMAKE_BINARY_DIR}/src/gen-cpp/RPC.cpp
     ${CMAKE_BINARY_DIR}/src/gen-cpp/Operation_types.cpp
 )
