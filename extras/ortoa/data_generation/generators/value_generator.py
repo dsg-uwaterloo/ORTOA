@@ -27,12 +27,12 @@ class ByteSizeGenerator(ValueFactory[str]):
     def generate_value(self):
         generated = str(self.num_bytes)
 
-        generated = generated + "".join(
-            [
-                chr(random.randint(0, 25) + ord("a"))
-                for _ in range(self.num_bytes - len(generated))
-            ]
-        )
+        remaining = self.num_bytes - len(generated)
+        while remaining > 0:
+            random_char = chr(random.randint(0, 25) + ord("a"))
+            generated += random_char * min(25, remaining)
+            remaining -= 10
+
         return generated
 
 
