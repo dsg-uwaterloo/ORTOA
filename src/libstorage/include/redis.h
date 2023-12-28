@@ -5,17 +5,18 @@
 
 #include "StorageInterface.h"
 
-class redisCli : public StorageInterface
-{
-    public:
-        redisCli();
-        std::string get(const std::string &key) override;
-        void put(const std::string &key, const std::string &value) override;
-        sw::redis::Pipeline pipe();
-        void reconnect();
+using namespace sw::redis;
 
-    private:
-        sw::redis::Redis redisConn = sw::redis::Redis("tcp://127.0.0.1:6379");
+class redisCli : public StorageInterface {
+  private:
+    ConnectionOptions connection_options;
+    std::unique_ptr<Redis> redisConn;
+
+  public:
+    redisCli(const std::string &redis_ip, int redis_port = 6379);
+    std::string get(const std::string &key) override;
+    void put(const std::string &key, const std::string &value) override;
+    void put_batch(const std::vector<std::pair<std::string, std::string>> &operations) override;
 };
 
 #endif //REDIS_H
