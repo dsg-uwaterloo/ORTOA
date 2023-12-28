@@ -35,10 +35,10 @@ bool check_simulate(int argc, char *argv[]) {
 class RPCHandler : virtual public RPCIf {
   private:
     inline static oe_enclave_t *enclave;
-    redisCli rd;
+    std::unique_ptr<StorageInterface> storage_server;
 
   public:
-    RPCHandler() {}
+    RPCHandler(): storage_server{std::make_unique<redisCli>(HOST_IP)} {}
 
     static void setEnclaveArgs(int argc, char *argv[]) {
         assert(argc >= 2);
@@ -63,7 +63,7 @@ class RPCHandler : virtual public RPCIf {
     }
 
     void access(std::string &_return, const Operation &operation) {
-        std::string rd_value = rd.get(operation.key);
+        std::string rd_value = storage_server->get(operation.key);
 
         std::unique_ptr<unsigned char> out(new unsigned char[4096]);
         size_t out_len;
@@ -81,7 +81,7 @@ class RPCHandler : virtual public RPCIf {
                           updated_val, out_len);
             #endif
 
-            rd.put(operation.key, updated_val);
+            storage_server->put(operation.key, updated_val);
             _return = updated_val;
         } 
     }
