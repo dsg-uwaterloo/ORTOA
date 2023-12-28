@@ -2,8 +2,8 @@
 #define CLIENT_UTILS_H
 
 #include <fstream>
-#include <string>
 #include <sodium.h>
+#include <string>
 
 #include "RPC.h"
 

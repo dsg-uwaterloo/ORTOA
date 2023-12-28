@@ -3,15 +3,14 @@
 #include "constants.h"
 #include "encryption_engine.h"
 
-#include <sstream>
 #include <argparse/argparse.hpp>
 #include <mutex>
+#include <sstream>
 
 std::mutex fileMutex;
 
 bool moreOperationsExist(ClientConfig &config) {
-    return (config.use_seed && !config.seed_data.eof()) || 
-           (!config.use_seed && config.num_operations > 0);
+    return (config.use_seed && !config.seed_data.eof()) || (!config.use_seed && config.num_operations > 0);
 }
 
 Operation getInitKV(ClientConfig &config) {
@@ -95,8 +94,7 @@ std::string clientEncrypt(const std::string &value) {
     encryption_engine engine;
 
     std::unique_ptr<unsigned char> cipher_text(new unsigned char[4096]);
-    size_t out_len =
-        (size_t)engine.encryptNonDeterministic(value, cipher_text.get());
+    size_t out_len = (size_t)engine.encryptNonDeterministic(value, cipher_text.get());
     std::string updated_val((const char *)cipher_text.get(), out_len);
     return updated_val;
 }
@@ -142,7 +140,7 @@ void parseArgs(int argc, char *argv[], ClientConfig &config) {
         if (!config.experiment_result_file.is_open()) {
             throw std::runtime_error("Invalid path to experiment result file");
         }
-    } 
+    }
 
     config.num_clients = program.get<int>("--nthreads");
     config.num_warmup_operations = program.get<int>("--warmup");

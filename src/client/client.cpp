@@ -2,8 +2,8 @@
 #include <numeric>
 #include <sstream>
 
-#include "redis.h"
 #include "SharedQueue.h"
+#include "redis.h"
 #include "spdlog/spdlog.h"
 
 using namespace std::chrono;
@@ -43,7 +43,8 @@ class ClientHandler {
         for (int i = 0; i < config.num_clients; ++i) {
             data_handler_threads.push_back(std::thread(DataHandler(sharedQueue)));
         }
-        for (auto &thread : data_handler_threads) thread.join();
+        for (auto &thread : data_handler_threads)
+            thread.join();
 
         // Warm up client-host communication
         WarmUpRunner::warmupOperations = config.num_warmup_operations;
@@ -56,10 +57,12 @@ class ClientHandler {
         for (int i = 0; i < config.num_clients; ++i) {
             runner_threads.push_back(std::thread(ClientRunner(sharedQueue, latencies)));
         }
-        for (auto &thread : runner_threads) thread.join();
+        for (auto &thread : runner_threads)
+            thread.join();
         auto end = high_resolution_clock::now();
 
-        for (auto &thread : warmup_threads) thread.join();
+        for (auto &thread : warmup_threads)
+            thread.join();
 
         total_duration = duration_cast<milliseconds>(end - start).count();
     }
@@ -67,8 +70,7 @@ class ClientHandler {
     float getAveLatency() {
         assert(latencies.size() > 0);
 
-        auto average_latency =
-            std::accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
+        auto average_latency = std::accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
 
         spdlog::info("[Client]: Data access complete, average latency: {0} milliseconds", average_latency);
         return average_latency;
@@ -82,7 +84,8 @@ class ClientHandler {
     }
 
     void writeOutput() {
-        if (config.init_db) return;
+        if (config.init_db)
+            return;
 
         if (!config.experiment_result_file.is_open()) {
             getAveLatency();
