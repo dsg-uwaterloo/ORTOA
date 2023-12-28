@@ -1,5 +1,9 @@
 # ORTOA-TEE Installation
 
+## Git
+
+Install [Git LFS](https://git-lfs.com/) following the instructions for your system.
+
 ## Installing the C++ project
 
 ### 1. OpenEnclave SDK
