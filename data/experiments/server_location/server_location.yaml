@@ -1,0 +1,17 @@
+name: Server Location Experiment
+
+output_directory: server_location_experiment/
+
+metadata:
+  description: How does the server location the performance of ORTOA?
+
+client_config:
+  data:
+    generator: FixedStringGenerator
+    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    seed_size: 1000000
+    num_operations: 1100
+
+  flags:
+    - name: nthreads
+      value: 32
