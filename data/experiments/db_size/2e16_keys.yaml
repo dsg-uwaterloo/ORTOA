@@ -14,4 +14,4 @@ client_config:
 
   flags:
     - name: nthreads
-      value: 1
+      value: 32
