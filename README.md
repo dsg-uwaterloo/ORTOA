@@ -20,6 +20,6 @@ of the type of client request. This sequential two round solution provides two m
 This work proposes *ORTOA*, a family of one round trip data access protocols that *hides the type of client access to efficiently address the privacy challenges caused by revealing the type of access.* 
 
 Specifically, we propose three different single-round access type hiding protocols:
-- ORTOA-FHE: Leverages an existing crypto-graphic primitive, Fully Homomorphic Encryption (FHE)
 - ORTOA-LBL: Represents plaintext values in a binary format and encodes each bit with a secret label generated using pseudo-random functions (PRFs)
 - ORTOA-TEE: Leverages the cryptographic guarantees of Trusted Execution Environments (TEE) (hardware enclaves)
+- ORTOA-FHE: Leverages an existing crypto-graphic primitive, Fully Homomorphic Encryption (FHE). Due to the practical challenges of extensively multiplying FHE encrypted values, the code for this version is absent from this repository.
