@@ -1,0 +1,16 @@
+name: Sample Experiment
+
+output_directory: sample_experiment/
+
+metadata:
+  description: A sample experiment to help demonstrate the benchmarking flow.
+
+client_config:
+  data:
+    data_type: seed
+    seed: ortoa-tee/data/sample/sample_seed.csv
+    operations: ortoa-tee/data/sample/sample_operations.csv
+
+  flags:
+    - name: nthreads
+      value: 32
