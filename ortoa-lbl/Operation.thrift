@@ -1,15 +1,10 @@
-enum OpType {
-  GET, 
-  PUT, 
-  EOD
-}
 
 struct Operation {
-  1: OpType op,
+  1: string op,
   2: string key,
   3: string value
 }
 
-service RPC {
+service Send_Op {
   binary access(1:Operation operation),
 }
