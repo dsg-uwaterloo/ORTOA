@@ -63,8 +63,6 @@ class JobOrchestration(BaseModel, Generic[JobT]):
         arbitrary_types_allowed = True
 
     jobs: Sequence[JobT]
-    max_processes: Optional[int]
-    log_errors_in_main_thread: bool = False
 
     def model_post_init(self, __context: Any) -> None:
         if len(self.jobs) == 0:
