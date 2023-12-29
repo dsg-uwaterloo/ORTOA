@@ -37,9 +37,13 @@ We provide a bash script library `srcipts/ortoa-lib.sh` that houses a collection
 ORTOA/ $ source scripts/ortoa-lib.sh
 ```
 
+## Installing the project
+
+Details about the project installation process can be found in the docs/ directory as [INSTALL.md](docs/INSTALL.md).
+
 ## Building the codebase
 
-Details about the build can be found at [TODO](todo). The easiest way to build the C++ projects is to run the `ortoa-cbi` script.
+Details about the build can be found in the docs/ directory as [BUILD.md](docs/BUILD.md). The easiest way to build the C++ projects is to run the `ortoa-cbi` script.
 
 ```bash
 ORTOA/ $ ortoa-cbi  # requires sourcing scripts & utilities
