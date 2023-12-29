@@ -1,6 +1,6 @@
 # ORTOA-TEE
 
-ORTOA - a One Round Trip Oblivious Access protocol that reads or writes data stored on remote storage *in one round without revealing the type of access*.
+ORTOA - a family of One Round Trip Oblivious Access protocols that reads or writes data stored on remote storage *in one round without revealing the type of access*.
 
 The ORTOA-TEE project implements this access protocol leveraging the cryptographic guarantees of trusted execution environments (hardware enclaves) and benchmarks the performance.
 
@@ -13,7 +13,10 @@ If a cloud vendor can provide hardware enclaves (i.e., TEEs), an application can
 
 ## Design & Implementation
 The ORTOA-TEE data flow is as follows:
-1. Client sends a request to an untrusted host with the following packet
+
+<img src="docs/ortoa-tee-diagram.png" width="600">
+
+1. Client sends a request to an untrusted host with the following packet:
    1. Operation type *C* (GET or PUT)
    2. Key *k* (an unencrypted integer)
    3. Value *v<sub>new</sub>* (an encrypted string) (for GET requests, the value is randomly generated to maintain uniformity between operation types)
@@ -22,9 +25,9 @@ The ORTOA-TEE data flow is as follows:
 4. The enclave conducts a decryption and encryption based on the following rules:
    - If operation *C* is GET: decrypt and re-encrypt *v<sub>old</sub>*
    - If operation *C* is PUT: decrypt and re-encrypt *v<sub>new</sub>*
-5. Return the encrypted value, *v<sub>enclave</sub>*, to untrusted host
-6. Untrusted host puts the value, *v<sub>enclave</sub>* into database with key *k*
-7. Untrusted host returns the value, *v<sub>enclave</sub>* to client
+5. Return the encrypted value *v<sub>enclave</sub>* to untrusted host
+6. Untrusted host puts the value *v<sub>enclave</sub>* into database with key *k*
+7. Untrusted host returns the value *v<sub>enclave</sub>* to client
 
 ## Scripts & Utilities
 
