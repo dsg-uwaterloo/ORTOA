@@ -51,14 +51,6 @@ def parse_args() -> argparse.Namespace:
         required=False,
         help="Directory to use as base for experiment directory tree (default: %(default)s)",
     )
-    parser.add_argument(
-        "-m",
-        "--max-processes",
-        type=int,
-        default=None,
-        required=False,
-        help="Maximum number of processes to use when running experiments (default: %(default)s)",
-    )
 
     args = parser.parse_args()
 
@@ -73,8 +65,6 @@ def parse_args() -> argparse.Namespace:
 def benchmark(
     experiment_base: Path,
     experiment_names: List[Path],
-    max_processes: Optional[int] = None,
-    log_errors_in_main_thread: bool = False,
 ) -> Stats:
     """Main entrypoint to the benchmarking flow
 
@@ -110,8 +100,6 @@ def benchmark(
     # Orchestrate and the jobs
     orchestration = JobOrchestration(
         jobs=jobs,
-        max_processes=max_processes,
-        log_errors_in_main_thread=log_errors_in_main_thread,
     )
     results = orchestration.run_sequential()
 
@@ -123,9 +111,7 @@ def main():
     args = parse_args()
     args.working_dir.mkdir(parents=True, exist_ok=True)
 
-    stats: Stats = benchmark(
-        args.working_dir, args.experiments + args.experiment_dirs, args.max_processes
-    )
+    stats: Stats = benchmark(args.working_dir, args.experiments + args.experiment_dirs)
 
     stats.save_to(args.working_dir)
 
