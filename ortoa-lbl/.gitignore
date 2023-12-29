@@ -1,0 +1,11 @@
+
+db/
+gen-cpp/
+
+client
+server
+
+*.o
+*.so
+
+*.data
