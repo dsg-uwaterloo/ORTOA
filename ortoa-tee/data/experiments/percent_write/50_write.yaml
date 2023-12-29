@@ -1,0 +1,19 @@
+name: Write Percentage Experiment - 50%
+
+output_directory: write_percentage_experiment_50/
+
+metadata:
+  description: How does varying the percentage of write requests affect ortoa-tee?
+  percent_write: 50%
+
+client_config:
+  data:
+    generator: FixedStringGenerator
+    value: aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllllmmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    seed_size: 1000000
+    num_operations: 1100
+    p_get: 0.5
+
+  flags:
+    - name: nthreads
+      value: 32

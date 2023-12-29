@@ -1,0 +1,18 @@
+# C++ build and installation
+build/
+install/
+
+# Python sdk
+.venv/
+
+**/__pycache__/
+**/.pytest_cache/
+*.egg-info/
+
+# e2e benchmarking flow
+out/
+*.csv
+
+# Miscellaneous
+.vscode/
+**/*.DS_Store
