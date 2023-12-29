@@ -11,6 +11,7 @@ install/
 
 # e2e benchmarking flow
 out/
+*.csv
 
 # Miscellaneous
 .vscode/
