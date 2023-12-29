@@ -74,11 +74,21 @@ class Experiment(BaseModel):
                 output_file,
             )
 
-            if self.client_config.data.seed and not self.client_config.data.seed.exists():
-                raise FileNotFoundError(f"Seed file {self.client_config.data.seed} was not found.")
+            if (
+                self.client_config.data.seed
+                and not self.client_config.data.seed.exists()
+            ):
+                raise FileNotFoundError(
+                    f"Seed file {self.client_config.data.seed} was not found."
+                )
 
-            if self.client_config.data.operations and not self.client_config.data.operations.exists():
-                raise FileNotFoundError(f"Operations file {self.client_config.data.operations} was not found.")
+            if (
+                self.client_config.data.operations
+                and not self.client_config.data.operations.exists()
+            ):
+                raise FileNotFoundError(
+                    f"Operations file {self.client_config.data.operations} was not found."
+                )
 
 
 def load_experiments(
@@ -133,7 +143,7 @@ def atomicize_experiments(experiments: List[Experiment]) -> List[AtomicExperimen
         assert isinstance(experiment.client_config.data, SeedData)
         assert experiment.client_config.data.seed is not None
         assert experiment.client_config.data.operations is not None
-        
+
         all_client_flags = [
             flag.get_atomic_flags() for flag in experiment.client_config.flags
         ]

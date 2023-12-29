@@ -10,6 +10,7 @@ T = TypeVar("T", bound=Union[int, str, bool, float])
 # Abstractions
 ##########################
 
+
 class IntType(BaseModel):
     type: Literal["int"] = Field(default="int", frozen=True)
 
@@ -31,6 +32,7 @@ class RangeParameter(Parameter, Generic[NumberT]):
 ##########################
 # Parameter Types
 ##########################
+
 
 class IntegerIncrementRange(RangeParameter[int], IntType):
     step: int
