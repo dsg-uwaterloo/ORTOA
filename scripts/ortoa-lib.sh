@@ -39,9 +39,6 @@ ortoa-lib: a collection of bash functions to ease development
     Benchmarking ORTOA:
         ortoa-benchmark: ------------ Benchmark ORTOA with configured experiments
     
-    Testing ORTOA:
-        ortoa-test-python: ---------- Run pytest on python targets
-    
     Data Generation:
         ortoa-generate-seed: -------- Seed Data Generation script for ORTOA-tee
         ortoa-generate-operations: -- Operation Generation script for ORTOA-tee 
@@ -146,29 +143,6 @@ Experiments:
 """
 
     python3 "${REPO_ROOT}/extras/ortoa/benchmark/infrastucture/main.py" "${@}"
-}
-
-
-# Testing
-############################################
-
-ortoa-test-python() {
-    local HELP="""\
-Run ORTOA python tests
-
-Syntax: ortoa-test-python [-h]
-----------------------------------------------
-    -h                  Print this help message
-"""
-    OPTIND=1
-    while getopts ":h" option; do
-        case "${option}" in
-            h) echo "${HELP}"; return 0 ;;
-        esac
-    done
-
-    source "${REPO_ROOT}/scripts/test/run_benchmark_tests.sh"
-    run_unit_tests
 }
 
 
