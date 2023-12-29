@@ -1,0 +1,16 @@
+name: EHR Data Experiment
+
+output_directory: ehr_data_experiment/
+
+metadata: 
+  description: How does ORTOA perform on real world data?
+
+client_config: 
+  data: 
+    data_type: seed
+    seed: data/experiments/real_world_data/ehr_seed.csv
+    operations: data/experiments/real_world_data/ehr_operations.csv
+  
+  flags:
+    - name: nthreads
+      value: 32
