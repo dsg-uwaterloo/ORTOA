@@ -1,4 +1,3 @@
-import itertools
 from pathlib import Path
 from typing import Any, Generic, List, Literal, Optional, TypeVar, Union
 

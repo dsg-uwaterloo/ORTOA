@@ -2,7 +2,7 @@ import argparse
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from ortoa.benchmark.infrastucture.experiment_collection import (
     ExperimentPath,
@@ -66,17 +66,8 @@ def benchmark(
     experiment_base: Path,
     experiment_names: List[Path],
 ) -> Stats:
-    """Main entrypoint to the benchmarking flow
+    """Main entrypoint to the benchmarking flow"""
 
-    Args:
-        experiment_base (Path): _description_
-        experiment_names (List[Path]): _description_
-        max_processes (Optional[int], optional): _description_. Defaults to None.
-        log_errors_in_main_thread (bool, optional): _description_. Defaults to False.
-
-    Returns:
-        Stats: _description_
-    """
     # Get a path to every experiment file and verify the paths
     experiment_paths: List[ExperimentPath] = collect_experiments(experiment_names)
 
