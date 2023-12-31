@@ -3,23 +3,21 @@ from typing import (
     Any,
     Generic,
     List,
-    Optional,
     Protocol,
     Sequence,
     TypeVar,
     runtime_checkable,
 )
 
-from alive_progress import alive_bar, alive_it
+from alive_progress import alive_bar
 from pydantic import BaseModel
 
 
 @runtime_checkable
 class JobProtocol(Protocol):
     """
-    Protocol class (https://peps.python.org/pep-0544/) providing template for jobs runnable by the JobOrchestration class.
-    To satisfy this protocol, a class must have all the same members and methods (but can have more). A satisfying class
-    does not have to inherit from the protocol. Other examples of protocols include typing.Sequence
+    Protocol class providing template for jobs. To satisfy this protocol, a class must have all the same 
+    members and methods, but does not have to inherit from the protocol.
     """
 
     directory: Path
@@ -42,21 +40,16 @@ JobT = TypeVar("JobT", bound=JobProtocol)
 
 
 class Result(BaseModel, Generic[JobT]):
-    """
-    Result[Job] is a Job and an exception
-    """
-
     class Config:
         arbitrary_types_allowed = True
 
     job: JobT
     result_path: Path
-    exception: Optional[BaseException]
 
 
 class JobOrchestration(BaseModel, Generic[JobT]):
     """
-    Given a sequence of jobs, schedule the jobs in a process pool, managing job cancellation and progress reporting
+    Given a sequence of jobs, schedule the jobs and report progress
     """
 
     class Config:
@@ -86,10 +79,10 @@ class JobOrchestration(BaseModel, Generic[JobT]):
 
                 # save the results
                 results.append(
-                    Result(job=job, result_path=job.client_flags.output, exception=None)
+                    Result(job=job, result_path=job.client_flags.output)
                 )
 
-                bar()  # increment the progress bar status
+                bar()  # update the progress bar
 
             bar.text("Benchmark complete!")
 

@@ -142,7 +142,7 @@ class Stats(BaseModel):
 
     @classmethod
     def from_results(cls, results: List[Result]) -> Self:
-        """Given an iterable of results, generate statistics on those results"""
+        """Generate statistics from the results"""
         per_job_result = [
             cls._parse_result(job=result.job, results_file=result.result_path)
             for result in results

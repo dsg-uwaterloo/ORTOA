@@ -8,7 +8,7 @@ from typing_extensions import Self
 
 class ExperimentPath(BaseModel):
     """
-    Experiment and associated files as an object on local filesystem
+    Path to experiment config in local filesystem
     """
 
     experiment_path: Path
@@ -20,7 +20,7 @@ class ExperimentPath(BaseModel):
     @classmethod
     def construct_experiments(cls, experiment: Path) -> List[Self]:
         """
-        Construct an list of ExperimentPath instances
+        Construct an list of ExperimentPath
         """
 
         if experiment.is_file():
@@ -42,7 +42,7 @@ class ExperimentPath(BaseModel):
 
 def collect_experiments(experiments: Iterable[Path]) -> List[ExperimentPath]:
     """
-    Given a list of experiment names, find the experiments and collect them into an interable
+    Given a list of experiment names, find the experiments and collect them
     """
     return list(
         itertools.chain.from_iterable(
