@@ -14,7 +14,7 @@ If a cloud vendor can provide hardware enclaves (i.e., TEEs), an application can
 ## Design & Implementation
 The ORTOA-TEE data flow is as follows:
 
-<img src="docs/ortoa-tee-diagram.png" width="600">
+<img src="docs/ortoa-tee-data-flow.png" width="600">
 
 1. Client sends a request to an untrusted host with the following packet:
    1. Operation type *C* (GET or PUT)
